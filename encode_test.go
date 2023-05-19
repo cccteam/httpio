@@ -128,6 +128,39 @@ func TestEncoder_StatusCodes(t *testing.T) {
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
+			name: "Successfully writes NotFound",
+			args: args{
+				err: err,
+			},
+			err: err,
+			statusFunc: func(e *Encoder, err error) error {
+				return e.NotFound(err)
+			},
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "Successfully writes Conflict",
+			args: args{
+				err: err,
+			},
+			err: err,
+			statusFunc: func(e *Encoder, err error) error {
+				return e.Conflict(err)
+			},
+			wantStatus: http.StatusConflict,
+		},
+		{
+			name: "Successfully writes ServiceUnavailable",
+			args: args{
+				err: err,
+			},
+			err: err,
+			statusFunc: func(e *Encoder, err error) error {
+				return e.ServiceUnavailable(err)
+			},
+			wantStatus: http.StatusServiceUnavailable,
+		},
+		{
 			name: "Successfully writes a specific status code",
 			args: args{
 				err: err,
@@ -174,7 +207,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 		wantStatus            int
 	}{
 		{
-			name: "successfully writes a response with 401 status",
+			name: "successfully writes a response with Unauthorized status",
 			args: args{
 				message: msg,
 				err:     errors.New("This is a test"),
@@ -186,7 +219,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 			wantStatus: http.StatusUnauthorized,
 		},
 		{
-			name: "successfully writes a response with a 500 status",
+			name: "successfully writes a response with a Internal Server Error status",
 			args: args{
 				message: msg,
 				err:     errors.New("This is a test"),
@@ -198,7 +231,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 			wantStatus: http.StatusInternalServerError,
 		},
 		{
-			name: "successfully writes a response with a 400 status",
+			name: "successfully writes a response with a Bad Request status",
 			args: args{
 				message: msg,
 				err:     errors.New("This is a test"),
@@ -208,6 +241,42 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 				return e.BadRequestWithMessage(msg, err)
 			},
 			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "successfully writes a response with a NotFound status",
+			args: args{
+				message: msg,
+				err:     errors.New("This is a test"),
+			},
+			wantErr: true,
+			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
+				return e.NotFoundWithMessage(msg, err)
+			},
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "successfully writes a response with a Conflict status",
+			args: args{
+				message: msg,
+				err:     errors.New("This is a test"),
+			},
+			wantErr: true,
+			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
+				return e.ConflictWithMessage(msg, err)
+			},
+			wantStatus: http.StatusConflict,
+		},
+		{
+			name: "successfully writes a response with a ServiceUnavailable status",
+			args: args{
+				message: msg,
+				err:     errors.New("This is a test"),
+			},
+			wantErr: true,
+			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
+				return e.ServiceUnavailableWithMessage(msg, err)
+			},
+			wantStatus: http.StatusServiceUnavailable,
 		},
 		{
 			name: "successfully writes a response with a specific status",
