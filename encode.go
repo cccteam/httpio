@@ -26,7 +26,8 @@ type Encoder struct {
 	encoder HTTPEncoder
 }
 
-// NewEncoder returns a new Encoder to write to the Response. JSON is the default encoding
+// NewEncoder returns a new Encoder to write to the Response
+// This encoder is a json encoder by default
 func NewEncoder(w http.ResponseWriter) *Encoder {
 	w.Header().Set("Content-Type", "application/json")
 
