@@ -158,12 +158,6 @@ issues:
         - lll
         - bodyclose
 
-    - linters:
-        - errcheck
-      text: Rollback
-      linters:
-        - tagliatelle
-
   include:
     - EXC0002
     - EXC0005
