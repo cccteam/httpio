@@ -7,23 +7,21 @@ import (
 	"github.com/go-playground/errors/v5"
 )
 
-// the Validator interface defines validation methods that are used within the httpio package.
-type Validator interface {
-	// Struct validates a struct and returns an error if validation fails
-	Struct(s interface{}) error
-}
+// ValidatorFunc is a function that validates s
+// It returns an error if the validation fails
+type ValidatorFunc func(s interface{}) error
 
 // Decoder is a struct that can be used for decoding http requests and validating those requests
 type Decoder struct {
-	validator Validator
-	request   *http.Request
+	validateFunc ValidatorFunc
+	request      *http.Request
 }
 
 // NewDecoder returns a pointer to a new Decoder struct
-func NewDecoder(req *http.Request, validator Validator) *Decoder {
+func NewDecoder(req *http.Request, validator ValidatorFunc) *Decoder {
 	return &Decoder{
-		validator: validator,
-		request:   req,
+		validateFunc: validator,
+		request:      req,
 	}
 }
 
@@ -33,8 +31,8 @@ func (d *Decoder) Decode(request interface{}) error {
 		return errors.Wrap(err, "Decoder.Decode()")
 	}
 
-	if err := d.validator.Struct(request); err != nil {
-		return errors.Wrap(err, "Validator.Struct()")
+	if err := d.validateFunc(request); err != nil {
+		return errors.Wrap(err, "failed validating the request")
 	}
 
 	return nil

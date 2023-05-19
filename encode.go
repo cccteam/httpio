@@ -107,6 +107,16 @@ func (e *Encoder) Unauthorized(err error) error {
 	return e.statusCode(http.StatusUnauthorized, err)
 }
 
+// Forbidden writes a 403 status to the response header and returns the original error
+func (e *Encoder) Forbidden(err error) error {
+	return e.statusCode(http.StatusForbidden, err)
+}
+
+// ForbiddenWithMessage returns a forbidden response with an error message
+func (e *Encoder) ForbiddenWithMessage(message string, err error) error {
+	return e.statusCodeWithMessage(http.StatusForbidden, message, err)
+}
+
 // UnauthorizedWithMessage returns an unauthorized response with an error message
 func (e *Encoder) UnauthorizedWithMessage(message string, err error) error {
 	return e.statusCodeWithMessage(http.StatusUnauthorized, message, err)
