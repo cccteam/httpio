@@ -26,13 +26,23 @@ type Encoder struct {
 	encoder HTTPEncoder
 }
 
-// NewEncoder returns a new Encoder to write to the Response
-// This encoder is a json encoder by default
+// NewEncoder returns a new Encoder to write to the ResponseWriter
+// This encoder will write to the ResponseWriter using a json encoder.
 func NewEncoder(w http.ResponseWriter) *Encoder {
 	w.Header().Set("Content-Type", "application/json")
 
 	return &Encoder{
 		encoder: json.NewEncoder(w),
+		w:       w,
+	}
+}
+
+// NewCustomEncoder returns a new Encoder to write to the ResponseWriter
+// This allows you to provide a custom http encoder if needed.
+// The encoder must be setup write to the ResponseWriter that is passed in.
+func NewCustomEncoder(w http.ResponseWriter, encoder HTTPEncoder) *Encoder {
+	return &Encoder{
+		encoder: encoder,
 		w:       w,
 	}
 }
