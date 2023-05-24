@@ -2,6 +2,7 @@ package httpio
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -14,8 +15,6 @@ import (
 func TestNewDecoder(t *testing.T) {
 	t.Parallel()
 
-	r := httptest.NewRequest(http.MethodGet, "/test", strings.NewReader("this is a test"))
-
 	type args struct {
 		req           *http.Request
 		validatorFunc ValidatorFunc
@@ -23,17 +22,12 @@ func TestNewDecoder(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *Decoder
 	}{
 		{
 			name: "Creates a new decoder successfully",
 			args: args{
-				req:           r,
+				req:           httptest.NewRequest(http.MethodGet, "/test", strings.NewReader("this is a test")),
 				validatorFunc: func(s interface{}) error { return nil },
-			},
-			want: &Decoder{
-				validateFunc: func(s interface{}) error { return nil },
-				request:      r,
 			},
 		},
 	}
@@ -42,12 +36,14 @@ func TestNewDecoder(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := NewDecoder(tt.args.req, tt.args.validatorFunc)
-			if !reflect.DeepEqual(got.request, tt.want.request) {
-				t.Errorf("NewDecoder().request = %v, want = %v", got, tt.want)
+			if !reflect.DeepEqual(got.request, tt.args.req) {
+				t.Errorf("NewDecoder().request = %v, want = %v", got, tt.args.req)
 			}
 
-			if !reflect.DeepEqual(got.validateFunc(got.request), tt.want.validateFunc(tt.want.request)) {
-				t.Errorf("NewDecoder().validateReturn = %v, want %v", got, tt.want)
+			// Can not compare functions, but you can compare the address of the function to check
+			// that the same function was passed through the constructor.
+			if fmt.Sprintf("%v", got.validate) != fmt.Sprintf("%v", tt.args.validatorFunc) {
+				t.Errorf("NewDecoder().validate = %v, want %v", got.validate, tt.args.validatorFunc)
 			}
 		})
 	}
