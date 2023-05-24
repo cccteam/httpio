@@ -37,16 +37,6 @@ func NewEncoder(w http.ResponseWriter) *Encoder {
 	}
 }
 
-// NewCustomEncoder returns a new Encoder to write to the ResponseWriter
-// This allows you to provide a custom http encoder if needed.
-// The encoder must be setup write to the ResponseWriter that is passed in.
-func NewCustomEncoder(w http.ResponseWriter, encoder HTTPEncoder) *Encoder {
-	return &Encoder{
-		encoder: encoder,
-		w:       w,
-	}
-}
-
 // encode attempts to encode and write to the response writer
 func (e *Encoder) encode(body interface{}) error {
 	if body == nil {
