@@ -19,20 +19,25 @@ Validation is handled by the Validator interface, which requires a Struct(s inte
 ### Example usage
 
 ```go
-type MyValidator struct{}
-
-func (v MyValidator) Struct(s interface{}) error {
-    // validation logic goes here
-}
-
 type MyRequest struct {
     Field1 string `json:"field1" validate:"required"`
     Field2 int    `json:"field2" validate:"required,gt=0"`
 }
 
+v := validator.New()
+
 func MyHandler(w http.ResponseWriter, r *http.Request) {
     req := &MyRequest{}
-    decoder := httpio.NewDecoder(r, MyValidator{})
+    validatorFunc :=  func(s interface{}) error {
+        
+        if err := v.Struct(s); err != nil {
+            return err
+        }
+
+        return nil
+    }
+
+    decoder := httpio.NewDecoder(r, validatorFunc)
     if err := decoder.Decode(req); err != nil {
         // handle error
         return
