@@ -26,8 +26,8 @@ type Encoder struct {
 	encoder HTTPEncoder
 }
 
-// NewEncoder returns a new Encoder to write to the Response
-// This encoder is a json encoder by default
+// NewEncoder returns a new Encoder to write to the ResponseWriter
+// This encoder will write to the ResponseWriter using a json encoder.
 func NewEncoder(w http.ResponseWriter) *Encoder {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -95,6 +95,16 @@ func (e *Encoder) ok(body interface{}) error {
 // Unauthorized writes a 401 status to the response header and returns the original error
 func (e *Encoder) Unauthorized(err error) error {
 	return e.statusCode(http.StatusUnauthorized, err)
+}
+
+// Forbidden writes a 403 status to the response header and returns the original error
+func (e *Encoder) Forbidden(err error) error {
+	return e.statusCode(http.StatusForbidden, err)
+}
+
+// ForbiddenWithMessage returns a forbidden response with an error message
+func (e *Encoder) ForbiddenWithMessage(message string, err error) error {
+	return e.statusCodeWithMessage(http.StatusForbidden, message, err)
 }
 
 // UnauthorizedWithMessage returns an unauthorized response with an error message
