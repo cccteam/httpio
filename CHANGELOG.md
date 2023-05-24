@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/cccteam/httpio/compare/httpio-v0.0.1...httpio-v0.0.2) (2023-05-24)
+
+
+### Features
+
+* Add additional unit tests and change decoder interface ([#5](https://github.com/cccteam/httpio/issues/5)) ([3f16dc5](https://github.com/cccteam/httpio/commit/3f16dc5c19168790261a8ccfaaf4118b310c4219))
+
 ## 0.0.1 (2023-05-19)
 
 
