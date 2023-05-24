@@ -13,15 +13,15 @@ type ValidatorFunc func(s interface{}) error
 
 // Decoder is a struct that can be used for decoding http requests and validating those requests
 type Decoder struct {
-	validateFunc ValidatorFunc
-	request      *http.Request
+	validate ValidatorFunc
+	request  *http.Request
 }
 
 // NewDecoder returns a pointer to a new Decoder struct
 func NewDecoder(req *http.Request, validator ValidatorFunc) *Decoder {
 	return &Decoder{
-		validateFunc: validator,
-		request:      req,
+		validate: validator,
+		request:  req,
 	}
 }
 
@@ -31,7 +31,7 @@ func (d *Decoder) Decode(request interface{}) error {
 		return errors.Wrap(err, "Decoder.Decode()")
 	}
 
-	if err := d.validateFunc(request); err != nil {
+	if err := d.validate(request); err != nil {
 		return errors.Wrap(err, "failed validating the request")
 	}
 

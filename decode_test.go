@@ -42,8 +42,8 @@ func TestNewDecoder(t *testing.T) {
 
 			// Can not compare functions, but you can compare the address of the function to check
 			// that the same function was passed through the constructor.
-			if fmt.Sprintf("%v", got.validateFunc) != fmt.Sprintf("%v", tt.args.validatorFunc) {
-				t.Errorf("NewDecoder().validateFunc = %v, want %v", got.validateFunc, tt.args.validatorFunc)
+			if fmt.Sprintf("%v", got.validate) != fmt.Sprintf("%v", tt.args.validatorFunc) {
+				t.Errorf("NewDecoder().validate = %v, want %v", got.validate, tt.args.validatorFunc)
 			}
 		})
 	}
