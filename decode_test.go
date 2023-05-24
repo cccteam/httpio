@@ -1,7 +1,6 @@
 package httpio
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -52,18 +51,6 @@ func TestNewDecoder(t *testing.T) {
 func TestDecoder_Decode(t *testing.T) {
 	t.Parallel()
 
-	type request struct {
-		Name string
-	}
-	req := &request{
-		Name: "Zach",
-	}
-
-	body, err := json.Marshal(req)
-	if err != nil {
-		t.Fatal("failed to marshal request")
-	}
-
 	type args struct {
 		body          string
 		validatorFunc ValidatorFunc
@@ -76,7 +63,7 @@ func TestDecoder_Decode(t *testing.T) {
 		{
 			name: "successfully decodes the request",
 			args: args{
-				body: string(body),
+				body: `{"Name":"Zach"}`,
 				validatorFunc: func(s interface{}) error {
 					return nil
 				},
@@ -93,7 +80,7 @@ func TestDecoder_Decode(t *testing.T) {
 		{
 			name: "fails to validate the request",
 			args: args{
-				body: string(body),
+				body: `{"Name":"Zach"}`,
 				validatorFunc: func(s interface{}) error {
 					return errors.New("Failed to validate the request")
 				},
@@ -108,7 +95,9 @@ func TestDecoder_Decode(t *testing.T) {
 			r := httptest.NewRequest(http.MethodGet, "/test", strings.NewReader(tt.args.body))
 
 			decoder := NewDecoder(r, tt.args.validatorFunc)
-			var req request
+			req := struct {
+				Name string
+			}{}
 			if err := decoder.Decode(&req); (err != nil) != tt.wantErr {
 				t.Errorf("Decoder.DecodeRequest() error = %v, wantErr %v", err, tt.wantErr)
 			}
