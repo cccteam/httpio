@@ -1,6 +1,6 @@
 # httpio
 
-The `httpio` package provides tools for encoding HTTP responses and decoding HTTP requests in Go, complete with validation rules.
+The `httpio` package provides tools for decoding HTTP requests, decoding url parameters, and encoding HTTP responses in Go, complete with validation rules.
 
 ## Getting Started
 
@@ -29,7 +29,7 @@ v := validator.New()
 func MyHandler(w http.ResponseWriter, r *http.Request) {
     req := &MyRequest{}
     validatorFunc :=  func(s interface{}) error {
-        
+
         if err := v.Struct(s); err != nil {
             return err
         }
@@ -88,8 +88,28 @@ func MyHandler(w http.ResponseWriter, r *http.Request) {
         httpio.NewEncoder(w).InternalServerErrorWithMessage("This is what is returned in the response message", err)
         return
     }
-    
+
     // if the operation is successful, proceed as normal...
+}
+```
+
+## Params
+
+The Params() generic function serves as an enhancement to the chi router's parameters feature by decoding HTTP URL parameters into native Go types.
+
+Currently the supported types are `string`, `int`, `int64`, `float64`, `bool`
+
+### Example usage
+
+```go
+// given url: http://myapi.com/api/fileid/26
+// and chi route of:          /api/fileid/{fileId}
+
+func MyHandler(w http.ResponseWriter, r *http.Request) {
+    param := Param[int64](r, "fileId")
+    // param is parsed as type int64
+    //
+    // WithParams() middleware should be used to catch parsing errors
 }
 ```
 

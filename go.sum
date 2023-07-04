@@ -1,3 +1,5 @@
+github.com/go-chi/chi/v5 v5.0.8 h1:lD+NLqFcAi1ovnVZpsnObHGW4xb4J8lNmoYVfECH1Y0=
+github.com/go-chi/chi/v5 v5.0.8/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
 github.com/go-playground/errors/v5 v5.3.0 h1:Okot0WmH9v4bLz7wHad/gu1XrmqIHW6r5P4ubLv7QhE=
 github.com/go-playground/errors/v5 v5.3.0/go.mod h1:LcLhmzQ/RuEntAs9r38NSV+xtbHffhMx/1yuuEroc7M=
 github.com/go-playground/pkg/v5 v5.15.2 h1:/PSAD9FTPd+pZ6dn22tCiKJGGCEbZMRXqkC/5bwvVBw=
