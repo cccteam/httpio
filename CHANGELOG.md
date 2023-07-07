@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/cccteam/httpio/compare/v0.0.1...v0.0.2) (2023-07-07)
+
+
+### Features
+
+* chi UrlParam type parsing ([#10](https://github.com/cccteam/httpio/issues/10)) ([c2ba993](https://github.com/cccteam/httpio/commit/c2ba9931905d3e9894b9c63821aaf39e696d69fd))
+
 ## [0.0.1](https://github.com/cccteam/httpio/compare/v0.0.2...v0.0.1) (2023-05-25)
 
 
