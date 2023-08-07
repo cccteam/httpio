@@ -67,12 +67,12 @@ func (e *Encoder) statusCode(statusCode int, err error) error {
 }
 
 // StatusCodeWithMessage writes a statusCode and message to the response header and returns the original error
-func (e *Encoder) StatusCodeWithMessage(statusCode int, message string, err error) error {
-	return e.statusCodeWithMessage(statusCode, message, err)
+func (e *Encoder) StatusCodeWithMessage(statusCode int, err error, message string) error {
+	return e.statusCodeWithMessage(statusCode, err, message)
 }
 
 // statusCodeWithMessage writes a statusCode and message to the response header and returns the original error
-func (e *Encoder) statusCodeWithMessage(statusCode int, message string, err error) error {
+func (e *Encoder) statusCodeWithMessage(statusCode int, err error, message string) error {
 	e.w.WriteHeader(statusCode)
 	if err := e.encode(&MessageResponse{Message: message}); err != nil {
 		return err
@@ -103,13 +103,13 @@ func (e *Encoder) Forbidden(err error) error {
 }
 
 // ForbiddenWithMessage returns a forbidden response with an error message
-func (e *Encoder) ForbiddenWithMessage(message string, err error) error {
-	return e.statusCodeWithMessage(http.StatusForbidden, message, err)
+func (e *Encoder) ForbiddenWithMessage(err error, message string) error {
+	return e.statusCodeWithMessage(http.StatusForbidden, err, message)
 }
 
 // UnauthorizedWithMessage returns an unauthorized response with an error message
-func (e *Encoder) UnauthorizedWithMessage(message string, err error) error {
-	return e.statusCodeWithMessage(http.StatusUnauthorized, message, err)
+func (e *Encoder) UnauthorizedWithMessage(err error, message string) error {
+	return e.statusCodeWithMessage(http.StatusUnauthorized, err, message)
 }
 
 // BadRequest writes a http 400 status to the response header and returns the original error
@@ -118,8 +118,8 @@ func (e *Encoder) BadRequest(err error) error {
 }
 
 // BadRequestWithMessage writes a bad request with a message body in the response
-func (e *Encoder) BadRequestWithMessage(message string, err error) error {
-	return e.statusCodeWithMessage(http.StatusBadRequest, message, err)
+func (e *Encoder) BadRequestWithMessage(err error, message string) error {
+	return e.statusCodeWithMessage(http.StatusBadRequest, err, message)
 }
 
 // InternalServerError writes a 500 status to the response header and returns the original error
@@ -128,8 +128,8 @@ func (e *Encoder) InternalServerError(err error) error {
 }
 
 // InternalServerErrorWithMessage writes a 500 status to the response header and encodes a message in the response body
-func (e *Encoder) InternalServerErrorWithMessage(message string, err error) error {
-	return e.statusCodeWithMessage(http.StatusInternalServerError, message, err)
+func (e *Encoder) InternalServerErrorWithMessage(err error, message string) error {
+	return e.statusCodeWithMessage(http.StatusInternalServerError, err, message)
 }
 
 // NotFound writes a 404 status to the response header and returns the original error
@@ -138,8 +138,8 @@ func (e *Encoder) NotFound(err error) error {
 }
 
 // NotFoundWithMessage writes a 404 status to the response header and encodes a message in the response body
-func (e *Encoder) NotFoundWithMessage(message string, err error) error {
-	return e.statusCodeWithMessage(http.StatusNotFound, message, err)
+func (e *Encoder) NotFoundWithMessage(err error, message string) error {
+	return e.statusCodeWithMessage(http.StatusNotFound, err, message)
 }
 
 // Conflict writes a 409 status to the response header and returns the original error
@@ -148,8 +148,8 @@ func (e *Encoder) Conflict(err error) error {
 }
 
 // ConflictWithMessage writes a 409 status to the response header and encodes a message in the response body
-func (e *Encoder) ConflictWithMessage(message string, err error) error {
-	return e.statusCodeWithMessage(http.StatusConflict, message, err)
+func (e *Encoder) ConflictWithMessage(err error, message string) error {
+	return e.statusCodeWithMessage(http.StatusConflict, err, message)
 }
 
 // ServiceUnavailable writes a 503 status to the response header and returns the original error
@@ -158,6 +158,6 @@ func (e *Encoder) ServiceUnavailable(err error) error {
 }
 
 // ServiceUnavailableWithMessage writes a 503 status to the response header and encodes a message in the response body
-func (e *Encoder) ServiceUnavailableWithMessage(message string, err error) error {
-	return e.statusCodeWithMessage(http.StatusServiceUnavailable, message, err)
+func (e *Encoder) ServiceUnavailableWithMessage(err error, message string) error {
+	return e.statusCodeWithMessage(http.StatusServiceUnavailable, err, message)
 }
