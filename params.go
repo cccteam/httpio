@@ -30,7 +30,7 @@ func WithParams(next http.Handler) http.Handler {
 		defer func() {
 			if r := recover(); r != nil {
 				if m, ok := r.(paramErrMsg); ok {
-					_ = NewEncoder(w).BadRequestWithMessage(m.Msg(), errors.New(m.Msg()))
+					_ = NewEncoder(w).BadRequestWithMessage(errors.New(m.Msg()), m.Msg())
 				} else {
 					panic(r)
 				}

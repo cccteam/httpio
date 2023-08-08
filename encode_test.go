@@ -214,7 +214,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 			},
 			wantErr: true,
 			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.UnauthorizedWithMessage(msg, err)
+				return e.UnauthorizedWithMessage(err, msg)
 			},
 			wantStatus: http.StatusUnauthorized,
 		},
@@ -226,7 +226,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 			},
 			wantErr: true,
 			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.InternalServerErrorWithMessage(msg, err)
+				return e.InternalServerErrorWithMessage(err, msg)
 			},
 			wantStatus: http.StatusInternalServerError,
 		},
@@ -238,7 +238,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 			},
 			wantErr: true,
 			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.BadRequestWithMessage(msg, err)
+				return e.BadRequestWithMessage(err, msg)
 			},
 			wantStatus: http.StatusBadRequest,
 		},
@@ -250,7 +250,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 			},
 			wantErr: true,
 			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.NotFoundWithMessage(msg, err)
+				return e.NotFoundWithMessage(err, msg)
 			},
 			wantStatus: http.StatusNotFound,
 		},
@@ -262,7 +262,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 			},
 			wantErr: true,
 			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.ConflictWithMessage(msg, err)
+				return e.ConflictWithMessage(err, msg)
 			},
 			wantStatus: http.StatusConflict,
 		},
@@ -274,7 +274,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 			},
 			wantErr: true,
 			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.ServiceUnavailableWithMessage(msg, err)
+				return e.ServiceUnavailableWithMessage(err, msg)
 			},
 			wantStatus: http.StatusServiceUnavailable,
 		},
@@ -286,7 +286,7 @@ func TestEncoder_StatusCodeWithMessage(t *testing.T) {
 			},
 			wantErr: true,
 			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.StatusCodeWithMessage(202, msg, err)
+				return e.StatusCodeWithMessage(202, err, msg)
 			},
 			wantStatus: 202,
 		},
