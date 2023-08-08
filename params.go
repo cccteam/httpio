@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid"
 )
 
 // ParamType defines the type used to describe url Params
@@ -73,6 +74,13 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 			return any(i)
 		case bool:
 			i, err := strconv.ParseBool(v)
+			if err != nil {
+				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+			}
+
+			return any(i)
+		case uuid.UUID:
+			i, err := uuid.FromString(v)
 			if err != nil {
 				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
