@@ -97,7 +97,7 @@ func MyHandler(w http.ResponseWriter, r *http.Request) {
 
 The Params() generic function serves as an enhancement to the chi router's parameters feature by decoding HTTP URL parameters into native Go types.
 
-Currently the supported types are `string`, `int`, `int64`, `float64`, `bool`
+Currently the supported types are `string`, `int`, `int64`, `float64`, `bool`, and any type that implements the `encoding.TextUnmarshaler` interface.
 
 ### Example usage
 

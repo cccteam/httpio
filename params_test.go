@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
@@ -58,7 +57,7 @@ func TestWithParams(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tt.wantPanic != (r != nil) {
-					t.Errorf("param() panic = %v, want %v", r != nil, tt.wantPanic)
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
 				}
 			}()
 
@@ -112,7 +111,7 @@ func Test_param_string(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tt.wantPanic != (r != nil) {
-					t.Errorf("param() panic = %v, want %v", r != nil, tt.wantPanic)
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
 				}
 			}()
 
@@ -161,7 +160,7 @@ func Test_param_int(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tt.wantPanic != (r != nil) {
-					t.Errorf("param() panic = %v, want %v", r != nil, tt.wantPanic)
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
 				}
 			}()
 
@@ -210,7 +209,7 @@ func Test_param_int64(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tt.wantPanic != (r != nil) {
-					t.Errorf("param() panic = %v, want %v", r != nil, tt.wantPanic)
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
 				}
 			}()
 
@@ -259,7 +258,7 @@ func Test_param_float64(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tt.wantPanic != (r != nil) {
-					t.Errorf("param() panic = %v, want %v", r != nil, tt.wantPanic)
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
 				}
 			}()
 
@@ -348,7 +347,7 @@ func Test_param_bool(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tt.wantPanic != (r != nil) {
-					t.Errorf("param() panic = %v, want %v", r != nil, tt.wantPanic)
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
 				}
 			}()
 
@@ -397,11 +396,60 @@ func Test_param_UUID(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tt.wantPanic != (r != nil) {
-					t.Errorf("param() panic = %v, want %v", r != nil, tt.wantPanic)
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
 				}
 			}()
 
 			if gotVal := Param[uuid.UUID](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func Test_param_ptr_UUID(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   uuid.UUID
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"fileId": "0020198f-a14e-42ee-b5f8-65a228ba38e7"}),
+				param: ParamType("fileId"),
+			},
+			wantVal: uuid.FromStringOrNil("0020198f-a14e-42ee-b5f8-65a228ba38e7"),
+		},
+		{
+			name: "Invalid Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"fileId": "0020198f-a14e-42ee-b5f8-65a228ba38xx"}),
+				param: ParamType("fileId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[*uuid.UUID](tt.args.r, tt.args.param); *gotVal != tt.wantVal {
 				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
 			}
 		})
@@ -418,7 +466,7 @@ func Test_param_notimplemented(t *testing.T) {
 	tests := []struct {
 		name      string
 		args      args
-		wantVal   time.Time
+		wantVal   struct{}
 		wantPanic bool
 	}{
 		{
@@ -438,11 +486,11 @@ func Test_param_notimplemented(t *testing.T) {
 			defer func() {
 				r := recover()
 				if tt.wantPanic != (r != nil) {
-					t.Errorf("param() panic = %v, want %v", r != nil, tt.wantPanic)
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
 				}
 			}()
 
-			if gotVal := Param[time.Time](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+			if gotVal := Param[struct{}](tt.args.r, tt.args.param); gotVal != tt.wantVal {
 				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
 			}
 		})
