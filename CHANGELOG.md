@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/cccteam/httpio/compare/v0.1.0...v0.1.1) (2023-11-28)
+
+
+### Features
+
+* Add support for encoding.TextUnmarshaler interface ([#17](https://github.com/cccteam/httpio/issues/17)) ([8ca0b51](https://github.com/cccteam/httpio/commit/8ca0b51652f6887c70751296f9fd3076b9cdebfc))
+
 ## [0.1.0](https://github.com/cccteam/httpio/compare/v0.0.2...v0.1.0) (2023-08-08)
 
 
