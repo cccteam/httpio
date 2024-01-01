@@ -1,5 +1,5 @@
-github.com/go-chi/chi/v5 v5.0.10 h1:rLz5avzKpjqxrYwXNfmjkrYYXOyLJd37pz53UFHC6vk=
-github.com/go-chi/chi/v5 v5.0.10/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
+github.com/go-chi/chi/v5 v5.0.11 h1:BnpYbFZ3T3S1WMpD79r7R5ThWX40TaFB7L31Y8xqSwA=
+github.com/go-chi/chi/v5 v5.0.11/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
 github.com/go-playground/errors/v5 v5.4.0 h1:BxBxwlRjuclYbRebE4ddrRrMK705lS2mHzHw7BDoDPA=
 github.com/go-playground/errors/v5 v5.4.0/go.mod h1:6aVeVHsT36RNu/m/8AvGdPv8T2J/+KfVv6Su4VvBfpQ=
 github.com/go-playground/pkg/v5 v5.21.3 h1:1IVy0eupI5kht6L6zaAqTEvjs00zLkG28ictNkoN1wE=
