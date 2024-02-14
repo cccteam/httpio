@@ -10,7 +10,7 @@ linters-settings:
           - github.com/go-chi/chi/v5
           - github.com/go-playground/errors/v5
           - github.com/gofrs/uuid
-          - github.com/golang/mock/gomock
+          - go.uber.org/mock/gomock
           - $gostd
   dupl:
     threshold: 100

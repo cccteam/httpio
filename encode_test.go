@@ -8,15 +8,14 @@ import (
 	"testing"
 
 	"github.com/go-playground/errors/v5"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
-func TestEncoder_EncodeResponse(t *testing.T) {
+func TestEncoder_encode(t *testing.T) {
 	t.Parallel()
 	type response struct {
 		Message string
 	}
-	ctrl := gomock.NewController(t)
 
 	type args struct {
 		response interface{}
@@ -25,7 +24,7 @@ func TestEncoder_EncodeResponse(t *testing.T) {
 		name         string
 		args         args
 		wantErr      bool
-		setupEncoder func(w http.ResponseWriter) HTTPEncoder
+		setupEncoder func(encoder *MockHTTPEncoder, w http.ResponseWriter) HTTPEncoder
 	}{
 		{
 			name:    "successfully encodes a response",
@@ -35,7 +34,7 @@ func TestEncoder_EncodeResponse(t *testing.T) {
 					Message: "this is a good response",
 				},
 			},
-			setupEncoder: func(w http.ResponseWriter) HTTPEncoder {
+			setupEncoder: func(_ *MockHTTPEncoder, w http.ResponseWriter) HTTPEncoder {
 				return json.NewEncoder(w)
 			},
 		},
@@ -45,8 +44,7 @@ func TestEncoder_EncodeResponse(t *testing.T) {
 			args: args{
 				response: "Hello world",
 			},
-			setupEncoder: func(w http.ResponseWriter) HTTPEncoder {
-				encoder := NewMockHTTPEncoder(ctrl)
+			setupEncoder: func(encoder *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
 				encoder.EXPECT().Encode("Hello world").Return(errors.New("Failed to encode"))
 
 				return encoder
@@ -58,7 +56,7 @@ func TestEncoder_EncodeResponse(t *testing.T) {
 			args: args{
 				response: nil,
 			},
-			setupEncoder: func(w http.ResponseWriter) HTTPEncoder {
+			setupEncoder: func(_ *MockHTTPEncoder, w http.ResponseWriter) HTTPEncoder {
 				return json.NewEncoder(w)
 			},
 		},
@@ -67,261 +65,25 @@ func TestEncoder_EncodeResponse(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			ctrl := gomock.NewController(t)
+			mockEncoder := NewMockHTTPEncoder(ctrl)
+
 			recorder := httptest.NewRecorder()
 
 			encoder := &Encoder{
-				encoder: tt.setupEncoder(recorder),
+				encoder: tt.setupEncoder(mockEncoder, recorder),
 				w:       recorder,
 			}
-			if err := encoder.encode(tt.args.response); (err != nil) != tt.wantErr {
+			if err := encoder.encode(tt.args.response, 1); (err != nil) != tt.wantErr {
 				t.Errorf("Encoder.EncodeResponse() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestEncoder_StatusCodes(t *testing.T) {
-	t.Parallel()
-	err := errors.New("This is a test")
-	type args struct {
-		err error
-	}
-	tests := []struct {
-		name       string
-		e          *Encoder
-		args       args
-		err        error
-		statusFunc func(e *Encoder, err error) error
-		wantStatus int
-	}{
-		{
-			name: "Successfully writes unauthorized",
-			args: args{
-				err: err,
-			},
-			err: err,
-			statusFunc: func(e *Encoder, err error) error {
-				return e.Unauthorized(err)
-			},
-			wantStatus: http.StatusUnauthorized,
-		},
-		{
-			name: "Successfully writes bad request",
-			args: args{
-				err: err,
-			},
-			err: err,
-			statusFunc: func(e *Encoder, err error) error {
-				return e.BadRequest(err)
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "Successfully writes internal server error",
-			args: args{
-				err: err,
-			},
-			err: err,
-			statusFunc: func(e *Encoder, err error) error {
-				return e.InternalServerError(err)
-			},
-			wantStatus: http.StatusInternalServerError,
-		},
-		{
-			name: "Successfully writes NotFound",
-			args: args{
-				err: err,
-			},
-			err: err,
-			statusFunc: func(e *Encoder, err error) error {
-				return e.NotFound(err)
-			},
-			wantStatus: http.StatusNotFound,
-		},
-		{
-			name: "Successfully writes Conflict",
-			args: args{
-				err: err,
-			},
-			err: err,
-			statusFunc: func(e *Encoder, err error) error {
-				return e.Conflict(err)
-			},
-			wantStatus: http.StatusConflict,
-		},
-		{
-			name: "Successfully writes ServiceUnavailable",
-			args: args{
-				err: err,
-			},
-			err: err,
-			statusFunc: func(e *Encoder, err error) error {
-				return e.ServiceUnavailable(err)
-			},
-			wantStatus: http.StatusServiceUnavailable,
-		},
-		{
-			name: "Successfully writes a specific status code",
-			args: args{
-				err: err,
-			},
-			err: err,
-			statusFunc: func(e *Encoder, err error) error {
-				return e.StatusCode(122, err)
-			},
-			wantStatus: 122,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			recorder := httptest.NewRecorder()
-			encoder := NewEncoder(recorder)
-
-			if err := tt.statusFunc(encoder, tt.args.err); !errors.Is(errors.Cause(err), errors.Cause(tt.err)) {
-				t.Errorf("Encoder error = %v, want %v", err, tt.err)
-			}
-
-			if recorder.Result().StatusCode != tt.wantStatus {
-				t.Errorf("wanted status code %d, got %d", tt.wantStatus, recorder.Result().StatusCode)
-			}
-		})
-	}
-}
-
-func TestEncoder_StatusCodeWithMessage(t *testing.T) {
+func TestEncoder_statusCodeWithMessage(t *testing.T) {
 	t.Parallel()
 
-	msg := "Testing"
-	type args struct {
-		message string
-		err     error
-	}
-	tests := []struct {
-		name                  string
-		e                     *Encoder
-		args                  args
-		wantErr               bool
-		statusWithMessageFunc func(e *Encoder, msg string, err error) error
-		wantStatus            int
-	}{
-		{
-			name: "successfully writes a response with Unauthorized status",
-			args: args{
-				message: msg,
-				err:     errors.New("This is a test"),
-			},
-			wantErr: true,
-			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.UnauthorizedWithMessage(err, msg)
-			},
-			wantStatus: http.StatusUnauthorized,
-		},
-		{
-			name: "successfully writes a response with a Internal Server Error status",
-			args: args{
-				message: msg,
-				err:     errors.New("This is a test"),
-			},
-			wantErr: true,
-			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.InternalServerErrorWithMessage(err, msg)
-			},
-			wantStatus: http.StatusInternalServerError,
-		},
-		{
-			name: "successfully writes a response with a Bad Request status",
-			args: args{
-				message: msg,
-				err:     errors.New("This is a test"),
-			},
-			wantErr: true,
-			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.BadRequestWithMessage(err, msg)
-			},
-			wantStatus: http.StatusBadRequest,
-		},
-		{
-			name: "successfully writes a response with a NotFound status",
-			args: args{
-				message: msg,
-				err:     errors.New("This is a test"),
-			},
-			wantErr: true,
-			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.NotFoundWithMessage(err, msg)
-			},
-			wantStatus: http.StatusNotFound,
-		},
-		{
-			name: "successfully writes a response with a Conflict status",
-			args: args{
-				message: msg,
-				err:     errors.New("This is a test"),
-			},
-			wantErr: true,
-			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.ConflictWithMessage(err, msg)
-			},
-			wantStatus: http.StatusConflict,
-		},
-		{
-			name: "successfully writes a response with a ServiceUnavailable status",
-			args: args{
-				message: msg,
-				err:     errors.New("This is a test"),
-			},
-			wantErr: true,
-			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.ServiceUnavailableWithMessage(err, msg)
-			},
-			wantStatus: http.StatusServiceUnavailable,
-		},
-		{
-			name: "successfully writes a response with a specific status",
-			args: args{
-				message: msg,
-				err:     errors.New("This is a test"),
-			},
-			wantErr: true,
-			statusWithMessageFunc: func(e *Encoder, msg string, err error) error {
-				return e.StatusCodeWithMessage(202, err, msg)
-			},
-			wantStatus: 202,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			recorder := httptest.NewRecorder()
-			encoder := NewEncoder(recorder)
-			if err := tt.statusWithMessageFunc(encoder, tt.args.message, tt.args.err); (err != nil) != tt.wantErr {
-				t.Errorf("Encoder.StatusCodeWithMessage() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			if recorder.Result().StatusCode != tt.wantStatus {
-				t.Errorf("Decoder.DecodeRequest() wanted status code %d, got %d", http.StatusUnauthorized, recorder.Result().StatusCode)
-			}
-
-			var bod MessageResponse
-			if err := json.NewDecoder(recorder.Result().Body).Decode(&bod); err != nil {
-				t.Fatal("failed to decode body")
-			}
-
-			if bod.Message != tt.args.message {
-				t.Errorf("Encoder.StatusCodeWithMessage() want message = %s, got = %s", tt.args.message, bod.Message)
-			}
-		})
-	}
-}
-
-func TestEncoder_Ok(t *testing.T) {
-	t.Parallel()
-
-	ctrl := gomock.NewController(t)
-	msg := "Testing"
 	type args struct {
 		message string
 		err     error
@@ -330,35 +92,836 @@ func TestEncoder_Ok(t *testing.T) {
 		name         string
 		e            *Encoder
 		args         args
+		encodeMethod func(e *Encoder, msg string) error
+		setupEncoder func(e *MockHTTPEncoder, w http.ResponseWriter) HTTPEncoder
 		wantErr      bool
 		wantStatus   int
-		setupEncoder func(w http.ResponseWriter) HTTPEncoder
 	}{
 		{
-			name: "successfully writes a response with 200 status",
+			name: "BadRequestMessage()",
 			args: args{
-				message: msg,
+				message: "Testing",
 				err:     nil,
 			},
-			wantErr: false,
-			setupEncoder: func(w http.ResponseWriter) HTTPEncoder {
-				e := NewMockHTTPEncoder(ctrl)
-				e.EXPECT().Encode(msg).Return(nil).AnyTimes()
+			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
+				e.EXPECT().Encode(&MessageResponse{Message: "Testing"}).Return(nil).AnyTimes()
 				return e
 			},
-			wantStatus: http.StatusOK,
+			encodeMethod: func(e *Encoder, msg string) error {
+				return e.BadRequestMessage(msg)
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
 		},
 		{
-			name: "fails to write a response with 200 status",
+			name: "BadRequestMessage() with error",
 			args: args{
-				message: msg,
+				message: "Testing",
 				err:     nil,
 			},
-			wantErr: true,
-			setupEncoder: func(w http.ResponseWriter) HTTPEncoder {
-				e := NewMockHTTPEncoder(ctrl)
-				e.EXPECT().Encode(msg).Return(errors.New("Hi, I failed")).AnyTimes()
+			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
+				e.EXPECT().Encode(&MessageResponse{Message: "Testing"}).Return(errors.New("big error")).AnyTimes()
 				return e
+			},
+			encodeMethod: func(e *Encoder, msg string) error {
+				return e.BadRequestMessage(msg)
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+			e := NewMockHTTPEncoder(ctrl)
+			recorder := httptest.NewRecorder()
+			encoder := &Encoder{
+				encoder: tt.setupEncoder(e, recorder),
+				w:       recorder,
+			}
+			if err := tt.encodeMethod(encoder, tt.args.message); (err != nil) != tt.wantErr {
+				t.Errorf("Encoder.Method() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if recorder.Result().StatusCode != tt.wantStatus {
+				t.Errorf("Encoder.Method() wanted status code %d, got %d", tt.wantStatus, recorder.Result().StatusCode)
+			}
+		})
+	}
+}
+
+func TestEncoder_withBody(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		statusCode int
+		message    string
+		err        error
+	}
+	tests := []struct {
+		name         string
+		e            *Encoder
+		args         args
+		encodeMethod func(e *Encoder, statusCode int, body interface{}) error
+		setupEncoder func(e *MockHTTPEncoder, w http.ResponseWriter) HTTPEncoder
+		wantErr      bool
+		wantStatus   int
+	}{
+		{
+			name: "Ok",
+			args: args{
+				message: "Testing",
+				err:     nil,
+			},
+			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
+				e.EXPECT().Encode("Testing").Return(nil).AnyTimes()
+				return e
+			},
+			encodeMethod: func(e *Encoder, _ int, body interface{}) error {
+				return e.Ok(body)
+			},
+			wantStatus: http.StatusOK,
+			wantErr:    false,
+		},
+		{
+			name: "Ok with error",
+			args: args{
+				message: "Testing",
+				err:     nil,
+			},
+			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
+				e.EXPECT().Encode("Testing").Return(errors.New("big error")).AnyTimes()
+				return e
+			},
+			encodeMethod: func(e *Encoder, _ int, body interface{}) error {
+				return e.Ok(body)
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErr:    true,
+		},
+		{
+			name: "StatusCodeWithBody",
+			args: args{
+				statusCode: http.StatusBadRequest,
+				message:    "Testing",
+				err:        nil,
+			},
+			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
+				e.EXPECT().Encode("Testing").Return(nil).AnyTimes()
+				return e
+			},
+			encodeMethod: func(e *Encoder, statusCode int, body interface{}) error {
+				return e.StatusCodeWithBody(statusCode, body)
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErr:    false,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+			e := NewMockHTTPEncoder(ctrl)
+			recorder := httptest.NewRecorder()
+			encoder := &Encoder{
+				encoder: tt.setupEncoder(e, recorder),
+				w:       recorder,
+			}
+			if err := tt.encodeMethod(encoder, tt.wantStatus, tt.args.message); (err != nil) != tt.wantErr {
+				t.Errorf("Encoder.Method() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if recorder.Result().StatusCode != tt.wantStatus {
+				t.Errorf("Decoder.DecodeRequest() wanted status code %d, got %d", tt.wantStatus, recorder.Result().StatusCode)
+			}
+		})
+	}
+}
+
+func TestEncoder_encodeMethods(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		message string
+		a       []interface{}
+		err     error
+	}
+	tests := []struct {
+		name              string
+		e                 *Encoder
+		args              args
+		encodeMethod      func(e *Encoder, msg string, a []interface{}, err error) error
+		wantStatus        int
+		wantMessage       string
+		wantErr           bool
+		wantContainsError bool
+	}{
+		{
+			name: "BadRequest()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.BadRequest()
+			},
+			wantStatus:        http.StatusBadRequest,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "BadRequestWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.BadRequestWithError(err)
+			},
+			wantStatus:        http.StatusBadRequest,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "BadRequestMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.BadRequestMessage(msg)
+			},
+			wantStatus:        http.StatusBadRequest,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "BadRequestMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.BadRequestMessagef(msg, a...)
+			},
+			wantStatus:        http.StatusBadRequest,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "BadRequestMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.BadRequestMessageWithError(err, msg)
+			},
+			wantStatus:        http.StatusBadRequest,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "BadRequestMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.BadRequestMessageWithErrorf(err, msg, a...)
+			},
+			wantStatus:        http.StatusBadRequest,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "Unauthorized()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.Unauthorized()
+			},
+			wantStatus:        http.StatusUnauthorized,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "UnauthorizedWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.UnauthorizedWithError(err)
+			},
+			wantStatus:        http.StatusUnauthorized,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "UnauthorizedMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.UnauthorizedMessage(msg)
+			},
+			wantStatus:        http.StatusUnauthorized,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "UnauthorizedMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.UnauthorizedMessagef(msg, a...)
+			},
+			wantStatus:        http.StatusUnauthorized,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "UnauthorizedMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.UnauthorizedMessageWithError(err, msg)
+			},
+			wantStatus:        http.StatusUnauthorized,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "UnauthorizedMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.UnauthorizedMessageWithErrorf(err, msg, a...)
+			},
+			wantStatus:        http.StatusUnauthorized,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "Forbidden()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.Forbidden()
+			},
+			wantStatus:        http.StatusForbidden,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "ForbiddenWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.ForbiddenWithError(err)
+			},
+			wantStatus:        http.StatusForbidden,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "ForbiddenMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.ForbiddenMessage(msg)
+			},
+			wantStatus:        http.StatusForbidden,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "ForbiddenMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.ForbiddenMessagef(msg, a...)
+			},
+			wantStatus:        http.StatusForbidden,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "ForbiddenMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.ForbiddenMessageWithError(err, msg)
+			},
+			wantStatus:        http.StatusForbidden,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "ForbiddenMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.ForbiddenMessageWithErrorf(err, msg, a...)
+			},
+			wantStatus:        http.StatusForbidden,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "NotFound()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.NotFound()
+			},
+			wantStatus:        http.StatusNotFound,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "NotFoundWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.NotFoundWithError(err)
+			},
+			wantStatus:        http.StatusNotFound,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "NotFoundMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.NotFoundMessage(msg)
+			},
+			wantStatus:        http.StatusNotFound,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "NotFoundMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.NotFoundMessagef(msg, a...)
+			},
+			wantStatus:        http.StatusNotFound,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "NotFoundMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.NotFoundMessageWithError(err, msg)
+			},
+			wantStatus:        http.StatusNotFound,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "NotFoundMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.NotFoundMessageWithErrorf(err, msg, a...)
+			},
+			wantStatus:        http.StatusNotFound,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "Conflict()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.Conflict()
+			},
+			wantStatus:        http.StatusConflict,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "ConflictWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.ConflictWithError(err)
+			},
+			wantStatus:        http.StatusConflict,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "ConflictMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.ConflictMessage(msg)
+			},
+			wantStatus:        http.StatusConflict,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "ConflictMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.ConflictMessagef(msg, a...)
+			},
+			wantStatus:        http.StatusConflict,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "ConflictMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.ConflictMessageWithError(err, msg)
+			},
+			wantStatus:        http.StatusConflict,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "ConflictMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.ConflictMessageWithErrorf(err, msg, a...)
+			},
+			wantStatus:        http.StatusConflict,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "InternalServerError()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.InternalServerError()
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "InternalServerErrorWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.InternalServerErrorWithError(err)
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "InternalServerErrorMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.InternalServerErrorMessage(msg)
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "InternalServerErrorMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.InternalServerErrorMessagef(msg, a...)
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "InternalServerErrorMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.InternalServerErrorMessageWithError(err, msg)
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "InternalServerErrorMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.InternalServerErrorMessageWithErrorf(err, msg, a...)
+			},
+			wantStatus:        http.StatusInternalServerError,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "ServiceUnavailable()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.ServiceUnavailable()
+			},
+			wantStatus:        http.StatusServiceUnavailable,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "ServiceUnavailableWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.ServiceUnavailableWithError(err)
+			},
+			wantStatus:        http.StatusServiceUnavailable,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "ServiceUnavailableMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.ServiceUnavailableMessage(msg)
+			},
+			wantStatus:        http.StatusServiceUnavailable,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "ServiceUnavailableMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.ServiceUnavailableMessagef(msg, a...)
+			},
+			wantStatus:        http.StatusServiceUnavailable,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "ServiceUnavailableMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.ServiceUnavailableMessageWithError(err, msg)
+			},
+			wantStatus:        http.StatusServiceUnavailable,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "ServiceUnavailableMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.ServiceUnavailableMessageWithErrorf(err, msg, a...)
+			},
+			wantStatus:        http.StatusServiceUnavailable,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			recorder := httptest.NewRecorder()
+			encoder := NewEncoder(recorder)
+			err := tt.encodeMethod(encoder, tt.args.message, tt.args.a, tt.args.err)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Encoder.Method() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if CauseIsError(err) != tt.wantContainsError {
+				t.Errorf("ContainsError() = %v, wantContainsError %v", err, tt.wantContainsError)
+			}
+
+			if recorder.Result().StatusCode != tt.wantStatus {
+				t.Errorf("Decoder.DecodeRequest() wanted status code %d, got %d", http.StatusUnauthorized, recorder.Result().StatusCode)
+			}
+
+			if tt.wantMessage == "" {
+				return
+			}
+
+			var bod MessageResponse
+			if err := json.NewDecoder(recorder.Result().Body).Decode(&bod); err != nil {
+				t.Fatal("failed to decode body")
+			}
+
+			if bod.Message != tt.wantMessage {
+				t.Errorf("Encoder.StatusCodeWithMessage() want message = %s, got = %s", tt.wantMessage, bod.Message)
+			}
+		})
+	}
+}
+
+func TestEncoder_ClientMessage(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		message string
+		err     error
+	}
+	tests := []struct {
+		name       string
+		e          *Encoder
+		args       args
+		wantStatus int
+	}{
+		{
+			name: "BadRequest",
+			args: args{
+				message: "Testing",
+				err:     NewBadRequestMessage("Testing"),
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Unauthorized",
+			args: args{
+				message: "Testing",
+				err:     NewUnauthorizedMessage("Testing"),
+			},
+			wantStatus: http.StatusUnauthorized,
+		},
+		{
+			name: "Forbidden",
+			args: args{
+				message: "Testing",
+				err:     NewForbiddenMessage("Testing"),
+			},
+			wantStatus: http.StatusForbidden,
+		},
+		{
+			name: "NotFound",
+			args: args{
+				message: "Testing",
+				err:     NewNotFoundMessage("Testing"),
+			},
+			wantStatus: http.StatusNotFound,
+		},
+		{
+			name: "Conflict",
+			args: args{
+				message: "Testing",
+				err:     NewConflictMessage("Testing"),
+			},
+			wantStatus: http.StatusConflict,
+		},
+		{
+			name: "InternalServerError",
+			args: args{
+				message: "Testing",
+				err:     NewInternalServerErrorMessage("Testing"),
+			},
+			wantStatus: http.StatusInternalServerError,
+		},
+		{
+			name: "ServiceUnavailable",
+			args: args{
+				message: "Testing",
+				err:     NewServiceUnavailableMessage("Testing"),
+			},
+			wantStatus: http.StatusServiceUnavailable,
+		},
+		{
+			name: "Other Error",
+			args: args{
+				err: errors.New("Testing"),
 			},
 			wantStatus: http.StatusInternalServerError,
 		},
@@ -368,16 +931,26 @@ func TestEncoder_Ok(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			recorder := httptest.NewRecorder()
-			encoder := &Encoder{
-				encoder: tt.setupEncoder(recorder),
-				w:       recorder,
-			}
-			if err := encoder.Ok(tt.args.message); (err != nil) != tt.wantErr {
-				t.Errorf("Encoder.Ok() error = %v, wantErr %v", err, tt.wantErr)
+			encoder := NewEncoder(recorder)
+			if err := encoder.ClientMessage(tt.args.err); err == nil {
+				t.Errorf("Encoder.ClientMessage() error = %v, wantErr %v", err, true)
 			}
 
 			if recorder.Result().StatusCode != tt.wantStatus {
-				t.Errorf("Decoder.DecodeRequest() wanted status code %d, got %d", tt.wantStatus, recorder.Result().StatusCode)
+				t.Errorf("Decoder.DecodeRequest() wanted status code %d, got %d", http.StatusUnauthorized, recorder.Result().StatusCode)
+			}
+
+			if tt.args.message == "" {
+				return
+			}
+
+			var bod MessageResponse
+			if err := json.NewDecoder(recorder.Result().Body).Decode(&bod); err != nil {
+				t.Fatal("failed to decode body")
+			}
+
+			if bod.Message != tt.args.message {
+				t.Errorf("Encoder.ClientMessage() want message = %s, got = %s", tt.args.message, bod.Message)
 			}
 		})
 	}
