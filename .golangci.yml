@@ -10,6 +10,7 @@ linters-settings:
           - github.com/go-chi/chi/v5
           - github.com/go-playground/errors/v5
           - github.com/gofrs/uuid
+          - github.com/google/go-cmp/cmp
           - go.uber.org/mock/gomock
           - $gostd
   dupl:
@@ -168,6 +169,11 @@ issues:
         - gochecknoinits
         - lll
         - bodyclose
+
+    - path: errors\.go
+      linters:
+        - errorlint
+        - gochecknoinits
 
   include:
     - EXC0002

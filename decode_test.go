@@ -26,7 +26,7 @@ func TestNewDecoder(t *testing.T) {
 			name: "Creates a new decoder successfully",
 			args: args{
 				req:           httptest.NewRequest(http.MethodGet, "/test", strings.NewReader("this is a test")),
-				validatorFunc: func(s interface{}) error { return nil },
+				validatorFunc: func(_ interface{}) error { return nil },
 			},
 		},
 	}
@@ -64,7 +64,7 @@ func TestDecoder_Decode(t *testing.T) {
 			name: "successfully decodes the request",
 			args: args{
 				body: `{"Name":"Zach"}`,
-				validatorFunc: func(s interface{}) error {
+				validatorFunc: func(_ interface{}) error {
 					return nil
 				},
 			},
@@ -81,7 +81,7 @@ func TestDecoder_Decode(t *testing.T) {
 			name: "fails to validate the request",
 			args: args{
 				body: `{"Name":"Zach"}`,
-				validatorFunc: func(s interface{}) error {
+				validatorFunc: func(_ interface{}) error {
 					return errors.New("Failed to validate the request")
 				},
 			},
