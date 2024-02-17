@@ -1,7 +1,9 @@
 package httpio
 
 import (
+	stderrors "errors"
 	"fmt"
+	"strings"
 
 	"github.com/go-playground/errors/v5"
 )
@@ -18,6 +20,27 @@ const (
 	serviceUnavailable                 // http code 503
 )
 
+func init() {
+	errors.RegisterErrorFormatFn(errorFormatFn)
+}
+
+// errorFormatFn implements a custom format function for the errors package
+// to properly unwrap error chains contained inside a ClientMessage.
+func errorFormatFn(chain errors.Chain) string {
+	var errMsg strings.Builder
+
+	for i, link := range chain {
+		if i == 0 {
+			if chain, ok := stderrors.Unwrap(link.Err).(errors.Chain); ok {
+				errMsg.WriteString(errorFormatFn(chain))
+			}
+		}
+		errMsg.WriteString(link.Error())
+	}
+
+	return errMsg.String()
+}
+
 // Message returns the message from the wrapped ClientMessage or an empty string
 func Message(err error) string {
 	cerr := &ClientMessage{}
@@ -26,6 +49,22 @@ func Message(err error) string {
 	}
 
 	return ""
+}
+
+// Messages returns a slice of messages from the ClientMessage's contained within the chain of errors
+func Messages(err error) []string {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		subMsgs := Messages(cerr.Unwrap())
+
+		msgs := make([]string, 0, len(subMsgs)+1)
+		msgs = append(msgs, cerr.Message())
+		msgs = append(msgs, subMsgs...)
+
+		return msgs
+	}
+
+	return nil
 }
 
 // CauseIsError returns true if the Cause of this error is an error vs a ClientMessage with nil error
@@ -52,11 +91,7 @@ func (c *ClientMessage) Message() string {
 
 // Error returns the error message
 func (c *ClientMessage) Error() string {
-	if c.error != nil {
-		return fmt.Sprintf("%s: %s", c.clientMessage, c.error)
-	}
-
-	return ""
+	return c.clientMessage
 }
 
 func (c *ClientMessage) Unwrap() error {
