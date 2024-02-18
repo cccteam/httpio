@@ -8,7 +8,7 @@ jobs:
   security_scan:
     uses: cccteam/github-workflows/.github/workflows/golang-security-scan.yml@main
     with:
-      go-version: "1.21.6"
+      go-version: "1.22.0"
       execute-trivy-scan: false
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.CCC_SLACK_BOT_TOKEN }}
