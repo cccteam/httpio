@@ -41,6 +41,44 @@ func TestMessage(t *testing.T) {
 	}
 }
 
+func TestMessages(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "find message",
+			args: args{&ClientMessage{clientMessage: "my message"}},
+			want: []string{"my message"},
+		},
+		{
+			name: "find messages",
+			args: args{&ClientMessage{clientMessage: "my message", error: errors.Wrap(&ClientMessage{clientMessage: "your message"}, "")}},
+			want: []string{"my message", "your message"},
+		},
+		{
+			name: "dont find messages",
+			args: args{errors.New("my message")},
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := Messages(tt.args.err)
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("Messages() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestContainsError(t *testing.T) {
 	t.Parallel()
 
@@ -113,14 +151,14 @@ func TestClientMessage_Error(t *testing.T) {
 				clientMessage: "my message",
 				error:         stderr.New("my error"),
 			},
-			want: "my message: my error",
+			want: "my message",
 		},
 		{
-			name: "with error",
+			name: "no error",
 			fields: fields{
 				clientMessage: "my message",
 			},
-			want: "",
+			want: "my message",
 		},
 	}
 	for _, tt := range tests {
@@ -239,36 +277,50 @@ func TestHasClientMessage(t *testing.T) {
 		args args
 		want bool
 	}{
+		{name: "BadRequest", args: args{err: NewBadRequest()}, want: true},
+		{name: "BadRequest (with error)", args: args{err: NewBadRequestWithError(stderr.New("msg"))}, want: true},
 		{name: "BadRequest (with message)", args: args{err: NewBadRequestMessage("msg")}, want: true},
 		{name: "BadRequest (with messagef)", args: args{err: NewBadRequestMessagef("msg %v", "arg")}, want: true},
 		{name: "BadRequest (with message and error)", args: args{err: NewBadRequestMessageWithError(stderr.New("err"), "msg")}, want: true},
 		{name: "BadRequest (with message and errorf)", args: args{err: NewBadRequestMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
 
+		{name: "Unauthorized", args: args{err: NewUnauthorized()}, want: true},
+		{name: "Unauthorized (with error)", args: args{err: NewUnauthorizedWithError(stderr.New("msg"))}, want: true},
 		{name: "Unauthorized (with message)", args: args{err: NewUnauthorizedMessage("msg")}, want: true},
 		{name: "Unauthorized (with messagef)", args: args{err: NewUnauthorizedMessagef("msg %v", "arg")}, want: true},
 		{name: "Unauthorized (with message and error)", args: args{err: NewUnauthorizedMessageWithError(stderr.New("err"), "msg")}, want: true},
 		{name: "Unauthorized (with message and errorf)", args: args{err: NewUnauthorizedMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
 
+		{name: "Forbidden", args: args{err: NewForbidden()}, want: true},
+		{name: "Forbidden (with error)", args: args{err: NewForbiddenWithError(stderr.New("msg"))}, want: true},
 		{name: "Forbidden (with message)", args: args{err: NewForbiddenMessage("msg")}, want: true},
 		{name: "Forbidden (with messagef)", args: args{err: NewForbiddenMessagef("msg %v", "arg")}, want: true},
 		{name: "Forbidden (with message and error)", args: args{err: NewForbiddenMessageWithError(stderr.New("err"), "msg")}, want: true},
 		{name: "Forbidden (with message and errorf)", args: args{err: NewForbiddenMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
 
+		{name: "NotFound", args: args{err: NewNotFound()}, want: true},
+		{name: "NotFound (with error)", args: args{err: NewNotFoundWithError(stderr.New("msg"))}, want: true},
 		{name: "NotFound (with message)", args: args{err: NewNotFoundMessage("msg")}, want: true},
 		{name: "NotFound (with messagef)", args: args{err: NewNotFoundMessagef("msg %v", "arg")}, want: true},
 		{name: "NotFound (with message and error)", args: args{err: NewNotFoundMessageWithError(stderr.New("err"), "msg")}, want: true},
 		{name: "NotFound (with message and errorf)", args: args{err: NewNotFoundMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
 
+		{name: "Conflict", args: args{err: NewConflict()}, want: true},
+		{name: "Conflict (with error)", args: args{err: NewConflictWithError(stderr.New("msg"))}, want: true},
 		{name: "Conflict (with message)", args: args{err: NewConflictMessage("msg")}, want: true},
 		{name: "Conflict (with messagef)", args: args{err: NewConflictMessagef("msg %v", "arg")}, want: true},
 		{name: "Conflict (with message and error)", args: args{err: NewConflictMessageWithError(stderr.New("err"), "msg")}, want: true},
 		{name: "Conflict (with message and errorf)", args: args{err: NewConflictMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
 
+		{name: "InternalServerError", args: args{err: NewInternalServerError()}, want: true},
+		{name: "InternalServerError (with error)", args: args{err: NewInternalServerErrorWithError(stderr.New("msg"))}, want: true},
 		{name: "InternalServerError (with message)", args: args{err: NewInternalServerErrorMessage("msg")}, want: true},
 		{name: "InternalServerError (with messagef)", args: args{err: NewInternalServerErrorMessagef("msg %v", "arg")}, want: true},
 		{name: "InternalServerError (with message and error)", args: args{err: NewInternalServerErrorMessageWithError(stderr.New("err"), "msg")}, want: true},
 		{name: "InternalServerError (with message and errorf)", args: args{err: NewInternalServerErrorMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
 
+		{name: "ServiceUnavailable", args: args{err: NewServiceUnavailable()}, want: true},
+		{name: "ServiceUnavailable (with error)", args: args{err: NewServiceUnavailableWithError(stderr.New("msg"))}, want: true},
 		{name: "ServiceUnavailable (with message)", args: args{err: NewServiceUnavailableMessage("msg")}, want: true},
 		{name: "ServiceUnavailable (with messagef)", args: args{err: NewServiceUnavailableMessagef("msg %v", "arg")}, want: true},
 		{name: "ServiceUnavailable (with message and error)", args: args{err: NewServiceUnavailableMessageWithError(stderr.New("err"), "msg")}, want: true},
