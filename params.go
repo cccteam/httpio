@@ -28,11 +28,11 @@ func (m paramErrMsg) Msg() string {
 func WithParams(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
-			if r := recover(); r != nil {
-				if m, ok := r.(paramErrMsg); ok {
-					_ = NewEncoder(w).BadRequestMessage(m.Msg())
+			if rec := recover(); rec != nil {
+				if m, ok := rec.(paramErrMsg); ok {
+					_ = NewEncoder(w).BadRequestMessage(r.Context(), m.Msg())
 				} else {
-					panic(r)
+					panic(rec)
 				}
 			}
 		}()

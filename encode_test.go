@@ -2,6 +2,7 @@
 package httpio
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -108,7 +109,7 @@ func TestEncoder_statusCodeWithMessage(t *testing.T) {
 				return e
 			},
 			encodeMethod: func(e *Encoder, msg string) error {
-				return e.BadRequestMessage(msg)
+				return e.BadRequestMessage(context.Background(), msg)
 			},
 			wantStatus: http.StatusBadRequest,
 			wantErr:    true,
@@ -124,7 +125,7 @@ func TestEncoder_statusCodeWithMessage(t *testing.T) {
 				return e
 			},
 			encodeMethod: func(e *Encoder, msg string) error {
-				return e.BadRequestMessage(msg)
+				return e.BadRequestMessage(context.Background(), msg)
 			},
 			wantStatus: http.StatusBadRequest,
 			wantErr:    true,
@@ -264,7 +265,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 		{
 			name: "BadRequest()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
-				return e.BadRequest()
+				return e.BadRequest(context.Background())
 			},
 			wantStatus:        http.StatusBadRequest,
 			wantMessage:       "",
@@ -277,7 +278,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err: errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
-				return e.BadRequestWithError(err)
+				return e.BadRequestWithError(context.Background(), err)
 			},
 			wantStatus:        http.StatusBadRequest,
 			wantMessage:       "",
@@ -290,7 +291,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				message: "Testing",
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
-				return e.BadRequestMessage(msg)
+				return e.BadRequestMessage(context.Background(), msg)
 			},
 			wantStatus:        http.StatusBadRequest,
 			wantMessage:       "Testing",
@@ -304,7 +305,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				a:       []interface{}{"f"},
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
-				return e.BadRequestMessagef(msg, a...)
+				return e.BadRequestMessagef(context.Background(), msg, a...)
 			},
 			wantStatus:        http.StatusBadRequest,
 			wantMessage:       "Testing f",
@@ -318,7 +319,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
-				return e.BadRequestMessageWithError(err, msg)
+				return e.BadRequestMessageWithError(context.Background(), err, msg)
 			},
 			wantStatus:        http.StatusBadRequest,
 			wantMessage:       "Testing",
@@ -333,7 +334,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
-				return e.BadRequestMessageWithErrorf(err, msg, a...)
+				return e.BadRequestMessageWithErrorf(context.Background(), err, msg, a...)
 			},
 			wantStatus:        http.StatusBadRequest,
 			wantMessage:       "Testing f",
@@ -343,7 +344,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 		{
 			name: "Unauthorized()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
-				return e.Unauthorized()
+				return e.Unauthorized(context.Background())
 			},
 			wantStatus:        http.StatusUnauthorized,
 			wantMessage:       "",
@@ -356,7 +357,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err: errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
-				return e.UnauthorizedWithError(err)
+				return e.UnauthorizedWithError(context.Background(), err)
 			},
 			wantStatus:        http.StatusUnauthorized,
 			wantMessage:       "",
@@ -369,7 +370,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				message: "Testing",
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
-				return e.UnauthorizedMessage(msg)
+				return e.UnauthorizedMessage(context.Background(), msg)
 			},
 			wantStatus:        http.StatusUnauthorized,
 			wantMessage:       "Testing",
@@ -383,7 +384,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				a:       []interface{}{"f"},
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
-				return e.UnauthorizedMessagef(msg, a...)
+				return e.UnauthorizedMessagef(context.Background(), msg, a...)
 			},
 			wantStatus:        http.StatusUnauthorized,
 			wantMessage:       "Testing f",
@@ -397,7 +398,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
-				return e.UnauthorizedMessageWithError(err, msg)
+				return e.UnauthorizedMessageWithError(context.Background(), err, msg)
 			},
 			wantStatus:        http.StatusUnauthorized,
 			wantMessage:       "Testing",
@@ -412,7 +413,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
-				return e.UnauthorizedMessageWithErrorf(err, msg, a...)
+				return e.UnauthorizedMessageWithErrorf(context.Background(), err, msg, a...)
 			},
 			wantStatus:        http.StatusUnauthorized,
 			wantMessage:       "Testing f",
@@ -422,7 +423,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 		{
 			name: "Forbidden()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
-				return e.Forbidden()
+				return e.Forbidden(context.Background())
 			},
 			wantStatus:        http.StatusForbidden,
 			wantMessage:       "",
@@ -435,7 +436,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err: errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
-				return e.ForbiddenWithError(err)
+				return e.ForbiddenWithError(context.Background(), err)
 			},
 			wantStatus:        http.StatusForbidden,
 			wantMessage:       "",
@@ -448,7 +449,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				message: "Testing",
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
-				return e.ForbiddenMessage(msg)
+				return e.ForbiddenMessage(context.Background(), msg)
 			},
 			wantStatus:        http.StatusForbidden,
 			wantMessage:       "Testing",
@@ -462,7 +463,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				a:       []interface{}{"f"},
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
-				return e.ForbiddenMessagef(msg, a...)
+				return e.ForbiddenMessagef(context.Background(), msg, a...)
 			},
 			wantStatus:        http.StatusForbidden,
 			wantMessage:       "Testing f",
@@ -476,7 +477,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
-				return e.ForbiddenMessageWithError(err, msg)
+				return e.ForbiddenMessageWithError(context.Background(), err, msg)
 			},
 			wantStatus:        http.StatusForbidden,
 			wantMessage:       "Testing",
@@ -491,7 +492,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
-				return e.ForbiddenMessageWithErrorf(err, msg, a...)
+				return e.ForbiddenMessageWithErrorf(context.Background(), err, msg, a...)
 			},
 			wantStatus:        http.StatusForbidden,
 			wantMessage:       "Testing f",
@@ -501,7 +502,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 		{
 			name: "NotFound()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
-				return e.NotFound()
+				return e.NotFound(context.Background())
 			},
 			wantStatus:        http.StatusNotFound,
 			wantMessage:       "",
@@ -514,7 +515,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err: errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
-				return e.NotFoundWithError(err)
+				return e.NotFoundWithError(context.Background(), err)
 			},
 			wantStatus:        http.StatusNotFound,
 			wantMessage:       "",
@@ -527,7 +528,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				message: "Testing",
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
-				return e.NotFoundMessage(msg)
+				return e.NotFoundMessage(context.Background(), msg)
 			},
 			wantStatus:        http.StatusNotFound,
 			wantMessage:       "Testing",
@@ -541,7 +542,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				a:       []interface{}{"f"},
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
-				return e.NotFoundMessagef(msg, a...)
+				return e.NotFoundMessagef(context.Background(), msg, a...)
 			},
 			wantStatus:        http.StatusNotFound,
 			wantMessage:       "Testing f",
@@ -555,7 +556,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
-				return e.NotFoundMessageWithError(err, msg)
+				return e.NotFoundMessageWithError(context.Background(), err, msg)
 			},
 			wantStatus:        http.StatusNotFound,
 			wantMessage:       "Testing",
@@ -570,7 +571,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
-				return e.NotFoundMessageWithErrorf(err, msg, a...)
+				return e.NotFoundMessageWithErrorf(context.Background(), err, msg, a...)
 			},
 			wantStatus:        http.StatusNotFound,
 			wantMessage:       "Testing f",
@@ -580,7 +581,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 		{
 			name: "Conflict()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
-				return e.Conflict()
+				return e.Conflict(context.Background())
 			},
 			wantStatus:        http.StatusConflict,
 			wantMessage:       "",
@@ -593,7 +594,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err: errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
-				return e.ConflictWithError(err)
+				return e.ConflictWithError(context.Background(), err)
 			},
 			wantStatus:        http.StatusConflict,
 			wantMessage:       "",
@@ -606,7 +607,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				message: "Testing",
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
-				return e.ConflictMessage(msg)
+				return e.ConflictMessage(context.Background(), msg)
 			},
 			wantStatus:        http.StatusConflict,
 			wantMessage:       "Testing",
@@ -620,7 +621,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				a:       []interface{}{"f"},
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
-				return e.ConflictMessagef(msg, a...)
+				return e.ConflictMessagef(context.Background(), msg, a...)
 			},
 			wantStatus:        http.StatusConflict,
 			wantMessage:       "Testing f",
@@ -634,7 +635,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
-				return e.ConflictMessageWithError(err, msg)
+				return e.ConflictMessageWithError(context.Background(), err, msg)
 			},
 			wantStatus:        http.StatusConflict,
 			wantMessage:       "Testing",
@@ -649,7 +650,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
-				return e.ConflictMessageWithErrorf(err, msg, a...)
+				return e.ConflictMessageWithErrorf(context.Background(), err, msg, a...)
 			},
 			wantStatus:        http.StatusConflict,
 			wantMessage:       "Testing f",
@@ -659,7 +660,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 		{
 			name: "InternalServerError()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
-				return e.InternalServerError()
+				return e.InternalServerError(context.Background())
 			},
 			wantStatus:        http.StatusInternalServerError,
 			wantMessage:       "",
@@ -672,7 +673,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err: errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
-				return e.InternalServerErrorWithError(err)
+				return e.InternalServerErrorWithError(context.Background(), err)
 			},
 			wantStatus:        http.StatusInternalServerError,
 			wantMessage:       "",
@@ -685,7 +686,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				message: "Testing",
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
-				return e.InternalServerErrorMessage(msg)
+				return e.InternalServerErrorMessage(context.Background(), msg)
 			},
 			wantStatus:        http.StatusInternalServerError,
 			wantMessage:       "Testing",
@@ -699,7 +700,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				a:       []interface{}{"f"},
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
-				return e.InternalServerErrorMessagef(msg, a...)
+				return e.InternalServerErrorMessagef(context.Background(), msg, a...)
 			},
 			wantStatus:        http.StatusInternalServerError,
 			wantMessage:       "Testing f",
@@ -713,7 +714,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
-				return e.InternalServerErrorMessageWithError(err, msg)
+				return e.InternalServerErrorMessageWithError(context.Background(), err, msg)
 			},
 			wantStatus:        http.StatusInternalServerError,
 			wantMessage:       "Testing",
@@ -728,7 +729,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
-				return e.InternalServerErrorMessageWithErrorf(err, msg, a...)
+				return e.InternalServerErrorMessageWithErrorf(context.Background(), err, msg, a...)
 			},
 			wantStatus:        http.StatusInternalServerError,
 			wantMessage:       "Testing f",
@@ -738,7 +739,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 		{
 			name: "ServiceUnavailable()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
-				return e.ServiceUnavailable()
+				return e.ServiceUnavailable(context.Background())
 			},
 			wantStatus:        http.StatusServiceUnavailable,
 			wantMessage:       "",
@@ -751,7 +752,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err: errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
-				return e.ServiceUnavailableWithError(err)
+				return e.ServiceUnavailableWithError(context.Background(), err)
 			},
 			wantStatus:        http.StatusServiceUnavailable,
 			wantMessage:       "",
@@ -764,7 +765,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				message: "Testing",
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
-				return e.ServiceUnavailableMessage(msg)
+				return e.ServiceUnavailableMessage(context.Background(), msg)
 			},
 			wantStatus:        http.StatusServiceUnavailable,
 			wantMessage:       "Testing",
@@ -778,7 +779,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				a:       []interface{}{"f"},
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
-				return e.ServiceUnavailableMessagef(msg, a...)
+				return e.ServiceUnavailableMessagef(context.Background(), msg, a...)
 			},
 			wantStatus:        http.StatusServiceUnavailable,
 			wantMessage:       "Testing f",
@@ -792,7 +793,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
-				return e.ServiceUnavailableMessageWithError(err, msg)
+				return e.ServiceUnavailableMessageWithError(context.Background(), err, msg)
 			},
 			wantStatus:        http.StatusServiceUnavailable,
 			wantMessage:       "Testing",
@@ -807,7 +808,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				err:     errors.New("Testing"),
 			},
 			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
-				return e.ServiceUnavailableMessageWithErrorf(err, msg, a...)
+				return e.ServiceUnavailableMessageWithErrorf(context.Background(), err, msg, a...)
 			},
 			wantStatus:        http.StatusServiceUnavailable,
 			wantMessage:       "Testing f",
@@ -932,7 +933,7 @@ func TestEncoder_ClientMessage(t *testing.T) {
 			t.Parallel()
 			recorder := httptest.NewRecorder()
 			encoder := NewEncoder(recorder)
-			if err := encoder.ClientMessage(tt.args.err); err == nil {
+			if err := encoder.ClientMessage(context.Background(), tt.args.err); err == nil {
 				t.Errorf("Encoder.ClientMessage() error = %v, wantErr %v", err, true)
 			}
 
