@@ -93,7 +93,7 @@ func (c *ClientMessage) Message() string {
 	return c.clientMessage
 }
 
-// Error implements the error interface, returning the client message
+// Error returns the error message
 func (c *ClientMessage) Error() string {
 	return fmt.Sprintf("Client Message:%q: %s", c.clientMessage, c.error.Error())
 }
