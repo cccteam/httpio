@@ -95,7 +95,7 @@ func (c *ClientMessage) Message() string {
 
 // Error implements the error interface, returning the client message
 func (c *ClientMessage) Error() string {
-	return c.clientMessage
+	return fmt.Sprintf("Client Message:%q: %s", c.clientMessage, c.error.Error())
 }
 
 func (c *ClientMessage) Unwrap() error {
