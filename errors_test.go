@@ -151,7 +151,7 @@ func TestClientMessage_Error(t *testing.T) {
 				clientMessage: "my message",
 				error:         stderr.New("my error"),
 			},
-			want: "my message",
+			want: "Client Message:\"my message\": my error",
 		},
 		{
 			name: "no error",

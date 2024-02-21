@@ -95,6 +95,10 @@ func (c *ClientMessage) Message() string {
 
 // Error returns the error message
 func (c *ClientMessage) Error() string {
+	if c.error == nil {
+		return c.clientMessage
+	}
+
 	return fmt.Sprintf("Client Message:%q: %s", c.clientMessage, c.error.Error())
 }
 
