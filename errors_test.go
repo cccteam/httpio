@@ -126,7 +126,7 @@ func TestContainsError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := CauseIsError(tt.args.err); got != tt.want {
-				t.Errorf("ContainsError() = %v, want %v", got, tt.want)
+				t.Errorf("CauseIsError() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -146,7 +146,7 @@ func TestClientMessage_Error(t *testing.T) {
 		want   string
 	}{
 		{
-			name: "with error",
+			name: "with error & message",
 			fields: fields{
 				clientMessage: "my message",
 				error:         stderr.New("my error"),
@@ -158,7 +158,19 @@ func TestClientMessage_Error(t *testing.T) {
 			fields: fields{
 				clientMessage: "my message",
 			},
-			want: "my message",
+			want: "Client Message:\"my message\"",
+		},
+		{
+			name: "no message",
+			fields: fields{
+				error: stderr.New("my error"),
+			},
+			want: "my error",
+		},
+		{
+			name:   "no message, no error",
+			fields: fields{},
+			want:   "",
 		},
 	}
 	for _, tt := range tests {

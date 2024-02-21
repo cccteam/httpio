@@ -95,11 +95,19 @@ func (c *ClientMessage) Message() string {
 
 // Error returns the error message
 func (c *ClientMessage) Error() string {
-	if c.error == nil {
-		return c.clientMessage
+	if c.error == nil && c.clientMessage == "" {
+		return ""
+	}
+	if c.clientMessage == "" {
+		return c.error.Error()
 	}
 
-	return fmt.Sprintf("Client Message:%q: %s", c.clientMessage, c.error.Error())
+	msg := fmt.Sprintf("Client Message:%q", c.clientMessage)
+	if c.error == nil {
+		return msg
+	}
+
+	return fmt.Sprintf("%s: %s", msg, c.error.Error())
 }
 
 func (c *ClientMessage) Unwrap() error {
