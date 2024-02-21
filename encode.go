@@ -130,7 +130,7 @@ func (e *Encoder) ServiceUnavailable(ctx context.Context) error {
 	}, "")
 }
 
-// BadRequestWithError creates a new empty client message with error and a BadRequest (400) return code
+// BadRequestWithError wraps an existing error while creating a new empty client message and a BadRequest (400) return code
 func (e *Encoder) BadRequestWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: badRequest,
@@ -138,7 +138,7 @@ func (e *Encoder) BadRequestWithError(ctx context.Context, err error) error {
 	}, "")
 }
 
-// UnauthorizedWithError creates a new empty client message with error and a Unauthorized (401) return code
+// UnauthorizedWithError wraps an existing error while creating a new empty client message and a Unauthorized (401) return code
 func (e *Encoder) UnauthorizedWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: unauthorized,
@@ -146,7 +146,7 @@ func (e *Encoder) UnauthorizedWithError(ctx context.Context, err error) error {
 	}, "")
 }
 
-// ForbiddenWithError creates a new empty client message with error and a Forbidden (403) return code
+// ForbiddenWithError wraps an existing error while creating a new empty client message and a Forbidden (403) return code
 func (e *Encoder) ForbiddenWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: forbidden,
@@ -154,7 +154,7 @@ func (e *Encoder) ForbiddenWithError(ctx context.Context, err error) error {
 	}, "")
 }
 
-// NotFoundWithError creates a new empty client message with error and a NotFound (404) return code
+// NotFoundWithError wraps an existing error while creating a new empty client message and a NotFound (404) return code
 func (e *Encoder) NotFoundWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: notFound,
@@ -162,7 +162,7 @@ func (e *Encoder) NotFoundWithError(ctx context.Context, err error) error {
 	}, "")
 }
 
-// ConflictWithError creates a new empty client message with error and a Conflict (409) return code
+// ConflictWithError wraps an existing error while creating a new empty client message and a Conflict (409) return code
 func (e *Encoder) ConflictWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: conflict,
@@ -170,7 +170,7 @@ func (e *Encoder) ConflictWithError(ctx context.Context, err error) error {
 	}, "")
 }
 
-// InternalServerErrorWithError creates a new empty client message with error and a InternalServerError (500) return code
+// InternalServerErrorWithError wraps an existing error while creating a new empty client message and a InternalServerError (500) return code
 func (e *Encoder) InternalServerErrorWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: internalServerError,
@@ -178,7 +178,7 @@ func (e *Encoder) InternalServerErrorWithError(ctx context.Context, err error) e
 	}, "")
 }
 
-// ServiceUnavailableWithError creates a new empty client message with error and a ServiceUnavailable (503) return code
+// ServiceUnavailableWithError wraps an existing error while creating a new empty client message and a ServiceUnavailable (503) return code
 func (e *Encoder) ServiceUnavailableWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: serviceUnavailable,

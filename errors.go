@@ -155,7 +155,7 @@ func NewServiceUnavailable() errors.Chain {
 	})
 }
 
-// NewBadRequestWithError creates a new empty client message with error and a BadRequest (400) return code
+// NewBadRequestWithError wraps an existing error while creating a new empty client message and a BadRequest (400) return code
 func NewBadRequestWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: badRequest,
@@ -163,7 +163,7 @@ func NewBadRequestWithError(err error) errors.Chain {
 	})
 }
 
-// NewUnauthorizedWithError creates a new empty client message with error and a Unauthorized (401) return code
+// NewUnauthorizedWithError wraps an existing error while creating a new empty client message and a Unauthorized (401) return code
 func NewUnauthorizedWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: unauthorized,
@@ -171,7 +171,7 @@ func NewUnauthorizedWithError(err error) errors.Chain {
 	})
 }
 
-// NewForbiddenWithError creates a new empty client message with error and a Forbidden (403) return code
+// NewForbiddenWithError wraps an existing error while creating a new empty client message and a Forbidden (403) return code
 func NewForbiddenWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: forbidden,
@@ -179,7 +179,7 @@ func NewForbiddenWithError(err error) errors.Chain {
 	})
 }
 
-// NewNotFoundWithError creates a new empty client message with error and a NotFound (404) return code
+// NewNotFoundWithError wraps an existing error while creating a new empty client message and a NotFound (404) return code
 func NewNotFoundWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: notFound,
@@ -187,7 +187,7 @@ func NewNotFoundWithError(err error) errors.Chain {
 	})
 }
 
-// NewConflictWithError creates a new empty client message with error and a Conflict (409) return code
+// NewConflictWithError wraps an existing error while creating a new empty client message and a Conflict (409) return code
 func NewConflictWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: conflict,
@@ -195,7 +195,7 @@ func NewConflictWithError(err error) errors.Chain {
 	})
 }
 
-// NewInternalServerErrorWithError creates a new empty client message with error and a InternalServerError (500) return code
+// NewInternalServerErrorWithError wraps an existing error while creating a new empty client message and a InternalServerError (500) return code
 func NewInternalServerErrorWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: internalServerError,
@@ -203,7 +203,7 @@ func NewInternalServerErrorWithError(err error) errors.Chain {
 	})
 }
 
-// NewServiceUnavailableWithError creates a new empty client message with error and a ServiceUnavailable (503) return code
+// NewServiceUnavailableWithError wraps an existing error while creating a new empty client message and a ServiceUnavailable (503) return code
 func NewServiceUnavailableWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: serviceUnavailable,
