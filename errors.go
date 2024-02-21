@@ -93,7 +93,7 @@ func (c *ClientMessage) Message() string {
 	return c.clientMessage
 }
 
-// Error returns the error message
+// Error implements the error interface, returning the client message
 func (c *ClientMessage) Error() string {
 	return c.clientMessage
 }
