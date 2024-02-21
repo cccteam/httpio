@@ -79,7 +79,7 @@ func TestMessages(t *testing.T) {
 	}
 }
 
-func TestContainsError(t *testing.T) {
+func TestCauseIsError(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
