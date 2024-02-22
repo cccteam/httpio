@@ -851,70 +851,70 @@ func TestEncoder_ClientMessage(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		message string
-		err     error
+		err error
 	}
 	tests := []struct {
-		name       string
-		e          *Encoder
-		args       args
-		wantStatus int
+		name        string
+		e           *Encoder
+		args        args
+		wantMessage string
+		wantStatus  int
 	}{
 		{
 			name: "BadRequest",
 			args: args{
-				message: "Testing",
-				err:     NewBadRequestMessage("Testing"),
+				err: NewBadRequestMessage("Testing"),
 			},
-			wantStatus: http.StatusBadRequest,
+			wantMessage: "Testing",
+			wantStatus:  http.StatusBadRequest,
 		},
 		{
 			name: "Unauthorized",
 			args: args{
-				message: "Testing",
-				err:     NewUnauthorizedMessage("Testing"),
+				err: NewUnauthorizedMessage("Testing"),
 			},
-			wantStatus: http.StatusUnauthorized,
+			wantMessage: "Testing",
+			wantStatus:  http.StatusUnauthorized,
 		},
 		{
 			name: "Forbidden",
 			args: args{
-				message: "Testing",
-				err:     NewForbiddenMessage("Testing"),
+				err: NewForbiddenMessage("Testing"),
 			},
-			wantStatus: http.StatusForbidden,
+			wantMessage: "Testing",
+			wantStatus:  http.StatusForbidden,
 		},
 		{
 			name: "NotFound",
 			args: args{
-				message: "Testing",
-				err:     NewNotFoundMessage("Testing"),
+				err: NewNotFoundMessage("Testing"),
 			},
-			wantStatus: http.StatusNotFound,
+			wantMessage: "Testing",
+			wantStatus:  http.StatusNotFound,
 		},
 		{
 			name: "Conflict",
 			args: args{
-				message: "Testing",
-				err:     NewConflictMessage("Testing"),
+				err: NewConflictMessage("Testing"),
 			},
-			wantStatus: http.StatusConflict,
+			wantMessage: "Testing",
+			wantStatus:  http.StatusConflict,
 		},
 		{
 			name: "InternalServerError",
 			args: args{
-				message: "Testing",
-				err:     NewInternalServerErrorMessage("Testing"),
+				err: NewInternalServerErrorMessage("Testing"),
 			},
-			wantStatus: http.StatusInternalServerError,
+			wantMessage: "Testing",
+			wantStatus:  http.StatusInternalServerError,
 		},
 		{
 			name: "ServiceUnavailable",
 			args: args{
-				message: "Testing",
-				err:     NewServiceUnavailableMessage("Testing"),
+				err: NewServiceUnavailableMessage("Testing"),
 			},
-			wantStatus: http.StatusServiceUnavailable,
+			wantMessage: "Testing",
+			wantStatus:  http.StatusServiceUnavailable,
 		},
 		{
 			name: "Other Error",
@@ -938,7 +938,7 @@ func TestEncoder_ClientMessage(t *testing.T) {
 				t.Errorf("Wanted response status code %d, got %d", tt.wantStatus, recorder.Result().StatusCode)
 			}
 
-			if tt.args.message == "" {
+			if tt.wantMessage == "" {
 				return
 			}
 
@@ -947,8 +947,8 @@ func TestEncoder_ClientMessage(t *testing.T) {
 				t.Fatal("failed to decode body")
 			}
 
-			if bod.Message != tt.args.message {
-				t.Errorf("Encoder.ClientMessage() want message = %s, got = %s", tt.args.message, bod.Message)
+			if bod.Message != tt.wantMessage {
+				t.Errorf("Encoder.ClientMessage() want message = %s, got = %s", tt.wantMessage, bod.Message)
 			}
 		})
 	}
