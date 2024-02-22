@@ -824,7 +824,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				t.Errorf("Encoder.Method() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if CauseIsError(err) != tt.wantContainsError {
-				t.Errorf("ContainsError() = %v, wantContainsError %v", err, tt.wantContainsError)
+				t.Errorf("CauseIsError() = %v, wantContainsError %v", err, tt.wantContainsError)
 			}
 
 			if recorder.Result().StatusCode != tt.wantStatus {
