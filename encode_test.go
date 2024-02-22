@@ -160,11 +160,9 @@ func TestEncoder_withBody(t *testing.T) {
 	type args struct {
 		statusCode int
 		message    string
-		err        error
 	}
 	tests := []struct {
 		name         string
-		e            *Encoder
 		args         args
 		encodeMethod func(e *Encoder, statusCode int, body interface{}) error
 		setupEncoder func(e *MockHTTPEncoder, w http.ResponseWriter) HTTPEncoder
@@ -174,8 +172,8 @@ func TestEncoder_withBody(t *testing.T) {
 		{
 			name: "Ok",
 			args: args{
-				message: "Testing",
-				err:     nil,
+				statusCode: http.StatusOK,
+				message:    "Testing",
 			},
 			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
 				e.EXPECT().Encode("Testing").Return(nil).AnyTimes()
@@ -190,8 +188,8 @@ func TestEncoder_withBody(t *testing.T) {
 		{
 			name: "Ok with error",
 			args: args{
-				message: "Testing",
-				err:     nil,
+				statusCode: http.StatusInternalServerError,
+				message:    "Testing",
 			},
 			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
 				e.EXPECT().Encode("Testing").Return(errors.New("big error")).AnyTimes()
@@ -208,7 +206,6 @@ func TestEncoder_withBody(t *testing.T) {
 			args: args{
 				statusCode: http.StatusBadRequest,
 				message:    "Testing",
-				err:        nil,
 			},
 			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
 				e.EXPECT().Encode("Testing").Return(nil).AnyTimes()
@@ -233,7 +230,7 @@ func TestEncoder_withBody(t *testing.T) {
 				encoder: tt.setupEncoder(e, recorder),
 				w:       recorder,
 			}
-			if err := tt.encodeMethod(encoder, tt.wantStatus, tt.args.message); (err != nil) != tt.wantErr {
+			if err := tt.encodeMethod(encoder, tt.args.statusCode, tt.args.message); (err != nil) != tt.wantErr {
 				t.Errorf("Encoder.Method() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
