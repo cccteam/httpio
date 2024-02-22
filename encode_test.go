@@ -238,7 +238,7 @@ func TestEncoder_withBody(t *testing.T) {
 			}
 
 			if recorder.Result().StatusCode != tt.wantStatus {
-				t.Errorf("Decoder.DecodeRequest() wanted status code %d, got %d", tt.wantStatus, recorder.Result().StatusCode)
+				t.Errorf("Wanted response status code %d, got %d", tt.wantStatus, recorder.Result().StatusCode)
 			}
 		})
 	}
