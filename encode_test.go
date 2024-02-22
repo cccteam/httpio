@@ -84,48 +84,53 @@ func TestEncoder_encode(t *testing.T) {
 
 func TestEncoder_statusCodeWithMessage(t *testing.T) {
 	t.Parallel()
-
 	type args struct {
-		message string
-		err     error
+		message    string
+		err        error
+		statusCode int
 	}
 	tests := []struct {
 		name         string
-		e            *Encoder
 		args         args
-		encodeMethod func(e *Encoder, msg string) error
-		setupEncoder func(e *MockHTTPEncoder, w http.ResponseWriter) HTTPEncoder
+		setupEncoder func(e *MockHTTPEncoder)
 		wantErr      bool
 		wantStatus   int
 	}{
 		{
-			name: "BadRequestMessage()",
+			name: "BadRequest message",
 			args: args{
-				message: "Testing",
-				err:     nil,
+				message:    "Testing",
+				err:        nil,
+				statusCode: http.StatusBadRequest,
 			},
-			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
+			setupEncoder: func(e *MockHTTPEncoder) {
 				e.EXPECT().Encode(&MessageResponse{Message: "Testing"}).Return(nil).AnyTimes()
-				return e
 			},
-			encodeMethod: func(e *Encoder, msg string) error {
-				return e.BadRequestMessage(context.Background(), msg)
+			wantStatus: http.StatusBadRequest,
+			wantErr:    false,
+		},
+		{
+			name: "BadRequest message with error",
+			args: args{
+				message:    "Testing",
+				err:        errors.New("some error"),
+				statusCode: http.StatusBadRequest,
+			},
+			setupEncoder: func(e *MockHTTPEncoder) {
+				e.EXPECT().Encode(&MessageResponse{Message: "Testing"}).Return(nil).AnyTimes()
 			},
 			wantStatus: http.StatusBadRequest,
 			wantErr:    true,
 		},
 		{
-			name: "BadRequestMessage() with error",
+			name: "fails to encode BadRequest message",
 			args: args{
-				message: "Testing",
-				err:     nil,
+				message:    "Testing",
+				err:        nil,
+				statusCode: http.StatusBadRequest,
 			},
-			setupEncoder: func(e *MockHTTPEncoder, _ http.ResponseWriter) HTTPEncoder {
+			setupEncoder: func(e *MockHTTPEncoder) {
 				e.EXPECT().Encode(&MessageResponse{Message: "Testing"}).Return(errors.New("big error")).AnyTimes()
-				return e
-			},
-			encodeMethod: func(e *Encoder, msg string) error {
-				return e.BadRequestMessage(context.Background(), msg)
 			},
 			wantStatus: http.StatusBadRequest,
 			wantErr:    true,
@@ -135,18 +140,17 @@ func TestEncoder_statusCodeWithMessage(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
 			ctrl := gomock.NewController(t)
 			e := NewMockHTTPEncoder(ctrl)
 			recorder := httptest.NewRecorder()
+			tt.setupEncoder(e)
 			encoder := &Encoder{
-				encoder: tt.setupEncoder(e, recorder),
+				encoder: e,
 				w:       recorder,
 			}
-			if err := tt.encodeMethod(encoder, tt.args.message); (err != nil) != tt.wantErr {
+			if err := encoder.statusCodeWithMessage(context.Background(), tt.args.statusCode, tt.args.err, tt.args.message); (err != nil) != tt.wantErr {
 				t.Errorf("Encoder.Method() error = %v, wantErr %v", err, tt.wantErr)
 			}
-
 			if recorder.Result().StatusCode != tt.wantStatus {
 				t.Errorf("Encoder.Method() wanted status code %d, got %d", tt.wantStatus, recorder.Result().StatusCode)
 			}
