@@ -841,7 +841,7 @@ func TestEncoder_encodeMethods(t *testing.T) {
 			}
 
 			if bod.Message != tt.wantMessage {
-				t.Errorf("Encoder.StatusCodeWithMessage() want message = %s, got = %s", tt.wantMessage, bod.Message)
+				t.Errorf("Encoder.statusCodeWithMessage() want message = %s, got = %s", tt.wantMessage, bod.Message)
 			}
 		})
 	}
