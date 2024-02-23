@@ -25,15 +25,14 @@ func TestWithParams(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				h: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				}),
+				h: http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
 			},
 			wantCode: http.StatusOK,
 		},
 		{
 			name: "No panic",
 			args: args{
-				h: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				h: http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
 					panic(paramErrMsg("message"))
 				}),
 			},
@@ -42,7 +41,7 @@ func TestWithParams(t *testing.T) {
 		{
 			name: "panic",
 			args: args{
-				h: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				h: http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
 					panic("message")
 				}),
 			},

@@ -2,7 +2,6 @@ package httpio
 
 import (
 	"encoding"
-	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -29,11 +28,11 @@ func (m paramErrMsg) Msg() string {
 func WithParams(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
-			if r := recover(); r != nil {
-				if m, ok := r.(paramErrMsg); ok {
-					_ = NewEncoder(w).BadRequestWithMessage(errors.New(m.Msg()), m.Msg())
+			if rec := recover(); rec != nil {
+				if m, ok := rec.(paramErrMsg); ok {
+					_ = NewEncoder(w).BadRequestMessage(r.Context(), m.Msg())
 				} else {
-					panic(r)
+					panic(rec)
 				}
 			}
 		}()
@@ -89,7 +88,7 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 				t = t.Elem()
 			}
 			interfaceType := reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
-			if reflect.PtrTo(t).Implements(interfaceType) {
+			if reflect.PointerTo(t).Implements(interfaceType) {
 				instance := reflect.New(t).Interface()
 				enc, ok := instance.(encoding.TextUnmarshaler)
 				if !ok {
