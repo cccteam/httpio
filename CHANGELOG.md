@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.0](https://github.com/cccteam/httpio/compare/v0.1.1...v0.2.0) (2024-02-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* Encoder methods were refactored ([#21](https://github.com/cccteam/httpio/issues/21))
+
+### Features
+
+* Add client error message handling ([#21](https://github.com/cccteam/httpio/issues/21)) ([64b2edb](https://github.com/cccteam/httpio/commit/64b2edb7de7ae9b2b1a3a07df01cfc1d8ec81e6d))
+
+
+### Code Refactoring
+
+* Encoder methods were refactored ([#21](https://github.com/cccteam/httpio/issues/21)) ([64b2edb](https://github.com/cccteam/httpio/commit/64b2edb7de7ae9b2b1a3a07df01cfc1d8ec81e6d))
+
 ## [0.1.1](https://github.com/cccteam/httpio/compare/v0.1.0...v0.1.1) (2023-11-28)
 
 
