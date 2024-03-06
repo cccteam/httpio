@@ -1,6 +1,9 @@
 name: Security Scan
 
 on:
+  push:
+    branches:
+      - upgrade/go-dependencies
   schedule:
     - cron: "0 14 * * *" # Daily at 8:00 AM CDT
 
