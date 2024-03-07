@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/cccteam/httpio/compare/v0.2.0...v0.2.1) (2024-03-07)
+
+
+### Code Upgrade
+
+* Go version 1.22.1 and dependencies ([#26](https://github.com/cccteam/httpio/issues/26)) ([5321011](https://github.com/cccteam/httpio/commit/53210113b126bf8778b29ef85832edf712930863))
+
 ## [0.2.0](https://github.com/cccteam/httpio/compare/v0.1.1...v0.2.0) (2024-02-24)
 
 
