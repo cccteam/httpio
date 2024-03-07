@@ -4,7 +4,7 @@ on:
     types: [opened, synchronize, reopened] # these are the defaults - synchronize means 'commits pushed to PR'
 
 env:
-  GO_VERSION: "1.22.0"
+  GO_VERSION: "1.22.1"
 
 concurrency:
   group: ${{ github.ref }}
@@ -22,7 +22,7 @@ jobs:
 
   golang-ci:
     needs: env-setup
-    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@v2.0.0
+    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@v2.0.1
     with:
       go-version: ${{ needs.env-setup.outputs.go_version }}
       build-tags: '[""]'
