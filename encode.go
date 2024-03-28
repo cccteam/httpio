@@ -11,6 +11,7 @@ import (
 )
 
 // MessageResponse holds a standard structure for http responses that carry a single message
+// This also includes a trace ID for debugging purposes
 type MessageResponse struct {
 	Message string `json:"message,omitempty"`
 	TraceID string `json:"traceId,omitempty"`
@@ -60,9 +61,18 @@ func (e *Encoder) encode(body interface{}, skipFrames uint) error {
 }
 
 // statusCodeWithMessage writes a statusCode and message to the response header and returns the original error
+// This also attempts to include a trace ID in the response if it exists, for debugging purposes
 func (e *Encoder) statusCodeWithMessage(ctx context.Context, statusCode int, err error, message string) error {
 	e.w.WriteHeader(statusCode)
-	if err := e.encode(&MessageResponse{Message: message, TraceID: logger.Ctx(ctx).TraceID()}, 4); err != nil {
+
+	traceID := logger.Ctx(ctx).TraceID()
+
+	// if we don't have any message or traceID, we don't need to write anything to the body
+	if message == "" && traceID == "" {
+		return err
+	}
+
+	if err := e.encode(&MessageResponse{Message: message, TraceID: traceID}, 4); err != nil {
 		return err
 	}
 
