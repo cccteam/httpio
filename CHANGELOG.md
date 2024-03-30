@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/cccteam/httpio/compare/v0.2.1...v0.2.2) (2024-03-30)
+
+
+### Bug Fixes
+
+* Bug in response when no message is specified ([#28](https://github.com/cccteam/httpio/issues/28)) ([0f2172e](https://github.com/cccteam/httpio/commit/0f2172ec726d01caa5ada6a8d6e1ed40da34f709))
+
 ## [0.2.1](https://github.com/cccteam/httpio/compare/v0.2.0...v0.2.1) (2024-03-07)
 
 
