@@ -836,6 +836,10 @@ func TestEncoder_encodeMethods(t *testing.T) {
 			}
 
 			if tt.wantMessage == "" {
+				if recorder.Body.Len() != 0 {
+					t.Errorf("Expected empty body, got %s", recorder.Body.String())
+				}
+
 				return
 			}
 
