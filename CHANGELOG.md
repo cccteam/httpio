@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/cccteam/httpio/compare/v0.2.2...v0.2.3) (2024-04-05)
+
+
+### Code Upgrade
+
+* Upgrade to go1.22.2 and x/net to v0.24 (fix vulnerabilities) ([#33](https://github.com/cccteam/httpio/issues/33)) ([03ec4bb](https://github.com/cccteam/httpio/commit/03ec4bbbf06ff25a4678550cb6cedc0e8de289a7))
+
 ## [0.2.2](https://github.com/cccteam/httpio/compare/v0.2.1...v0.2.2) (2024-03-30)
 
 
