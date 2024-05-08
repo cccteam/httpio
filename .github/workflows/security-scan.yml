@@ -1,9 +1,6 @@
 name: Security Scan
 
 on:
-  push:
-    branches:
-      - upgrade/go-version-MAY-2024
   schedule:
     - cron: "0 14 * * *" # Daily at 8:00 AM CDT
 
