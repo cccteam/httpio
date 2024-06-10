@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.4](https://github.com/cccteam/httpio/compare/v0.2.3...v0.2.4) (2024-06-10)
+
+
+### Code Upgrade
+
+* Go version 1.22.3 and dependencies ([#37](https://github.com/cccteam/httpio/issues/37)) ([3ae6b17](https://github.com/cccteam/httpio/commit/3ae6b174343d38a13d9a2e411ed9b29ba806d197))
+* Go version 1.22.4 for vulnerability GO-2024-2887 ([#43](https://github.com/cccteam/httpio/issues/43)) ([33ef042](https://github.com/cccteam/httpio/commit/33ef042f727f84ad94fe777f3b21685880663756))
+
 ## [0.2.3](https://github.com/cccteam/httpio/compare/v0.2.2...v0.2.3) (2024-04-05)
 
 
