@@ -22,7 +22,7 @@ jobs:
 
   golang-ci:
     needs: env-setup
-    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@v2.0.2
+    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@v3.0.0
     with:
       go-version: ${{ needs.env-setup.outputs.go_version }}
       build-tags: '[""]'
