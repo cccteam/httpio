@@ -13,4 +13,4 @@ jobs:
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.CCC_SLACK_BOT_TOKEN }}
       SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
-      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.SECURITY_ALERTS_TOKEN }}
+      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}
