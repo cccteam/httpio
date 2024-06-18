@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5](https://github.com/cccteam/httpio/compare/v0.2.4...v0.2.5) (2024-06-18)
+
+
+### Code Upgrade
+
+* Update workflows and add semantic pull request workflow (39) ([e3cd9d8](https://github.com/cccteam/httpio/commit/e3cd9d8216fb0cc1e211670405f6089a611edd77))
+
 ## [0.2.4](https://github.com/cccteam/httpio/compare/v0.2.3...v0.2.4) (2024-06-10)
 
 
