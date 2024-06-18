@@ -6,10 +6,10 @@ on:
 
 jobs:
   security_scan:
-    uses: cccteam/github-workflows/.github/workflows/golang-security-scan.yml@v2.0.2
+    uses: cccteam/github-workflows/.github/workflows/golang-security-scan.yml@v4.1.0
     with:
-      go-version: "1.22.4"
       execute-trivy-scan: false
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.CCC_SLACK_BOT_TOKEN }}
       SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+      DEPENDABOT_ALERTS_TOKEN: ${{ secrets.DEPENDABOT_ALERTS_TOKEN }}

@@ -22,7 +22,10 @@ jobs:
 
   golang-ci:
     needs: env-setup
-    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@v2.0.2
+    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@v4.1.0
     with:
       go-version: ${{ needs.env-setup.outputs.go_version }}
       build-tags: '[""]'
+
+  semantic-pull-request-title:
+    uses: cccteam/github-workflows/.github/workflows/semantic-pull-request-title.yml@v4.1.0
