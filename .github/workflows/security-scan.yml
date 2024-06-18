@@ -1,8 +1,6 @@
 name: Security Scan
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   schedule:
     - cron: "0 14 * * *" # Daily at 8:00 AM CDT
 
