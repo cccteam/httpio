@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.5](https://github.com/cccteam/httpio/compare/v0.2.4...v0.2.5) (2024-07-03)
+
+
+### Code Upgrade
+
+* Update Go version to 1.22.5 to address GO-2024-2963 ([#47](https://github.com/cccteam/httpio/issues/47)) ([531f9c9](https://github.com/cccteam/httpio/commit/531f9c93aea98158deeef60cc361a6889ee32e00))
+* Update workflows and add semantic pull request workflow (39) ([e3cd9d8](https://github.com/cccteam/httpio/commit/e3cd9d8216fb0cc1e211670405f6089a611edd77))
+
 ## [0.2.4](https://github.com/cccteam/httpio/compare/v0.2.3...v0.2.4) (2024-06-10)
 
 
