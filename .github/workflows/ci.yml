@@ -4,7 +4,7 @@ on:
     types: [opened, synchronize, reopened] # these are the defaults - synchronize means 'commits pushed to PR'
 
 env:
-  GO_VERSION: "1.22.4"
+  GO_VERSION: "1.22.5"
 
 concurrency:
   group: ${{ github.ref }}
