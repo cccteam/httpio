@@ -1,6 +1,6 @@
 module github.com/cccteam/httpio
 
-go 1.22.4
+go 1.22.5
 
 require (
 	github.com/cccteam/logger v0.1.9
