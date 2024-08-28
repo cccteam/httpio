@@ -10,15 +10,15 @@ import (
 
 // Handle returns a http.HandlerFunc that logs any error coming from handlers.
 // This provides a more ergonomic feel by allowing errors to be returned from handlers
-// 
+//
 // Example usage:
 //
-// 	func Handler() http.HandlerFunc {
-// 		return httpio.Handle(func(w http.ResponseWriter, r *http.Request) error {
-// 			// do something
-// 			return errors.New("error")
-// 		})
-// 	}
+//	func Handler() http.HandlerFunc {
+//		return httpio.Handle(func(w http.ResponseWriter, r *http.Request) error {
+//			// do something
+//			return errors.New("error")
+//		})
+//	}
 func Handle(handler func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := handler(w, r); err != nil {
@@ -36,6 +36,8 @@ func Handle(handler func(w http.ResponseWriter, r *http.Request) error) http.Han
 						logger.Req(r).Errorf("['%s']", messages)
 					}
 				}
+			} else {
+				logger.Req(r).Error(err)
 			}
 		}
 	})
