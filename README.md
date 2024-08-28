@@ -113,6 +113,21 @@ func MyHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
+## Handle
+
+Handle is a function that returns a http.HandlerFunc, logging any errors that are returned from the argument function. This provides a more ergonomic feel by allowing errors to be returned from handlers.
+
+### Example
+
+```go
+func MyHandler() http.HandlerFunc {
+	return httpio.Handle(func(w http.ResponseWriter, r *http.Request) error {
+		// do something
+		return errors.New("error")
+	})
+}
+```
+
 ## License
 
 This project is licensed under the MIT License.
