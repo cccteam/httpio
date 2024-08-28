@@ -28,12 +28,12 @@ func Log(handler func(w http.ResponseWriter, r *http.Request) error) http.Handle
 				if cerr.msgType < internalServerError {
 					logger.Req(r).Info(err)
 					if messages != "" {
-						logger.Req(r).Infof("['%s']", messages)
+						logger.Req(r).Infof("messages=['%s']", messages)
 					}
 				} else {
 					logger.Req(r).Error(err)
 					if messages != "" {
-						logger.Req(r).Errorf("['%s']", messages)
+						logger.Req(r).Errorf("messages=['%s']", messages)
 					}
 				}
 			} else {
