@@ -2,10 +2,9 @@
 package patching
 
 import (
-	"iter"
-	"maps"
+	"encoding"
+	"fmt"
 	"reflect"
-	"slices"
 	"strings"
 	"sync"
 
@@ -83,38 +82,76 @@ func (tm *Patcher) Diff(old any, patchSet *PatchSet) (map[string]DiffElem, error
 	}
 
 	if kind := oldType.Kind(); kind != reflect.Struct {
-		return nil, errors.Newf("old must be of kind struct, found kind %s", kind.String())
+		return nil, errors.Newf("Patcher.Diff(): old must be of kind struct, found kind %s", kind.String())
 	}
 
 	newMap := patchSet.data
+
 	oldMap := map[string]any{}
 	for _, field := range reflect.VisibleFields(oldType) {
 		oldMap[field.Name] = oldValue.FieldByName(field.Name).Interface()
 	}
 
 	diff := map[string]DiffElem{}
-	for _, key := range unionKeys(maps.Keys(oldMap), maps.Keys(newMap)) {
-		oldV, foundInOld := oldMap[key]
-		newV, foundInNew := newMap[key]
-
-		if !foundInOld || !foundInNew {
-			diff[key] = DiffElem{
-				Old: oldV,
-				New: newV,
-			}
-
-			continue
+	for field, newV := range newMap {
+		oldV, foundInOld := oldMap[field]
+		if !foundInOld {
+			return nil, errors.Newf("Patcher.Diff(): field %s in patchSet does not exist in old", field)
 		}
 
-		if o, n := reflect.TypeOf(oldV), reflect.TypeOf(newV); !o.Comparable() || !n.Comparable() {
-			return nil, errors.Newf("attempted to diff incomparable types, old: %s, new: %s", o.Name(), n.Name())
-		}
-
-		if oldV != newV {
-			diff[key] = DiffElem{
-				Old: oldV,
-				New: newV,
+		switch ot := oldV.(type) {
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, string, bool:
+			switch nt := newV.(type) {
+			case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, string, bool:
+				if ot != nt {
+					return nil, errors.Newf("Patcher.Diff(): attempted to diff incomparable types, old: %T, new: %T", ot, nt)
+				}
+			default:
+				return nil, errors.Newf("Patcher.Diff(): attempted to diff incomparable types, old: %T, new: %T", ot, nt)
 			}
+
+			if oldV != newV {
+				diff[field] = DiffElem{
+					Old: oldV,
+					New: newV,
+				}
+			}
+		case *int, *int8, *int16, *int32, *int64, *uint, *uint8, *uint16, *uint32, *uint64, *float32, *float64, *string, *bool:
+			derefOldV, ot := derefPrimitive(oldV)
+			switch nt := newV.(type) {
+			case *int, *int8, *int16, *int32, *int64, *uint, *uint8, *uint16, *uint32, *uint64, *float32, *float64, *string, *bool:
+				derefNewV, nt := derefPrimitive(newV)
+				if ot != nt {
+					return nil, errors.Newf("Patcher.Diff(): attempted to diff incomparable types, old: %T, new: %T", ot, nt)
+				}
+				if derefOldV != derefNewV {
+					diff[field] = DiffElem{
+						Old: oldV,
+						New: newV,
+					}
+				}
+			default:
+				return nil, errors.Newf("Patcher.Diff(): attempted to diff incomparable types, old: %T, new: %T", ot, nt)
+			}
+		case []int, []int8, []int16, []int32, []int64, []uint, []uint8, []uint16, []uint32, []uint64, []float32, []float64, []string, []bool:
+			return nil, errors.Newf("Patcher.Diff(): Not implemented for types old: %T, new: %T", oldV, newV)
+		case *[]int, *[]int8, *[]int16, *[]int32, *[]int64, *[]uint, *[]uint8, *[]uint16, *[]uint32, *[]uint64, *[]float32, *[]float64, *[]string, *[]bool:
+			return nil, errors.Newf("Patcher.Diff(): Not implemented for types old: %T, new: %T", oldV, newV)
+		default:
+			oldStringV, ok := marshalText(oldV)
+			if ok {
+				newStringV, ok := marshalText(newV)
+				if ok {
+					if oldStringV != newStringV {
+						diff[field] = DiffElem{
+							Old: oldV,
+							New: newV,
+						}
+					}
+				}
+			}
+
+			return nil, errors.Newf("Patcher.Diff(): Not implemented for types old: %T, new: %T", oldV, newV)
 		}
 	}
 
@@ -138,17 +175,61 @@ func structTags(t reflect.Type, key string) map[string]string {
 	return tagMap
 }
 
-func unionKeys(seqs ...iter.Seq[string]) []string {
-	union := []string{}
-
-	for _, seq := range seqs {
-		union = slices.AppendSeq(union, seq)
+func derefPrimitive(v any) (derefv, vType any) {
+	switch t := v.(type) {
+	case *int:
+		return any((*t)), t
+	case *int8:
+		return any((*t)), t
+	case *int16:
+		return any((*t)), t
+	case *int32:
+		return any((*t)), t
+	case *int64:
+		return any((*t)), t
+	case *uint:
+		return any((*t)), t
+	case *uint8:
+		return any((*t)), t
+	case *uint16:
+		return any((*t)), t
+	case *uint32:
+		return any((*t)), t
+	case *uint64:
+		return any((*t)), t
+	case *float32:
+		return any((*t)), t
+	case *float64:
+		return any((*t)), t
+	case *string:
+		return any((*t)), t
+	case *bool:
+		return any((*t)), t
 	}
 
-	slices.Sort(union)
-	union = slices.Compact(union)
+	panic(errors.Newf("deref(): unsupported type %T", v))
+}
 
-	return union
+func marshalText(v any) (val string, ok bool) {
+	t := reflect.TypeOf(v)
+	if t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	interfaceType := reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
+	if reflect.PointerTo(t).Implements(interfaceType) {
+		enc, ok := v.(encoding.TextMarshaler)
+		if !ok {
+			panic(fmt.Sprintf("type assertion failed for %T", v))
+		}
+		text, err := enc.MarshalText()
+		if err != nil {
+			panic(errors.Wrap(err, "MarshalText()"))
+		}
+
+		return string(text), true
+	}
+
+	return "", false
 }
 
 type DiffElem struct {
