@@ -113,6 +113,21 @@ func MyHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
+## Log
+
+Log returns a `http.HandlerFunc` that logs any error coming from handlers. This provides a more ergonomic feel by allowing errors to be returned from handlers
+
+### Example
+
+```go
+func MyHandler() http.HandlerFunc {
+	return httpio.Log(func(w http.ResponseWriter, r *http.Request) error {
+		// do something
+		return errors.New("error")
+	})
+}
+```
+
 ## License
 
 This project is licensed under the MIT License.
