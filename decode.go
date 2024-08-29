@@ -2,7 +2,6 @@ package httpio
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -22,6 +21,11 @@ type ValidatorFunc func(s interface{}) error
 type Enforcer interface {
 	RequireResource(user accesstypes.User, domain accesstypes.Domain, perms accesstypes.Permission, resources ...resourceset.Name) error
 }
+
+type (
+	DomainFromReq func(*http.Request) accesstypes.Domain
+	UserFromReq   func(*http.Request) accesstypes.User
+)
 
 // Decoder is a struct that can be used for decoding http requests and validating those requests
 type Decoder[T any] struct {
@@ -49,9 +53,10 @@ func (d *Decoder[T]) WithValidator(v ValidatorFunc) *Decoder[T] {
 	return &decoder
 }
 
-func (d *Decoder[T]) WithPermissionChecker(userFromCtx func(context.Context) accesstypes.User, enforcer Enforcer, perms *resourceset.Set) *DecoderWithPermissionChecker[T] {
+func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer Enforcer, perms *resourceset.Set) *DecoderWithPermissionChecker[T] {
 	return &DecoderWithPermissionChecker[T]{
-		userFromCtx:       userFromCtx,
+		userFromReq:       userFromReq,
+		domainFromReq:     domainFromReq,
 		permissionChecker: enforcer,
 		permissions:       perms,
 		fieldMapper:       d.fieldMapper,
@@ -79,7 +84,8 @@ func (d *Decoder[T]) DecodeToPatchSet(request *http.Request) (*patching.PatchSet
 }
 
 type DecoderWithPermissionChecker[T any] struct {
-	userFromCtx       func(context.Context) accesstypes.User
+	userFromReq       UserFromReq
+	domainFromReq     DomainFromReq
 	validate          ValidatorFunc
 	permissionChecker Enforcer
 	permissions       *resourceset.Set
@@ -101,7 +107,7 @@ func (d *DecoderWithPermissionChecker[T]) Decode(request *http.Request) (*T, err
 		return nil, err
 	}
 
-	if err := checkPermissions(p, d.permissionChecker, d.permissions, d.userFromCtx(request.Context())); err != nil {
+	if err := checkPermissions(p, d.permissionChecker, d.permissions, d.domainFromReq(request), d.userFromReq(request)); err != nil {
 		return nil, err
 	}
 
@@ -115,7 +121,7 @@ func (d *DecoderWithPermissionChecker[T]) DecodeToPatchSet(request *http.Request
 		return nil, err
 	}
 
-	if err := checkPermissions(p, d.permissionChecker, d.permissions, d.userFromCtx(request.Context())); err != nil {
+	if err := checkPermissions(p, d.permissionChecker, d.permissions, d.domainFromReq(request), d.userFromReq(request)); err != nil {
 		return nil, err
 	}
 
@@ -175,11 +181,10 @@ func decodeToMap[T any](fieldMapper *patching.FieldMapper, request *http.Request
 	return patchSet, nil
 }
 
-func checkPermissions(patchSet *patching.PatchSet, permissionChecker Enforcer, resourceSet *resourceset.Set, user accesstypes.User) error {
+func checkPermissions(patchSet *patching.PatchSet, permissionChecker Enforcer, resourceSet *resourceset.Set, domain accesstypes.Domain, user accesstypes.User) error {
 	for _, fieldName := range patchSet.Fields() {
 		if resourceSet.Contains(fieldName) {
-			// TODO: Domain must be passed in some how
-			if err := permissionChecker.RequireResource(user, accesstypes.GlobalDomain, resourceSet.RequiredPermission(), resourceSet.ResourceName(fieldName)); err != nil {
+			if err := permissionChecker.RequireResource(user, domain, resourceSet.RequiredPermission(), resourceSet.ResourceName(fieldName)); err != nil {
 				return errors.Wrap(err, "permissionChecker.RequireResource()")
 			}
 		}
