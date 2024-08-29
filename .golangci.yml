@@ -7,6 +7,8 @@ linters-settings:
         files:
           - $all
         allow:
+          - github.com/cccteam/access
+          - github.com/cccteam/httpio
           - github.com/cccteam/logger
           - github.com/go-chi/chi/v5
           - github.com/go-playground/errors/v5

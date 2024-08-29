@@ -1,52 +1,13 @@
 package httpio
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/go-playground/errors/v5"
 )
-
-func TestNewDecoder(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		req           *http.Request
-		validatorFunc ValidatorFunc
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		{
-			name: "Creates a new decoder successfully",
-			args: args{
-				req:           httptest.NewRequest(http.MethodGet, "/test", strings.NewReader("this is a test")),
-				validatorFunc: func(_ interface{}) error { return nil },
-			},
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			got := NewDecoder(tt.args.req, tt.args.validatorFunc)
-			if !reflect.DeepEqual(got.request, tt.args.req) {
-				t.Errorf("NewDecoder().request = %v, want = %v", got, tt.args.req)
-			}
-
-			// Can not compare functions, but you can compare the address of the function to check
-			// that the same function was passed through the constructor.
-			if fmt.Sprintf("%v", got.validate) != fmt.Sprintf("%v", tt.args.validatorFunc) {
-				t.Errorf("NewDecoder().validate = %v, want %v", got.validate, tt.args.validatorFunc)
-			}
-		})
-	}
-}
 
 func TestDecoder_Decode(t *testing.T) {
 	t.Parallel()
@@ -54,6 +15,78 @@ func TestDecoder_Decode(t *testing.T) {
 	type args struct {
 		body          string
 		validatorFunc ValidatorFunc
+	}
+	tests := []struct {
+		name             string
+		args             args
+		wantDecodeErr    bool
+		wantValidatorErr bool
+	}{
+		{
+			name: "successfully decodes the request",
+			args: args{
+				body: `{"Name":"Zach"}`,
+				validatorFunc: func(_ interface{}) error {
+					return nil
+				},
+			},
+		},
+		{
+			name: "Fails on decoding the request",
+			args: args{
+				body: "this is a bad json req body",
+			},
+			wantDecodeErr: true,
+		},
+		{
+			name: "fails to validate the request",
+			args: args{
+				body: `{"Name":"Zach"}`,
+				validatorFunc: func(_ interface{}) error {
+					return errors.New("Failed to validate the request")
+				},
+			},
+			wantValidatorErr: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			type request struct {
+				Name string
+			}
+
+			decoder, err := NewDecoder[request]()
+			if err != nil {
+				t.Fatalf("NewDecoder() error = %v", err)
+			}
+
+			r := httptest.NewRequest(http.MethodGet, "/test", strings.NewReader(tt.args.body))
+			if _, err := decoder.Decode(r); (err != nil) != tt.wantDecodeErr {
+				t.Fatalf("Decoder.DecodeRequest() error = %v, wantErr %v", err, tt.wantDecodeErr)
+			}
+
+			if tt.wantDecodeErr {
+				return
+			}
+
+			decoder = decoder.WithValidator(tt.args.validatorFunc)
+
+			r = httptest.NewRequest(http.MethodGet, "/test", strings.NewReader(tt.args.body))
+			if _, err := decoder.Decode(r); (err != nil) != tt.wantValidatorErr {
+				t.Errorf("Decoder.DecodeRequest() error = %v, wantErr %v", err, tt.wantValidatorErr)
+			}
+		})
+	}
+}
+
+func TestDecoder_Decode_Error(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		body string
 	}
 	tests := []struct {
 		name    string
@@ -64,26 +97,6 @@ func TestDecoder_Decode(t *testing.T) {
 			name: "successfully decodes the request",
 			args: args{
 				body: `{"Name":"Zach"}`,
-				validatorFunc: func(_ interface{}) error {
-					return nil
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "Fails on decoding the request",
-			args: args{
-				body: "this is a bad json req body",
-			},
-			wantErr: true,
-		},
-		{
-			name: "fails to validate the request",
-			args: args{
-				body: `{"Name":"Zach"}`,
-				validatorFunc: func(_ interface{}) error {
-					return errors.New("Failed to validate the request")
-				},
 			},
 			wantErr: true,
 		},
@@ -92,14 +105,15 @@ func TestDecoder_Decode(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			r := httptest.NewRequest(http.MethodGet, "/test", strings.NewReader(tt.args.body))
 
-			decoder := NewDecoder(r, tt.args.validatorFunc)
-			req := struct {
-				Name string
-			}{}
-			if err := decoder.Decode(&req); (err != nil) != tt.wantErr {
-				t.Errorf("Decoder.DecodeRequest() error = %v, wantErr %v", err, tt.wantErr)
+			type request struct {
+				Name string `json:"name"`
+				NAME string
+			}
+
+			_, err := NewDecoder[request]()
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("NewDecoder() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
