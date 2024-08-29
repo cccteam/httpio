@@ -21,23 +21,28 @@ import (
 //	}
 func Log(handler func(w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := handler(w, r); err != nil {
-			cerr := &ClientMessage{}
-			if errors.As(err, &cerr) {
-				messages := strings.Join(Messages(err), "', '")
-				if cerr.msgType < internalServerError {
-					logger.Req(r).Info(err)
-					if messages != "" {
-						logger.Req(r).Infof("messages=['%s']", messages)
-					}
-				} else {
-					logger.Req(r).Error(err)
-					if messages != "" {
-						logger.Req(r).Errorf("messages=['%s']", messages)
-					}
-				}
-			} else {
-				logger.Req(r).Error(err)
+		err := handler(w, r)
+		if err == nil {
+			return
+		}
+
+		cerr := &ClientMessage{}
+		if !errors.As(err, &cerr) {
+			logger.Req(r).Error(err)
+
+			return
+		}
+
+		messages := strings.Join(Messages(err), "', '")
+		if cerr.msgType < internalServerError {
+			logger.Req(r).Info(err)
+			if messages != "" {
+				logger.Req(r).Infof("messages=['%s']", messages)
+			}
+		} else {
+			logger.Req(r).Error(err)
+			if messages != "" {
+				logger.Req(r).Errorf("messages=['%s']", messages)
 			}
 		}
 	}
