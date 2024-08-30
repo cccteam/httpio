@@ -77,8 +77,12 @@ func (tm *Patcher) Diff(old any, patchSet *PatchSet) (map[string]DiffElem, error
 	oldValue := reflect.ValueOf(old)
 	oldType := reflect.TypeOf(old)
 
+	if oldValue.Kind() == reflect.Pointer {
+		oldValue = oldValue.Elem()
+	}
+
 	if oldType.Kind() == reflect.Pointer {
-		oldType.Elem()
+		oldType = oldType.Elem()
 	}
 
 	if kind := oldType.Kind(); kind != reflect.Struct {
@@ -99,59 +103,13 @@ func (tm *Patcher) Diff(old any, patchSet *PatchSet) (map[string]DiffElem, error
 			return nil, errors.Newf("Patcher.Diff(): field %s in patchSet does not exist in old", field)
 		}
 
-		switch ot := oldV.(type) {
-		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, string, bool:
-			switch nt := newV.(type) {
-			case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, string, bool:
-				if ot != nt {
-					return nil, errors.Newf("Patcher.Diff(): attempted to diff incomparable types, old: %T, new: %T", ot, nt)
-				}
-			default:
-				return nil, errors.Newf("Patcher.Diff(): attempted to diff incomparable types, old: %T, new: %T", ot, nt)
+		if match, err := match(oldV, newV); err != nil {
+			return nil, err
+		} else if !match {
+			diff[field] = DiffElem{
+				Old: oldV,
+				New: newV,
 			}
-
-			if oldV != newV {
-				diff[field] = DiffElem{
-					Old: oldV,
-					New: newV,
-				}
-			}
-		case *int, *int8, *int16, *int32, *int64, *uint, *uint8, *uint16, *uint32, *uint64, *float32, *float64, *string, *bool:
-			derefOldV, ot := derefPrimitive(oldV)
-			switch nt := newV.(type) {
-			case *int, *int8, *int16, *int32, *int64, *uint, *uint8, *uint16, *uint32, *uint64, *float32, *float64, *string, *bool:
-				derefNewV, nt := derefPrimitive(newV)
-				if ot != nt {
-					return nil, errors.Newf("Patcher.Diff(): attempted to diff incomparable types, old: %T, new: %T", ot, nt)
-				}
-				if derefOldV != derefNewV {
-					diff[field] = DiffElem{
-						Old: oldV,
-						New: newV,
-					}
-				}
-			default:
-				return nil, errors.Newf("Patcher.Diff(): attempted to diff incomparable types, old: %T, new: %T", ot, nt)
-			}
-		case []int, []int8, []int16, []int32, []int64, []uint, []uint8, []uint16, []uint32, []uint64, []float32, []float64, []string, []bool:
-			return nil, errors.Newf("Patcher.Diff(): Not implemented for types old: %T, new: %T", oldV, newV)
-		case *[]int, *[]int8, *[]int16, *[]int32, *[]int64, *[]uint, *[]uint8, *[]uint16, *[]uint32, *[]uint64, *[]float32, *[]float64, *[]string, *[]bool:
-			return nil, errors.Newf("Patcher.Diff(): Not implemented for types old: %T, new: %T", oldV, newV)
-		default:
-			oldStringV, ok := marshalText(oldV)
-			if ok {
-				newStringV, ok := marshalText(newV)
-				if ok {
-					if oldStringV != newStringV {
-						diff[field] = DiffElem{
-							Old: oldV,
-							New: newV,
-						}
-					}
-				}
-			}
-
-			return nil, errors.Newf("Patcher.Diff(): Not implemented for types old: %T, new: %T", oldV, newV)
 		}
 	}
 
@@ -175,39 +133,108 @@ func structTags(t reflect.Type, key string) map[string]string {
 	return tagMap
 }
 
-func derefPrimitive(v any) (derefv, vType any) {
+func match(v, v2 any) (matched bool, err error) {
 	switch t := v.(type) {
+	case int:
+		return matchPrimitive(t, v2)
+	case int8:
+		return matchPrimitive(t, v2)
+	case int16:
+		return matchPrimitive(t, v2)
+	case int32:
+		return matchPrimitive(t, v2)
+	case int64:
+		return matchPrimitive(t, v2)
+	case uint:
+		return matchPrimitive(t, v2)
+	case uint8:
+		return matchPrimitive(t, v2)
+	case uint16:
+		return matchPrimitive(t, v2)
+	case uint32:
+		return matchPrimitive(t, v2)
+	case uint64:
+		return matchPrimitive(t, v2)
+	case float32:
+		return matchPrimitive(t, v2)
+	case float64:
+		return matchPrimitive(t, v2)
+	case string:
+		return matchPrimitive(t, v2)
+	case bool:
+		return matchPrimitive(t, v2)
 	case *int:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *int8:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *int16:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *int32:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *int64:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *uint:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *uint8:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *uint16:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *uint32:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *uint64:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *float32:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *float64:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *string:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
 	case *bool:
-		return any((*t)), t
+		return matchPrimitivePtr(t, v2)
+	default:
+		strV, ok := marshalText(v)
+		if ok {
+			strV2, ok := marshalText(v2)
+			if ok {
+				return strV == strV2, nil
+			}
+		}
+
+		// FIXME: Add support for slices and Named Types based on primitive types
+
+		panic(errors.Newf("deref(): unsupported type %T", v))
+	}
+}
+
+func matchPrimitive[T comparable](v T, v2 any) (bool, error) {
+	t2, ok := v2.(T)
+	if !ok {
+		return false, errors.Newf("deref(): attempted to diff incomparable types, old: %T, new: %T", v, v2)
+	}
+	if v == t2 {
+		return true, nil
 	}
 
-	panic(errors.Newf("deref(): unsupported type %T", v))
+	return false, nil
+}
+
+func matchPrimitivePtr[T comparable](v *T, v2 any) (bool, error) {
+	t2, ok := v2.(*T)
+	if !ok {
+		return false, errors.Newf("deref(): attempted to diff incomparable types, old: %T, new: %T", v, v2)
+	}
+	if v == nil || t2 == nil {
+		if v == nil && t2 == nil {
+			return true, nil
+		}
+
+		return false, nil
+	}
+	if *v == *t2 {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func marshalText(v any) (val string, ok bool) {
