@@ -178,6 +178,13 @@ issues:
         - errorlint
         - gochecknoinits
 
+    - path: patching/patcher\.go
+      linters:
+        - funlen
+        - cyclop
+        - gocyclo
+      text: match
+
   include:
     - EXC0002
     - EXC0005
