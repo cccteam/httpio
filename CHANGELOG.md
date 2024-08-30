@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.3.0](https://github.com/cccteam/httpio/compare/v0.2.5...v0.3.0) (2024-08-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* Replaced Decoder with a new Generic Decoder that supports PatchSets and permission enforcement (50)
+
+### Features
+
+* Add Log function ([#49](https://github.com/cccteam/httpio/issues/49)) ([4d6dfda](https://github.com/cccteam/httpio/commit/4d6dfdad92a8e33ab67987c53c1d058505ec7ac7))
+* Implement a new generic Decoder (50) ([c9a38bd](https://github.com/cccteam/httpio/commit/c9a38bd0fe856c0cc1fe0c0256eba35ae4fa3ac2))
+* Replaced Decoder with a new Generic Decoder that supports PatchSets and permission enforcement (50) ([c9a38bd](https://github.com/cccteam/httpio/commit/c9a38bd0fe856c0cc1fe0c0256eba35ae4fa3ac2))
+
+
+### Bug Fixes
+
+* Fix bugs in Diff method of the Patcher ([#53](https://github.com/cccteam/httpio/issues/53)) ([4baa421](https://github.com/cccteam/httpio/commit/4baa421a0efc5b4c75238eb9eb8f36fd2b36c6d3))
+
 ## [0.2.5](https://github.com/cccteam/httpio/compare/v0.2.4...v0.2.5) (2024-07-03)
 
 
