@@ -4,6 +4,7 @@ package patching
 import (
 	"encoding"
 	"fmt"
+	"iter"
 	"reflect"
 	"strings"
 	"sync"
@@ -47,7 +48,11 @@ func (tm *Patcher) get(t reflect.Type) (map[string]string, error) {
 }
 
 // Resolve returns a map with the keys set to the database struct tags found on databaseType, and the values set to the values in patchSet.
-func (tm *Patcher) Resolve(patchSet *PatchSet, databaseType any) (map[string]any, error) {
+func (tm *Patcher) Resolve(pkeys PrimaryKeys, patchSet *PatchSet, databaseType any) (map[string]any, error) {
+	if len(pkeys) == 0 {
+		return nil, errors.New("must include at least one primary key in call to Resolve")
+	}
+
 	t := reflect.TypeOf(databaseType)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -61,8 +66,8 @@ func (tm *Patcher) Resolve(patchSet *PatchSet, databaseType any) (map[string]any
 		return nil, err
 	}
 
-	newMap := make(map[string]any, len(patchSet.data))
-	for structField, value := range patchSet.data {
+	newMap := make(map[string]any, len(pkeys)+len(patchSet.data))
+	for structField, value := range all(patchSet.data, pkeys) {
 		tag, ok := fieldTagMapping[structField]
 		if !ok {
 			return nil, errors.Newf("field %s not found in struct", structField)
@@ -114,6 +119,21 @@ func (tm *Patcher) Diff(old any, patchSet *PatchSet) (map[string]DiffElem, error
 	}
 
 	return diff, nil
+}
+
+// all returns an iterator over key-value pairs from m.
+//   - all is a similar to maps.All but it takes a variadic
+//   - duplicate keys will not be deduped and will be yielded once for each duplication
+func all[Map ~map[K]V, K comparable, V any](m ...Map) iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		for _, m := range m {
+			for k, v := range m {
+				if !yield(k, v) {
+					return
+				}
+			}
+		}
+	}
 }
 
 func structTags(t reflect.Type, key string) map[string]string {
@@ -258,6 +278,8 @@ func marshalText(v any) (val string, ok bool) {
 
 	return "", false
 }
+
+type PrimaryKeys map[string]any
 
 type DiffElem struct {
 	Old any
