@@ -2,6 +2,7 @@
 package patching
 
 import (
+	"bytes"
 	"encoding"
 	"fmt"
 	"iter"
@@ -211,19 +212,17 @@ func match(v, v2 any) (matched bool, err error) {
 		return matchPrimitivePtr(t, v2)
 	case *bool:
 		return matchPrimitivePtr(t, v2)
-	default:
-		strV, ok := marshalText(v)
-		if ok {
-			strV2, ok := marshalText(v2)
-			if ok {
-				return strV == strV2, nil
-			}
-		}
-
-		// FIXME: Add support for slices and Named Types based on primitive types
-
-		panic(errors.Newf("deref(): unsupported type %T", v))
+	case encoding.TextMarshaler:
+		return matchTextMarshaler(t, v2)
+	case fmt.Stringer: // TODO questionable if this is a good idea
+		return matchStringer(t, v2)
 	}
+
+	if reflect.TypeOf(v) != reflect.TypeOf(v2) {
+		return false, errors.Newf("attempted to compare values having a different type, v.(type) = %T, v2.(type) = %T", v, v2)
+	}
+
+	return reflect.DeepEqual(v, v2), nil
 }
 
 func matchPrimitive[T comparable](v T, v2 any) (bool, error) {
@@ -257,26 +256,38 @@ func matchPrimitivePtr[T comparable](v *T, v2 any) (bool, error) {
 	return false, nil
 }
 
-func marshalText(v any) (val string, ok bool) {
-	t := reflect.TypeOf(v)
-	if t.Kind() == reflect.Pointer {
-		t = t.Elem()
-	}
-	interfaceType := reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
-	if reflect.PointerTo(t).Implements(interfaceType) {
-		enc, ok := v.(encoding.TextMarshaler)
-		if !ok {
-			panic(fmt.Sprintf("type assertion failed for %T", v))
-		}
-		text, err := enc.MarshalText()
-		if err != nil {
-			panic(errors.Wrap(err, "MarshalText()"))
-		}
-
-		return string(text), true
+func matchTextMarshaler(v encoding.TextMarshaler, v2 any) (bool, error) {
+	if reflect.TypeOf(v) != reflect.TypeOf(v2) {
+		return false, errors.Newf("attempted to compare values having a different type, v.(type) = %T, v2.(type) = %T", v, v2)
 	}
 
-	return "", false
+	vText, err := v.MarshalText()
+	if err != nil {
+		return false, errors.Wrap(err, "encoding.TextMarshaler.MarshalText()")
+	}
+
+	v2Text, err := v2.(encoding.TextMarshaler).MarshalText()
+	if err != nil {
+		return false, errors.Wrap(err, "encoding.TextMarshaler.MarshalText()")
+	}
+
+	if bytes.Equal(vText, v2Text) {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func matchStringer(v fmt.Stringer, v2 any) (bool, error) {
+	if reflect.TypeOf(v) != reflect.TypeOf(v2) {
+		return false, errors.Newf("attempted to compare values having a different type, v.(type) = %T, v2.(type) = %T", v, v2)
+	}
+
+	if v.String() == v2.(fmt.Stringer).String() {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 type PrimaryKeys map[string]any
