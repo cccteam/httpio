@@ -51,7 +51,6 @@ func Param[T any](r *http.Request, param ParamType) T {
 	}
 
 	var val T
-	// Resolve the parameter
 	v, err := resolve(urlParam, val)
 	if err != nil {
 		panic(err)
