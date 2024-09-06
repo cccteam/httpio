@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/cccteam/ccc"
 )
 
 type Int int
@@ -43,7 +45,34 @@ func Test_match(t *testing.T) {
 		wantMatched bool
 		wantErr     bool
 	}{
-		{name: "primitive matched", args: args{v: 1, v2: 1}, wantMatched: true},
+		{name: "primitive matched int", args: args{v: int(1), v2: int(1)}, wantMatched: true},
+		{name: "primitive matched int8", args: args{v: int8(1), v2: int8(1)}, wantMatched: true},
+		{name: "primitive matched int16", args: args{v: int16(1), v2: int16(1)}, wantMatched: true},
+		{name: "primitive matched int32", args: args{v: int32(1), v2: int32(1)}, wantMatched: true},
+		{name: "primitive matched int64", args: args{v: int64(1), v2: int64(1)}, wantMatched: true},
+		{name: "primitive matched uint", args: args{v: uint(1), v2: uint(1)}, wantMatched: true},
+		{name: "primitive matched uint8", args: args{v: uint8(1), v2: uint8(1)}, wantMatched: true},
+		{name: "primitive matched uint16", args: args{v: uint16(1), v2: uint16(1)}, wantMatched: true},
+		{name: "primitive matched uint32", args: args{v: uint32(1), v2: uint32(1)}, wantMatched: true},
+		{name: "primitive matched uint64", args: args{v: uint64(1), v2: uint64(1)}, wantMatched: true},
+		{name: "primitive matched float32", args: args{v: float32(1), v2: float32(1)}, wantMatched: true},
+		{name: "primitive matched float64", args: args{v: float64(1), v2: float64(1)}, wantMatched: true},
+		{name: "primitive matched string", args: args{v: "1", v2: "1"}, wantMatched: true},
+		{name: "primitive matched bool", args: args{v: true, v2: true}, wantMatched: true},
+		{name: "primitive matched *int", args: args{v: ccc.Ptr(int(1)), v2: ccc.Ptr(int(1))}, wantMatched: true},
+		{name: "primitive matched *int8", args: args{v: ccc.Ptr(int8(1)), v2: ccc.Ptr(int8(1))}, wantMatched: true},
+		{name: "primitive matched *int16", args: args{v: ccc.Ptr(int16(1)), v2: ccc.Ptr(int16(1))}, wantMatched: true},
+		{name: "primitive matched *int32", args: args{v: ccc.Ptr(int32(1)), v2: ccc.Ptr(int32(1))}, wantMatched: true},
+		{name: "primitive matched *int64", args: args{v: ccc.Ptr(int64(1)), v2: ccc.Ptr(int64(1))}, wantMatched: true},
+		{name: "primitive matched *uint", args: args{v: ccc.Ptr(uint(1)), v2: ccc.Ptr(uint(1))}, wantMatched: true},
+		{name: "primitive matched *uint8", args: args{v: ccc.Ptr(uint8(1)), v2: ccc.Ptr(uint8(1))}, wantMatched: true},
+		{name: "primitive matched *uint16", args: args{v: ccc.Ptr(uint16(1)), v2: ccc.Ptr(uint16(1))}, wantMatched: true},
+		{name: "primitive matched *uint32", args: args{v: ccc.Ptr(uint32(1)), v2: ccc.Ptr(uint32(1))}, wantMatched: true},
+		{name: "primitive matched *uint64", args: args{v: ccc.Ptr(uint64(1)), v2: ccc.Ptr(uint64(1))}, wantMatched: true},
+		{name: "primitive matched *float32", args: args{v: ccc.Ptr(float32(1)), v2: ccc.Ptr(float32(1))}, wantMatched: true},
+		{name: "primitive matched *float64", args: args{v: ccc.Ptr(float64(1)), v2: ccc.Ptr(float64(1))}, wantMatched: true},
+		{name: "primitive matched *string", args: args{v: ccc.Ptr("1"), v2: ccc.Ptr("1")}, wantMatched: true},
+		{name: "primitive matched *bool", args: args{v: ccc.Ptr(true), v2: ccc.Ptr(true)}, wantMatched: true},
 		{name: "primitive not matched", args: args{v: 1, v2: 4}, wantMatched: false},
 
 		{name: "named matched", args: args{v: Int(1), v2: Int(1)}, wantMatched: true},
