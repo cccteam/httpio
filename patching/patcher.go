@@ -125,9 +125,9 @@ func (tm *Patcher) Diff(old any, patchSet *PatchSet) (map[string]DiffElem, error
 // all returns an iterator over key-value pairs from m.
 //   - all is a similar to maps.All but it takes a variadic
 //   - duplicate keys will not be deduped and will be yielded once for each duplication
-func all[Map ~map[K]V, K comparable, V any](m ...Map) iter.Seq2[K, V] {
+func all[Map ~map[K]V, K comparable, V any](maps ...Map) iter.Seq2[K, V] {
 	return func(yield func(K, V) bool) {
-		for _, m := range m {
+		for _, m := range maps {
 			for k, v := range m {
 				if !yield(k, v) {
 					return
