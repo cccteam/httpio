@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/errors/v5"
 )
 
 // ParamType defines the type used to describe url Params
@@ -45,56 +44,53 @@ func WithParams(next http.Handler) http.Handler {
 // Param extracts the Param from the Request Context
 func Param[T any](r *http.Request, param ParamType) (val T) {
 	fetchParam := func() any {
-		// Fetch the URL parameter
 		v := chi.URLParam(r, string(param))
 		if v == "" {
 			panic(newParamErrMsg("route parameter (%s) is required", param))
 		}
-
-		switch t := any(val).(type) {
+		switch any(val).(type) {
 		case string:
 			return v
 		case int:
 			i, err := strconv.Atoi(v)
 			if err != nil {
-				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", v, t))
+				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
 			return i
 		case int64:
 			i, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
-				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", v, t))
+				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
 			return i
 		case float64:
 			i, err := strconv.ParseFloat(v, 64)
 			if err != nil {
-				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", v, t))
+				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
 			return i
 		case bool:
 			i, err := strconv.ParseBool(v)
 			if err != nil {
-				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", v, t))
+				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
 			return i
-		}
-
-		valType := reflect.TypeOf(val)
-		if valType.Kind() == reflect.Pointer {
-			val = reflect.New(valType.Elem()).Interface().(T)
-			if resolveInterface(v, val) {
+		default:
+			t := reflect.TypeOf(val)
+			if t.Kind() == reflect.Pointer {
+				val = reflect.New(t.Elem()).Interface().(T)
+				if resolveInterface(param, v, val) {
+					return val
+				}
+			} else if resolveInterface(param, v, &val) {
 				return val
 			}
-		} else if resolveInterface(v, &val) {
-			return val
+			panic(fmt.Sprintf("support for %T has not been implemented", val))
 		}
-
-		panic(fmt.Sprintf("support for %T has not been implemented", val))
 	}
 
 	v := fetchParam()
@@ -106,11 +102,11 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 	return val
 }
 
-func resolveInterface(urlParam string, val any) bool {
+func resolveInterface(param ParamType, v string, val any) bool {
 	switch t := val.(type) {
 	case encoding.TextUnmarshaler:
-		if err := t.UnmarshalText([]byte(urlParam)); err != nil {
-			panic(errors.Wrap(err, "encoding.UnmarshalText()"))
+		if err := t.UnmarshalText([]byte(v)); err != nil {
+			panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 		}
 
 		return true
