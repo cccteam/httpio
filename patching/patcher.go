@@ -257,16 +257,17 @@ func matchPrimitivePtr[T comparable](v *T, v2 any) (bool, error) {
 }
 
 func matchTextMarshaler(v encoding.TextMarshaler, v2 any) (bool, error) {
-	if reflect.TypeOf(v) != reflect.TypeOf(v2) {
-		return false, errors.Newf("attempted to compare values having a different type, v.(type) = %T, v2.(type) = %T", v, v2)
-	}
-
 	vText, err := v.MarshalText()
 	if err != nil {
 		return false, errors.Wrap(err, "encoding.TextMarshaler.MarshalText()")
 	}
 
-	v2Text, err := v2.(encoding.TextMarshaler).MarshalText()
+	t2, ok := v2.(encoding.TextMarshaler)
+	if !ok {
+		return false, errors.Newf("matchTextMarshaler(): v2 does not implement encoding.TextMarshaler: %T", v2)
+	}
+
+	v2Text, err := t2.MarshalText()
 	if err != nil {
 		return false, errors.Wrap(err, "encoding.TextMarshaler.MarshalText()")
 	}
@@ -279,11 +280,12 @@ func matchTextMarshaler(v encoding.TextMarshaler, v2 any) (bool, error) {
 }
 
 func matchStringer(v fmt.Stringer, v2 any) (bool, error) {
-	if reflect.TypeOf(v) != reflect.TypeOf(v2) {
-		return false, errors.Newf("attempted to compare values having a different type, v.(type) = %T, v2.(type) = %T", v, v2)
+	t2, ok := v2.(fmt.Stringer)
+	if !ok {
+		return false, errors.Newf("matchStringer(): v2 does not implement fmt.Stringer: %T", v2)
 	}
 
-	if v.String() == v2.(fmt.Stringer).String() {
+	if v.String() == t2.String() {
 		return true, nil
 	}
 
