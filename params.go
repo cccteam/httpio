@@ -50,35 +50,35 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 		}
 		switch any(val).(type) {
 		case string:
-			return any(v)
+			return v
 		case int:
 			i, err := strconv.Atoi(v)
 			if err != nil {
 				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
-			return any(i)
+			return i
 		case int64:
 			i, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
-			return any(i)
+			return i
 		case float64:
 			i, err := strconv.ParseFloat(v, 64)
 			if err != nil {
 				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
-			return any(i)
+			return i
 		case bool:
 			i, err := strconv.ParseBool(v)
 			if err != nil {
 				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
-			return any(i)
+			return i
 		default:
 			// Check if the type implements encoding.TextUnmarshaler
 			var receivedPtr bool
