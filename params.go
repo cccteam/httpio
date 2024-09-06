@@ -46,39 +46,39 @@ func WithParams(next http.Handler) http.Handler {
 func Param[T any](r *http.Request, param ParamType) (val T) {
 	fetchParam := func() any {
 		// Fetch the URL parameter
-		urlParam := chi.URLParam(r, string(param))
-		if urlParam == "" {
+		v := chi.URLParam(r, string(param))
+		if v == "" {
 			panic(newParamErrMsg("route parameter (%s) is required", param))
 		}
 
 		switch t := any(val).(type) {
 		case string:
-			return urlParam
+			return v
 		case int:
-			i, err := strconv.Atoi(urlParam)
+			i, err := strconv.Atoi(v)
 			if err != nil {
-				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", urlParam, t))
+				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", v, t))
 			}
 
 			return i
 		case int64:
-			i, err := strconv.ParseInt(urlParam, 10, 64)
+			i, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
-				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", urlParam, t))
+				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", v, t))
 			}
 
 			return i
 		case float64:
-			i, err := strconv.ParseFloat(urlParam, 64)
+			i, err := strconv.ParseFloat(v, 64)
 			if err != nil {
-				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", urlParam, t))
+				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", v, t))
 			}
 
 			return i
 		case bool:
-			i, err := strconv.ParseBool(urlParam)
+			i, err := strconv.ParseBool(v)
 			if err != nil {
-				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", urlParam, t))
+				panic(errors.Wrapf(err, "urlParam %s is not a valid %T", v, t))
 			}
 
 			return i
@@ -87,10 +87,10 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 		valType := reflect.TypeOf(val)
 		if valType.Kind() == reflect.Pointer {
 			val = reflect.New(valType.Elem()).Interface().(T)
-			if resolveInterface(urlParam, val) {
+			if resolveInterface(v, val) {
 				return val
 			}
-		} else if resolveInterface(urlParam, &val) {
+		} else if resolveInterface(v, &val) {
 			return val
 		}
 
