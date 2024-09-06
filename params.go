@@ -98,13 +98,13 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 }
 
 func resolveInterfaces[T any](param ParamType, v string, val T) any {
-	var wasPtr bool
+	var receivedPtr bool
 	var val2 any
 
 	// We need a pointer to the value for the interface to work
 	t := reflect.TypeOf(val)
 	if t.Kind() == reflect.Pointer {
-		wasPtr = true
+		receivedPtr = true
 		// The pointer is pointing to a nil value, so initialize the value
 		val2 = reflect.New(t.Elem()).Interface().(T)
 	} else {
@@ -121,9 +121,9 @@ func resolveInterfaces[T any](param ParamType, v string, val T) any {
 		return nil
 	}
 
-	if !wasPtr {
-		return *(val2.(*T))
+	if receivedPtr {
+		return val2
 	}
 
-	return val2
+	return *(val2.(*T))
 }
