@@ -89,6 +89,7 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 			} else if resolveInterface(param, v, &val) {
 				return val
 			}
+
 			panic(fmt.Sprintf("support for %T has not been implemented", val))
 		}
 	}

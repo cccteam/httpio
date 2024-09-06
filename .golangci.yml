@@ -186,6 +186,15 @@ issues:
         - gocyclo
       text: match
 
+    - path: params\.go
+      linters:
+        - forcetypeassert
+
+    - path: params\.go
+      linters:
+        - gocritic
+      text: "singleCaseSwitch"
+
   include:
     - EXC0002
     - EXC0005
