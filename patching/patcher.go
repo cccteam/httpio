@@ -214,7 +214,7 @@ func match(v, v2 any) (matched bool, err error) {
 		return matchPrimitivePtr(t, v2)
 	case encoding.TextMarshaler:
 		return matchTextMarshaler(t, v2)
-	case fmt.Stringer: // TODO questionable if this is a good idea
+	case fmt.Stringer:
 		return matchStringer(t, v2)
 	}
 
@@ -228,7 +228,7 @@ func match(v, v2 any) (matched bool, err error) {
 func matchPrimitive[T comparable](v T, v2 any) (bool, error) {
 	t2, ok := v2.(T)
 	if !ok {
-		return false, errors.Newf("deref(): attempted to diff incomparable types, old: %T, new: %T", v, v2)
+		return false, errors.Newf("matchPrimitive(): attempted to diff incomparable types, old: %T, new: %T", v, v2)
 	}
 	if v == t2 {
 		return true, nil
@@ -240,7 +240,7 @@ func matchPrimitive[T comparable](v T, v2 any) (bool, error) {
 func matchPrimitivePtr[T comparable](v *T, v2 any) (bool, error) {
 	t2, ok := v2.(*T)
 	if !ok {
-		return false, errors.Newf("deref(): attempted to diff incomparable types, old: %T, new: %T", v, v2)
+		return false, errors.Newf("matchPrimitivePtr(): attempted to diff incomparable types, old: %T, new: %T", v, v2)
 	}
 	if v == nil || t2 == nil {
 		if v == nil && t2 == nil {
