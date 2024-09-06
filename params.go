@@ -80,14 +80,8 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 
 			return i
 		default:
-			t := reflect.TypeOf(val)
-			if t.Kind() == reflect.Pointer {
-				val = reflect.New(t.Elem()).Interface().(T)
-				if resolveInterface(param, v, val) {
-					return val
-				}
-			} else if resolveInterface(param, v, &val) {
-				return val
+			if val2 := resolveInterfaces(param, v, val); val2 != nil {
+				return val2
 			}
 
 			panic(fmt.Sprintf("support for %T has not been implemented", val))
@@ -103,15 +97,33 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 	return val
 }
 
-func resolveInterface(param ParamType, v string, val any) bool {
-	switch t := val.(type) {
+func resolveInterfaces[T any](param ParamType, v string, val T) any {
+	var wasPtr bool
+	var val2 any
+
+	// We need a pointer to the value for the interface to work
+	t := reflect.TypeOf(val)
+	if t.Kind() == reflect.Pointer {
+		wasPtr = true
+		// The pointer is pointing to a nil value, so initialize the value
+		val2 = reflect.New(t.Elem()).Interface().(T)
+	} else {
+		// Take a pointer to the value
+		val2 = &val
+	}
+
+	switch t := val2.(type) {
 	case encoding.TextUnmarshaler:
 		if err := t.UnmarshalText([]byte(v)); err != nil {
 			panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 		}
-
-		return true
+	default:
+		return nil
 	}
 
-	return false
+	if !wasPtr {
+		return *(val2.(*T))
+	}
+
+	return val2
 }
