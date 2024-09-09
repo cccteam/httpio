@@ -613,6 +613,24 @@ func Benchmark_param_string(b *testing.B) {
 	}
 }
 
+func Benchmark_param_ccc_uuid(b *testing.B) {
+	r := mockRequest(map[ParamType]string{"uuid": "0020198f-a14e-42ee-b5f8-65a228ba3899"})
+
+	b.ResetTimer()
+	for range b.N {
+		_ = Param[ccc.UUID](r, ParamType("uuid"))
+	}
+}
+
+func Benchmark_param_ccc_uuid_ptr(b *testing.B) {
+	r := mockRequest(map[ParamType]string{"uuid": "0020198f-a14e-42ee-b5f8-65a228ba3899"})
+
+	b.ResetTimer()
+	for range b.N {
+		_ = Param[*ccc.UUID](r, ParamType("uuid"))
+	}
+}
+
 func Benchmark_param_uuid(b *testing.B) {
 	r := mockRequest(map[ParamType]string{"uuid": "0020198f-a14e-42ee-b5f8-65a228ba3899"})
 
