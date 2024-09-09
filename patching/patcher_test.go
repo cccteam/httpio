@@ -85,23 +85,38 @@ func Test_match(t *testing.T) {
 		{name: "time.Time matched", args: args{v: Time, v2: Time}, wantMatched: true},
 		{name: "time.Time not matched", args: args{v: Time, v2: Time2}, wantMatched: false},
 
+		{name: "[]time.Time matched", args: args{v: []time.Time{Time, Time2}, v2: []time.Time{Time, Time2}}, wantMatched: true},
+		{name: "[]time.Time not matched", args: args{v: []time.Time{Time, Time2}, v2: []time.Time{Time, Time}}, wantMatched: false},
+
 		{name: "stringer matched", args: args{v: Stringer(1), v2: Stringer(1)}, wantMatched: true},
 		{name: "stringer not matched", args: args{v: Stringer(1), v2: Stringer(4)}, wantMatched: false},
 		{name: "stringer error", args: args{v: Stringer(1), v2: Stringer2(1)}, wantErr: true},
 
 		{name: "different types error", args: args{v: Int(1), v2: 1}, wantErr: true},
 
-		{name: "slices matched", args: args{v: []Int{1, 5}, v2: []Int{1, 5}}, wantMatched: true},
-		{name: "slices not matched", args: args{v: []Int{1, 5}, v2: []Int{4, 5}}, wantMatched: false},
+		{name: "[]any matched", args: args{v: []any{1, 5}, v2: []any{1, 5}}, wantMatched: true},
+		{name: "[]any slices not matched", args: args{v: []any{1, 5}, v2: []any{4, 5}}, wantMatched: false},
 
-		{name: "ptr matched", args: args{v: &[]Int{1, 5}, v2: &[]Int{1, 5}}, wantMatched: true},
-		{name: "ptr not matched", args: args{v: &[]Int{1, 5}, v2: &[]Int{4, 5}}, wantMatched: false},
+		{name: "[]int matched", args: args{v: []int{1, 5}, v2: []int{1, 5}}, wantMatched: true},
+		{name: "[]int not matched", args: args{v: []int{1, 5}, v2: []int{4, 5}}, wantMatched: false},
+
+		{name: "[]*int matched", args: args{v: []*int{ccc.Ptr(1), ccc.Ptr(5)}, v2: []*int{ccc.Ptr(1), ccc.Ptr(5)}}, wantMatched: true},
+		{name: "[]*int not matched", args: args{v: []*int{ccc.Ptr(1), ccc.Ptr(5)}, v2: []*int{ccc.Ptr(4), ccc.Ptr(5)}}, wantMatched: false},
+
+		{name: "[]int8 matched", args: args{v: []int8{1, 5}, v2: []int8{1, 5}}, wantMatched: true},
+		{name: "[]int8 not matched", args: args{v: []int8{1, 5}, v2: []int8{4, 5}}, wantMatched: false},
+
+		{name: "[]Int matched", args: args{v: []Int{1, 5}, v2: []Int{1, 5}}, wantMatched: true},
+		{name: "[]Int not matched", args: args{v: []Int{1, 5}, v2: []Int{4, 5}}, wantMatched: false},
+
+		{name: "*[]Int matched", args: args{v: &[]Int{1, 5}, v2: &[]Int{1, 5}}, wantMatched: true},
+		{name: "*[]Int not matched", args: args{v: &[]Int{1, 5}, v2: &[]Int{4, 5}}, wantMatched: false},
 
 		{name: "ccc.UUID matched", args: args{v: ccc.Must(ccc.UUIDFromString("a517b48d-63a9-4c1f-b45b-8474b164e423")), v2: ccc.Must(ccc.UUIDFromString("a517b48d-63a9-4c1f-b45b-8474b164e423"))}, wantMatched: true},
 		{name: "ccc.UUID not matched", args: args{v: ccc.Must(ccc.UUIDFromString("a517b48d-63a9-4c1f-b45b-8474b164e423")), v2: ccc.Must(ccc.UUIDFromString("B517b48d-63a9-4c1f-b45b-8474b164e423"))}, wantMatched: false},
 
-		{name: "ptr ccc.UUID matched", args: args{v: ccc.Ptr(ccc.Must(ccc.UUIDFromString("a517b48d-63a9-4c1f-b45b-8474b164e423"))), v2: ccc.Ptr(ccc.Must(ccc.UUIDFromString("a517b48d-63a9-4c1f-b45b-8474b164e423")))}, wantMatched: true},
-		{name: "ptr ccc.UUID matched", args: args{v: ccc.Ptr(ccc.Must(ccc.UUIDFromString("a517b48d-63a9-4c1f-b45b-8474b164e423"))), v2: ccc.Ptr(ccc.Must(ccc.UUIDFromString("B517b48d-63a9-4c1f-b45b-8474b164e423")))}, wantMatched: false},
+		{name: "*ccc.UUID matched", args: args{v: ccc.Ptr(ccc.Must(ccc.UUIDFromString("a517b48d-63a9-4c1f-b45b-8474b164e423"))), v2: ccc.Ptr(ccc.Must(ccc.UUIDFromString("a517b48d-63a9-4c1f-b45b-8474b164e423")))}, wantMatched: true},
+		{name: "*ccc.UUID matched", args: args{v: ccc.Ptr(ccc.Must(ccc.UUIDFromString("a517b48d-63a9-4c1f-b45b-8474b164e423"))), v2: ccc.Ptr(ccc.Must(ccc.UUIDFromString("B517b48d-63a9-4c1f-b45b-8474b164e423")))}, wantMatched: false},
 	}
 	for _, tt := range tests {
 		tt := tt
