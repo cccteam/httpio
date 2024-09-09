@@ -370,6 +370,16 @@ func matchStringer(v fmt.Stringer, v2 any) (bool, error) {
 
 type PrimaryKeys map[string]any
 
+func PKey(key string, value any) PrimaryKeys {
+	return PrimaryKeys{key: value}
+}
+
+func (p PrimaryKeys) Add(key string, value any) PrimaryKeys {
+	p[key] = value
+
+	return p
+}
+
 type DiffElem struct {
 	Old any
 	New any
