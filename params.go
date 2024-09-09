@@ -43,7 +43,7 @@ func WithParams(next http.Handler) http.Handler {
 
 // Param extracts the Param from the Request Context
 func Param[T any](r *http.Request, param ParamType) (val T) {
-	fetchParam := func() any {
+	fetchParam := func(r *http.Request, param ParamType) any {
 		v := chi.URLParam(r, string(param))
 		if v == "" {
 			panic(newParamErrMsg("route parameter (%s) is required", param))
@@ -88,7 +88,7 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 		}
 	}
 
-	v := fetchParam()
+	v := fetchParam(r, param)
 	val, ok := v.(T)
 	if !ok {
 		panic(fmt.Sprintf("implementation error: returned %T instead of %T", v, val))
@@ -97,25 +97,24 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 	return val
 }
 
-func resolveInterfaces[T any](param ParamType, v string, val T) any {
+func resolveInterfaces[T any](param ParamType, paramVal string, val T) any {
 	var receivedPtr bool
 	var val2 any
 
-	// We need a pointer to the value for the interface to work
+	// We need a pointer because these interfaces are implemented on pointer receivers
 	t := reflect.TypeOf(val)
 	if t.Kind() == reflect.Pointer {
 		receivedPtr = true
-		// The pointer is pointing to a nil value, so initialize the value
+		// In this case, T is a nil pointer
 		val2 = reflect.New(t.Elem()).Interface().(T)
 	} else {
-		// Take a pointer to the value
 		val2 = &val
 	}
 
 	switch t := val2.(type) {
 	case encoding.TextUnmarshaler:
-		if err := t.UnmarshalText([]byte(v)); err != nil {
-			panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+		if err := t.UnmarshalText([]byte(paramVal)); err != nil {
+			panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, paramVal, val, err))
 		}
 	default:
 		return nil
