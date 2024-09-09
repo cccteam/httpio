@@ -158,60 +158,116 @@ func match(v, v2 any) (matched bool, err error) {
 	switch t := v.(type) {
 	case int:
 		return matchPrimitive(t, v2)
-	case int8:
-		return matchPrimitive(t, v2)
-	case int16:
-		return matchPrimitive(t, v2)
-	case int32:
-		return matchPrimitive(t, v2)
-	case int64:
-		return matchPrimitive(t, v2)
-	case uint:
-		return matchPrimitive(t, v2)
-	case uint8:
-		return matchPrimitive(t, v2)
-	case uint16:
-		return matchPrimitive(t, v2)
-	case uint32:
-		return matchPrimitive(t, v2)
-	case uint64:
-		return matchPrimitive(t, v2)
-	case float32:
-		return matchPrimitive(t, v2)
-	case float64:
-		return matchPrimitive(t, v2)
-	case string:
-		return matchPrimitive(t, v2)
-	case bool:
-		return matchPrimitive(t, v2)
 	case *int:
 		return matchPrimitivePtr(t, v2)
+	case []int:
+		return matchSlice(t, v2)
+	case []*int:
+		return matchSlice(t, v2)
+	case int8:
+		return matchPrimitive(t, v2)
 	case *int8:
 		return matchPrimitivePtr(t, v2)
+	case []int8:
+		return matchSlice(t, v2)
+	case []*int8:
+		return matchSlice(t, v2)
+	case int16:
+		return matchPrimitive(t, v2)
 	case *int16:
 		return matchPrimitivePtr(t, v2)
+	case []int16:
+		return matchSlice(t, v2)
+	case []*int16:
+		return matchSlice(t, v2)
+	case int32:
+		return matchPrimitive(t, v2)
 	case *int32:
 		return matchPrimitivePtr(t, v2)
+	case []int32:
+		return matchSlice(t, v2)
+	case []*int32:
+		return matchSlice(t, v2)
+	case int64:
+		return matchPrimitive(t, v2)
 	case *int64:
 		return matchPrimitivePtr(t, v2)
+	case []int64:
+		return matchSlice(t, v2)
+	case []*int64:
+		return matchSlice(t, v2)
+	case uint:
+		return matchPrimitive(t, v2)
 	case *uint:
 		return matchPrimitivePtr(t, v2)
+	case []uint:
+		return matchSlice(t, v2)
+	case []*uint:
+		return matchSlice(t, v2)
+	case uint8:
+		return matchPrimitive(t, v2)
 	case *uint8:
 		return matchPrimitivePtr(t, v2)
+	case []uint8:
+		return matchSlice(t, v2)
+	case []*uint8:
+		return matchSlice(t, v2)
+	case uint16:
+		return matchPrimitive(t, v2)
 	case *uint16:
 		return matchPrimitivePtr(t, v2)
+	case []uint16:
+		return matchSlice(t, v2)
+	case []*uint16:
+		return matchSlice(t, v2)
+	case uint32:
+		return matchPrimitive(t, v2)
 	case *uint32:
 		return matchPrimitivePtr(t, v2)
+	case []uint32:
+		return matchSlice(t, v2)
+	case []*uint32:
+		return matchSlice(t, v2)
+	case uint64:
+		return matchPrimitive(t, v2)
 	case *uint64:
 		return matchPrimitivePtr(t, v2)
+	case []uint64:
+		return matchSlice(t, v2)
+	case []*uint64:
+		return matchSlice(t, v2)
+	case float32:
+		return matchPrimitive(t, v2)
 	case *float32:
 		return matchPrimitivePtr(t, v2)
+	case []float32:
+		return matchSlice(t, v2)
+	case []*float32:
+		return matchSlice(t, v2)
+	case float64:
+		return matchPrimitive(t, v2)
 	case *float64:
 		return matchPrimitivePtr(t, v2)
+	case []float64:
+		return matchSlice(t, v2)
+	case []*float64:
+		return matchSlice(t, v2)
+	case string:
+		return matchPrimitive(t, v2)
 	case *string:
 		return matchPrimitivePtr(t, v2)
+	case []string:
+		return matchSlice(t, v2)
+	case []*string:
+		return matchSlice(t, v2)
+	case bool:
+		return matchPrimitive(t, v2)
 	case *bool:
 		return matchPrimitivePtr(t, v2)
+	case []bool:
+		return matchSlice(t, v2)
+	case []*bool:
+		return matchSlice(t, v2)
 	case encoding.TextMarshaler:
 		return matchTextMarshaler(t, v2)
 	case fmt.Stringer:
@@ -223,6 +279,26 @@ func match(v, v2 any) (matched bool, err error) {
 	}
 
 	return reflect.DeepEqual(v, v2), nil
+}
+
+func matchSlice[T comparable](v []T, v2 any) (bool, error) {
+	t2, ok := v2.([]T)
+	if !ok {
+		return false, errors.Newf("matchSlice(): attempted to diff incomparable types, old: %T, new: %T", v, v2)
+	}
+	if len(v) != len(t2) {
+		return false, nil
+	}
+
+	for i := range v {
+		if match, err := match(v[i], t2[i]); err != nil {
+			return false, err
+		} else if !match {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 func matchPrimitive[T comparable](v T, v2 any) (bool, error) {
