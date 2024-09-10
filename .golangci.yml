@@ -187,6 +187,11 @@ issues:
       linters:
         - forcetypeassert
 
+    - path: patcher\.go
+      linters:
+        - gocritic
+      text: sprintfQuotedString
+
     - path: params\.go
       linters:
         - gocritic

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"iter"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 
@@ -59,12 +60,13 @@ func (tm *Patcher) Columns(patchSet *PatchSet, databaseType any) string {
 
 		columns = append(columns, tag)
 	}
+	slices.Sort(columns)
 
 	switch tm.dbType {
 	case spanner:
 		return strings.Join(columns, ", ")
 	case postgres:
-		return fmt.Sprintf("%q", strings.Join(columns, `", "`))
+		return fmt.Sprintf(`"%s"`, strings.Join(columns, `", "`))
 	default:
 		panic(errors.Newf("unsupported tag name: %s", tm.tagName))
 	}

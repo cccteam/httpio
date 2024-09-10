@@ -165,7 +165,7 @@ func TestPatcher_Spanner_Columns(t *testing.T) {
 				}),
 				databaseType: SpannerStruct{},
 			},
-			want: "fieldtwo, field3",
+			want: "field3, fieldtwo",
 		},
 	}
 	for _, tt := range tests {
@@ -210,7 +210,7 @@ func TestPatcher_Postgres_Columns(t *testing.T) {
 				}),
 				databaseType: SpannerStruct{},
 			},
-			want: `"fieldtwo", "field3"`,
+			want: `"field3", "fieldtwo"`,
 		},
 	}
 	for _, tt := range tests {
