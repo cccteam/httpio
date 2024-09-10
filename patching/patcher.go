@@ -27,8 +27,33 @@ func NewSpannerPatcher() *Patcher {
 	}
 }
 
-func (tm *Patcher) get(t reflect.Type) (map[string]string, error) {
+func (tm *Patcher) Columns(patchSet *PatchSet, databaseType any) string {
+	fieldTagMapping, err := tm.get(databaseType)
+	if err != nil {
+		panic(err)
+	}
+
+	columns := []string{}
+	for _, field := range patchSet.Fields() {
+		tag, ok := fieldTagMapping[field]
+		if !ok {
+			panic(errors.Newf("field %s not found in struct", field))
+		}
+
+		columns = append(columns, tag)
+	}
+
+	return strings.Join(columns, ", ")
+}
+
+func (tm *Patcher) get(v any) (map[string]string, error) {
 	tm.mu.RLock()
+
+	t := reflect.TypeOf(v)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
 	if tagMap, ok := tm.cache[t]; ok {
 		defer tm.mu.RUnlock()
 
@@ -43,6 +68,10 @@ func (tm *Patcher) get(t reflect.Type) (map[string]string, error) {
 		return tagMap, nil
 	}
 
+	if t.Kind() != reflect.Struct {
+		panic(errors.Newf("expected struct, got %s", t.Kind()))
+	}
+
 	tm.cache[t] = structTags(t, tm.tagName)
 
 	return tm.cache[t], nil
@@ -54,15 +83,7 @@ func (tm *Patcher) Resolve(pkeys PrimaryKeys, patchSet *PatchSet, databaseType a
 		return nil, errors.New("must include at least one primary key in call to Resolve")
 	}
 
-	t := reflect.TypeOf(databaseType)
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	if t.Kind() != reflect.Struct {
-		return nil, errors.Newf("expected struct, got %s", t.Kind())
-	}
-
-	fieldTagMapping, err := tm.get(t)
+	fieldTagMapping, err := tm.get(databaseType)
 	if err != nil {
 		return nil, err
 	}
