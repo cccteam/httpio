@@ -19,7 +19,7 @@ import (
 type ValidatorFunc func(s interface{}) error
 
 type Enforcer interface {
-	RequireResource(user accesstypes.User, domain accesstypes.Domain, perms accesstypes.Permission, resources ...resourceset.Name) error
+	RequireResource(domain accesstypes.Domain, user accesstypes.User, perms accesstypes.Permission, resources ...accesstypes.Resource) error
 }
 
 type (
@@ -182,12 +182,15 @@ func decodeToMap[T any](fieldMapper *patching.FieldMapper, request *http.Request
 }
 
 func checkPermissions(patchSet *patching.PatchSet, permissionChecker Enforcer, resourceSet *resourceset.Set, domain accesstypes.Domain, user accesstypes.User) error {
+	resources := make([]accesstypes.Resource, 0, len(patchSet.Fields()))
 	for _, fieldName := range patchSet.Fields() {
 		if resourceSet.Contains(fieldName) {
-			if err := permissionChecker.RequireResource(user, domain, resourceSet.RequiredPermission(), resourceSet.ResourceName(fieldName)); err != nil {
-				return errors.Wrap(err, "permissionChecker.RequireResource()")
-			}
+			resources = append(resources, accesstypes.Resource(fieldName))
 		}
+	}
+
+	if err := permissionChecker.RequireResource(domain, user, resourceSet.RequiredPermission(), resources...); err != nil {
+		return errors.Wrap(err, "permissionChecker.RequireResource()")
 	}
 
 	return nil

@@ -1,9 +1,10 @@
 module github.com/cccteam/httpio
 
-go 1.23.0
+go 1.23.1
 
 require (
-	github.com/cccteam/access v0.1.2
+	github.com/cccteam/access v0.1.4
+	github.com/cccteam/ccc v0.2.1
 	github.com/cccteam/logger v0.1.12
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-playground/errors/v5 v5.4.0

@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/cccteam/ccc"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
 )
@@ -455,6 +456,104 @@ func Test_param_ptr_UUID(t *testing.T) {
 	}
 }
 
+func Test_param_ccc_UUID(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   ccc.UUID
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"fileId": "0020198f-a14e-42ee-b5f8-65a228ba38e7"}),
+				param: ParamType("fileId"),
+			},
+			wantVal: ccc.Must(ccc.UUIDFromString("0020198f-a14e-42ee-b5f8-65a228ba38e7")),
+		},
+		{
+			name: "Invalid Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"fileId": "0020198f-a14e-42ee-b5f8-65a228ba38xx"}),
+				param: ParamType("fileId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[ccc.UUID](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func Test_param_ptr_ccc_UUID(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   *ccc.UUID
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"fileId": "0020198f-a14e-42ee-b5f8-65a228ba38e7"}),
+				param: ParamType("fileId"),
+			},
+			wantVal: ccc.Ptr(ccc.Must(ccc.UUIDFromString("0020198f-a14e-42ee-b5f8-65a228ba38e7"))),
+		},
+		{
+			name: "Invalid Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"fileId": "0020198f-a14e-42ee-b5f8-65a228ba38xx"}),
+				param: ParamType("fileId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[*ccc.UUID](tt.args.r, tt.args.param); *gotVal != *tt.wantVal {
+				t.Errorf("param() = %v, want %v", *gotVal, *tt.wantVal)
+			}
+		})
+	}
+}
+
 func Test_param_notimplemented(t *testing.T) {
 	t.Parallel()
 
@@ -493,6 +592,60 @@ func Test_param_notimplemented(t *testing.T) {
 				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
 			}
 		})
+	}
+}
+
+func Benchmark_param_int(b *testing.B) {
+	r := mockRequest(map[ParamType]string{"integer": "1245"})
+
+	b.ResetTimer()
+	for range b.N {
+		_ = Param[int](r, ParamType("integer"))
+	}
+}
+
+func Benchmark_param_string(b *testing.B) {
+	r := mockRequest(map[ParamType]string{"string": "755"})
+
+	b.ResetTimer()
+	for range b.N {
+		_ = Param[string](r, ParamType("string"))
+	}
+}
+
+func Benchmark_param_ccc_uuid(b *testing.B) {
+	r := mockRequest(map[ParamType]string{"uuid": "0020198f-a14e-42ee-b5f8-65a228ba3899"})
+
+	b.ResetTimer()
+	for range b.N {
+		_ = Param[ccc.UUID](r, ParamType("uuid"))
+	}
+}
+
+func Benchmark_param_ccc_uuid_ptr(b *testing.B) {
+	r := mockRequest(map[ParamType]string{"uuid": "0020198f-a14e-42ee-b5f8-65a228ba3899"})
+
+	b.ResetTimer()
+	for range b.N {
+		_ = Param[*ccc.UUID](r, ParamType("uuid"))
+	}
+}
+
+func Benchmark_param_uuid(b *testing.B) {
+	r := mockRequest(map[ParamType]string{"uuid": "0020198f-a14e-42ee-b5f8-65a228ba3899"})
+
+	b.ResetTimer()
+	for range b.N {
+		_ = Param[uuid.UUID](r, ParamType("uuid"))
+	}
+}
+
+func Benchmark_param_uuid_ptr(b *testing.B) {
+	r := mockRequest(map[ParamType]string{"uuid": "0020198f-a14e-42ee-b5f8-65a228ba3899"})
+
+	b.ResetTimer()
+	for range b.N {
+		_ = Param[*uuid.UUID](r, ParamType("uuid"))
 	}
 }
 

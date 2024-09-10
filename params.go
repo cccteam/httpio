@@ -7,7 +7,9 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/cccteam/ccc"
 	"github.com/go-chi/chi/v5"
+	"github.com/gofrs/uuid"
 )
 
 // ParamType defines the type used to describe url Params
@@ -50,59 +52,52 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 		}
 		switch any(val).(type) {
 		case string:
-			return any(v)
+			return v
 		case int:
 			i, err := strconv.Atoi(v)
 			if err != nil {
 				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
-			return any(i)
+			return i
 		case int64:
 			i, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
-			return any(i)
+			return i
 		case float64:
 			i, err := strconv.ParseFloat(v, 64)
 			if err != nil {
 				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
-			return any(i)
+			return i
 		case bool:
 			i, err := strconv.ParseBool(v)
 			if err != nil {
 				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
 
-			return any(i)
-		default:
-			// Check if the type implements encoding.TextUnmarshaler
-			var receivedPtr bool
-			t := reflect.TypeOf(val)
-			if t.Kind() == reflect.Pointer {
-				receivedPtr = true
-				t = t.Elem()
+			return i
+		case uuid.UUID:
+			i, err := uuid.FromString(v)
+			if err != nil {
+				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 			}
-			interfaceType := reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
-			if reflect.PointerTo(t).Implements(interfaceType) {
-				instance := reflect.New(t).Interface()
-				enc, ok := instance.(encoding.TextUnmarshaler)
-				if !ok {
-					panic(fmt.Sprintf("type assertion failed for %T", instance))
-				}
-				if err := enc.UnmarshalText([]byte(v)); err != nil {
-					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
-				}
 
-				if receivedPtr {
-					return enc
-				}
+			return i
+		case ccc.UUID:
+			i, err := ccc.UUIDFromString(v)
+			if err != nil {
+				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+			}
 
-				return reflect.Indirect(reflect.ValueOf(enc)).Interface()
+			return i
+		default:
+			if val2 := resolveInterfaces(param, v, val); val2 != nil {
+				return val2
 			}
 
 			panic(fmt.Sprintf("support for %T has not been implemented", val))
@@ -116,4 +111,34 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 	}
 
 	return val
+}
+
+func resolveInterfaces[T any](param ParamType, paramVal string, val T) any {
+	var receivedPtr bool
+	var val2 any
+
+	// We need a pointer because these interfaces are implemented on pointer receivers
+	t := reflect.TypeOf(val)
+	if t.Kind() == reflect.Pointer {
+		receivedPtr = true
+		// In this case, T is a nil pointer
+		val2 = reflect.New(t.Elem()).Interface().(T)
+	} else {
+		val2 = &val
+	}
+
+	switch t := val2.(type) {
+	case encoding.TextUnmarshaler:
+		if err := t.UnmarshalText([]byte(paramVal)); err != nil {
+			panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, paramVal, val, err))
+		}
+	default:
+		return nil
+	}
+
+	if receivedPtr {
+		return val2
+	}
+
+	return *(val2.(*T))
 }
