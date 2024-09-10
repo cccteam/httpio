@@ -13,8 +13,16 @@ import (
 	"github.com/go-playground/errors/v5"
 )
 
+type dbType string
+
+const (
+	spanner  dbType = "spanner"
+	postgres dbType = "postgres"
+)
+
 type Patcher struct {
 	tagName string
+	dbType  dbType
 
 	mu    sync.RWMutex
 	cache map[reflect.Type]map[string]string
@@ -24,6 +32,15 @@ func NewSpannerPatcher() *Patcher {
 	return &Patcher{
 		cache:   make(map[reflect.Type]map[string]string),
 		tagName: "spanner",
+		dbType:  spanner,
+	}
+}
+
+func NewPostgresPatcher() *Patcher {
+	return &Patcher{
+		cache:   make(map[reflect.Type]map[string]string),
+		tagName: "db",
+		dbType:  postgres,
 	}
 }
 
@@ -43,7 +60,14 @@ func (tm *Patcher) Columns(patchSet *PatchSet, databaseType any) string {
 		columns = append(columns, tag)
 	}
 
-	return strings.Join(columns, ", ")
+	switch tm.dbType {
+	case spanner:
+		return strings.Join(columns, ", ")
+	case postgres:
+		return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
+	default:
+		panic(errors.Newf("unsupported tag name: %s", tm.tagName))
+	}
 }
 
 func (tm *Patcher) get(v any) (map[string]string, error) {
@@ -69,7 +93,7 @@ func (tm *Patcher) get(v any) (map[string]string, error) {
 	}
 
 	if t.Kind() != reflect.Struct {
-		panic(errors.Newf("expected struct, got %s", t.Kind()))
+		return nil, errors.Newf("expected struct, got %s", t.Kind())
 	}
 
 	tm.cache[t] = structTags(t, tm.tagName)

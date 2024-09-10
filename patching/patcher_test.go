@@ -135,7 +135,7 @@ func Test_match(t *testing.T) {
 	}
 }
 
-func TestPatcher_Columns(t *testing.T) {
+func TestPatcher_Spanner_Columns(t *testing.T) {
 	t.Parallel()
 	type SpannerStruct struct {
 		Field1 string `spanner:"field1"`
@@ -166,6 +166,51 @@ func TestPatcher_Columns(t *testing.T) {
 				databaseType: SpannerStruct{},
 			},
 			want: "fieldtwo, field3",
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := tm.Columns(tt.args.patchSet, tt.args.databaseType); got != tt.want {
+				t.Errorf("Patcher.Columns() = (%v),  want (%v)", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPatcher_Postgres_Columns(t *testing.T) {
+	t.Parallel()
+	type SpannerStruct struct {
+		Field1 string `db:"field1"`
+		Field2 string `db:"fieldtwo"`
+		Field3 int    `db:"field3"`
+		Field4 string `db:"field4"`
+		Field5 string `db:"field5"`
+	}
+
+	tm := NewPostgresPatcher()
+
+	type args struct {
+		patchSet     *PatchSet
+		databaseType any
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "multiple fields in patchSet",
+			args: args{
+				patchSet: NewPatchSet(map[string]any{
+					"Field2": "apple",
+					"Field3": 10,
+				}),
+				databaseType: SpannerStruct{},
+			},
+			want: `"fieldtwo", "field3"`,
 		},
 	}
 	for _, tt := range tests {
