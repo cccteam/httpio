@@ -64,7 +64,7 @@ func (tm *Patcher) Columns(patchSet *PatchSet, databaseType any) string {
 	case spanner:
 		return strings.Join(columns, ", ")
 	case postgres:
-		return fmt.Sprintf("\"%s\"", strings.Join(columns, `", "`))
+		return fmt.Sprintf("%q", strings.Join(columns, `", "`))
 	default:
 		panic(errors.Newf("unsupported tag name: %s", tm.tagName))
 	}
