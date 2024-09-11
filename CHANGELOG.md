@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/cccteam/httpio/compare/v0.3.0...v0.3.1) (2024-09-11)
+
+
+### Features
+
+* **patching:** Implement Column rendering for patchset ([#56](https://github.com/cccteam/httpio/issues/56)) ([9bedabd](https://github.com/cccteam/httpio/commit/9bedabd62b3a923c2f5a6655534e51efc187d3e3))
+* **patching:** Implement Primary Key handling ([#56](https://github.com/cccteam/httpio/issues/56)) ([9bedabd](https://github.com/cccteam/httpio/commit/9bedabd62b3a923c2f5a6655534e51efc187d3e3))
+
 ## [0.3.0](https://github.com/cccteam/httpio/compare/v0.2.5...v0.3.0) (2024-08-30)
 
 
