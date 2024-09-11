@@ -22,3 +22,7 @@ func (s *PatchSet) Set(field string, value any) {
 func (s *PatchSet) Fields() []string {
 	return slices.Collect(maps.Keys(s.data))
 }
+
+func (s *PatchSet) Len() int {
+	return len(s.data)
+}

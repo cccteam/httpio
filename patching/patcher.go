@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"iter"
 	"reflect"
-	"slices"
+	"sort"
 	"strings"
 	"sync"
 
@@ -26,12 +26,12 @@ type Patcher struct {
 	dbType  dbType
 
 	mu    sync.RWMutex
-	cache map[reflect.Type]map[string]string
+	cache map[reflect.Type]map[string]cacheEntry
 }
 
 func NewSpannerPatcher() *Patcher {
 	return &Patcher{
-		cache:   make(map[reflect.Type]map[string]string),
+		cache:   make(map[reflect.Type]map[string]cacheEntry),
 		tagName: "spanner",
 		dbType:  spanner,
 	}
@@ -39,7 +39,7 @@ func NewSpannerPatcher() *Patcher {
 
 func NewPostgresPatcher() *Patcher {
 	return &Patcher{
-		cache:   make(map[reflect.Type]map[string]string),
+		cache:   make(map[reflect.Type]map[string]cacheEntry),
 		tagName: "db",
 		dbType:  postgres,
 	}
@@ -51,16 +51,23 @@ func (tm *Patcher) Columns(patchSet *PatchSet, databaseType any) string {
 		panic(err)
 	}
 
-	columns := []string{}
+	columnEntries := make([]cacheEntry, 0, patchSet.Len())
 	for _, field := range patchSet.Fields() {
-		tag, ok := fieldTagMapping[field]
+		c, ok := fieldTagMapping[field]
 		if !ok {
 			panic(errors.Newf("field %s not found in struct", field))
 		}
 
-		columns = append(columns, tag)
+		columnEntries = append(columnEntries, c)
 	}
-	slices.Sort(columns)
+	sort.Slice(columnEntries, func(i, j int) bool {
+		return columnEntries[i].index < columnEntries[j].index
+	})
+
+	columns := make([]string, 0, len(columnEntries))
+	for _, c := range columnEntries {
+		columns = append(columns, c.tag)
+	}
 
 	switch tm.dbType {
 	case spanner:
@@ -72,7 +79,7 @@ func (tm *Patcher) Columns(patchSet *PatchSet, databaseType any) string {
 	}
 }
 
-func (tm *Patcher) get(v any) (map[string]string, error) {
+func (tm *Patcher) get(v any) (map[string]cacheEntry, error) {
 	tm.mu.RLock()
 
 	t := reflect.TypeOf(v)
@@ -116,11 +123,11 @@ func (tm *Patcher) Resolve(pkeys PrimaryKeys, patchSet *PatchSet, databaseType a
 
 	newMap := make(map[string]any, len(pkeys)+len(patchSet.data))
 	for structField, value := range all(patchSet.data, pkeys) {
-		tag, ok := fieldTagMapping[structField]
+		c, ok := fieldTagMapping[structField]
 		if !ok {
 			return nil, errors.Newf("field %s not found in struct", structField)
 		}
-		newMap[tag] = value
+		newMap[c.tag] = value
 	}
 
 	return newMap, nil
@@ -184,8 +191,8 @@ func all[Map ~map[K]V, K comparable, V any](maps ...Map) iter.Seq2[K, V] {
 	}
 }
 
-func structTags(t reflect.Type, key string) map[string]string {
-	tagMap := make(map[string]string)
+func structTags(t reflect.Type, key string) map[string]cacheEntry {
+	tagMap := make(map[string]cacheEntry)
 	for i := range t.NumField() {
 		field := t.Field(i)
 		tag := field.Tag.Get(key)
@@ -195,10 +202,15 @@ func structTags(t reflect.Type, key string) map[string]string {
 			continue
 		}
 
-		tagMap[field.Name] = list[0]
+		tagMap[field.Name] = cacheEntry{index: i, tag: list[0]}
 	}
 
 	return tagMap
+}
+
+type cacheEntry struct {
+	index int
+	tag   string
 }
 
 func match(v, v2 any) (matched bool, err error) {
