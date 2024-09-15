@@ -141,8 +141,8 @@ func TestPatcher_Spanner_Columns(t *testing.T) {
 		Field1 string `spanner:"field1"`
 		Field2 string `spanner:"fieldtwo"`
 		Field3 int    `spanner:"field3"`
-		Field4 string `spanner:"field4"`
 		Field5 string `spanner:"field5"`
+		Field4 string `spanner:"field4"`
 	}
 
 	tm := NewSpannerPatcher()
@@ -165,7 +165,18 @@ func TestPatcher_Spanner_Columns(t *testing.T) {
 				}),
 				databaseType: SpannerStruct{},
 			},
-			want: "field3, fieldtwo",
+			want: "fieldtwo, field3",
+		},
+		{
+			name: "multiple fields not in sorted order",
+			args: args{
+				patchSet: NewPatchSet(map[string]any{
+					"Field4": "apple",
+					"Field5": "bannana",
+				}),
+				databaseType: SpannerStruct{},
+			},
+			want: "field5, field4",
 		},
 	}
 	for _, tt := range tests {
@@ -186,8 +197,8 @@ func TestPatcher_Postgres_Columns(t *testing.T) {
 		Field1 string `db:"field1"`
 		Field2 string `db:"fieldtwo"`
 		Field3 int    `db:"field3"`
-		Field4 string `db:"field4"`
 		Field5 string `db:"field5"`
+		Field4 string `db:"field4"`
 	}
 
 	tm := NewPostgresPatcher()
@@ -210,7 +221,18 @@ func TestPatcher_Postgres_Columns(t *testing.T) {
 				}),
 				databaseType: SpannerStruct{},
 			},
-			want: `"field3", "fieldtwo"`,
+			want: `"fieldtwo", "field3"`,
+		},
+		{
+			name: "multiple fields not in sorted order",
+			args: args{
+				patchSet: NewPatchSet(map[string]any{
+					"Field4": "apple",
+					"Field5": "bannana",
+				}),
+				databaseType: SpannerStruct{},
+			},
+			want: `"field5", "field4"`,
 		},
 	}
 	for _, tt := range tests {
