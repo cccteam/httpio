@@ -1,4 +1,4 @@
-package patching
+package patchset
 
 import (
 	"reflect"
