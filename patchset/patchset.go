@@ -1,3 +1,4 @@
+// package patchset provides types to store json patch set mapping to struct fields.
 package patchset
 
 import (
