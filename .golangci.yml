@@ -176,21 +176,9 @@ issues:
         - errorlint
         - gochecknoinits
 
-    - path: patching/patcher\.go
-      linters:
-        - funlen
-        - cyclop
-        - gocyclo
-      text: match
-
     - path: params\.go
       linters:
         - forcetypeassert
-
-    - path: patcher\.go
-      linters:
-        - gocritic
-      text: sprintfQuotedString
 
     - path: params\.go
       linters:
