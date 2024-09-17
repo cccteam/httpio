@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.4.0](https://github.com/cccteam/httpio/compare/v0.3.1...v0.4.0) (2024-09-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Fix Enforcer interface caused by breaking change in implementation package ([#60](https://github.com/cccteam/httpio/issues/60))
+
+### Features
+
+* Match Column sort to Struct field order. ([#58](https://github.com/cccteam/httpio/issues/58)) ([568bf2b](https://github.com/cccteam/httpio/commit/568bf2b84f18280c990fd72e228ad67d40c7f584))
+
+
+### Bug Fixes
+
+* Fix Enforcer interface caused by breaking change in implementation package ([#60](https://github.com/cccteam/httpio/issues/60)) ([be1efc4](https://github.com/cccteam/httpio/commit/be1efc449544a6717f356926a51508b8751cde44))
+
+
+### Code Refactoring
+
+* Move resourceset package to this repository ([#60](https://github.com/cccteam/httpio/issues/60)) ([be1efc4](https://github.com/cccteam/httpio/commit/be1efc449544a6717f356926a51508b8751cde44))
+* Remove patcher to a different repository ([#60](https://github.com/cccteam/httpio/issues/60)) ([be1efc4](https://github.com/cccteam/httpio/commit/be1efc449544a6717f356926a51508b8751cde44))
+* Rename patching package to patchset ([#60](https://github.com/cccteam/httpio/issues/60)) ([be1efc4](https://github.com/cccteam/httpio/commit/be1efc449544a6717f356926a51508b8751cde44))
+
 ## [0.3.1](https://github.com/cccteam/httpio/compare/v0.3.0...v0.3.1) (2024-09-11)
 
 
