@@ -1,13 +1,13 @@
 package httpio
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/cccteam/ccc/accesstypes"
 	"github.com/cccteam/httpio/patchset"
@@ -130,20 +130,25 @@ func (d *DecoderWithPermissionChecker[T]) DecodeToPatchSet(request *http.Request
 }
 
 func decodeToMap[T any](fieldMapper *patchset.FieldMapper, request *http.Request, target *T, validate ValidatorFunc) (*patchset.PatchSet, error) {
-	// This can be optimized with a forkReader
-	bodyBuf := &bytes.Buffer{}
-	if _, err := io.Copy(bodyBuf, request.Body); err != nil {
-		return nil, errors.Wrap(err, "io.Copy()")
-	}
+	pr, pw := io.Pipe()
+	tr := io.TeeReader(request.Body, pw)
 
-	bodyReader := bytes.NewReader(bodyBuf.Bytes())
-	if err := json.NewDecoder(bodyReader).Decode(target); err != nil {
-		return nil, errors.Wrap(err, "Decoder.Decode()")
-	}
+	var wg sync.WaitGroup
+	var err error
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err = json.NewDecoder(pr).Decode(target)
+	}()
 
 	jsonData := make(map[string]any)
-	if err := json.Unmarshal(bodyBuf.Bytes(), &jsonData); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal request body")
+	if err := json.NewDecoder(tr).Decode(&jsonData); err != nil {
+		return nil, errors.Wrap(err, "failed to decode request body into map")
+	}
+
+	wg.Wait()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal request body into struct")
 	}
 
 	if validate != nil {
