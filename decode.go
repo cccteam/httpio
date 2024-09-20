@@ -191,7 +191,7 @@ func checkPermissions(ctx context.Context, patchSet *patchset.PatchSet, permissi
 	resources := make([]accesstypes.Resource, 0, patchSet.Len())
 	for _, fieldName := range patchSet.StructFields() {
 		if resourceSet.Contains(fieldName) {
-			resources = append(resources, accesstypes.Resource(fieldName))
+			resources = append(resources, resourceSet.Resource(fieldName))
 		}
 	}
 
