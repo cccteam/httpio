@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.1](https://github.com/cccteam/httpio/compare/v0.4.0...v0.4.1) (2024-09-23)
+
+
+### Features
+
+* Enhance read performance using tee reader ([#61](https://github.com/cccteam/httpio/issues/61)) ([5d2c58e](https://github.com/cccteam/httpio/commit/5d2c58e33a54fafcbc9c0dd23a0519327e8aa7b6))
+* Implement columnset package ([#61](https://github.com/cccteam/httpio/issues/61)) ([5d2c58e](https://github.com/cccteam/httpio/commit/5d2c58e33a54fafcbc9c0dd23a0519327e8aa7b6))
+
+
+### Bug Fixes
+
+* Fix bug in Decoder permission checking ([#61](https://github.com/cccteam/httpio/issues/61)) ([5d2c58e](https://github.com/cccteam/httpio/commit/5d2c58e33a54fafcbc9c0dd23a0519327e8aa7b6))
+
 ## [0.4.0](https://github.com/cccteam/httpio/compare/v0.3.1...v0.4.0) (2024-09-17)
 
 
