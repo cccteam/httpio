@@ -1,13 +1,13 @@
 package httpio
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/cccteam/ccc/accesstypes"
 	"github.com/cccteam/httpio/patchset"
@@ -31,13 +31,13 @@ type (
 // Decoder is a struct that can be used for decoding http requests and validating those requests
 type Decoder[T any] struct {
 	validate    ValidatorFunc
-	fieldMapper *patchset.FieldMapper
+	fieldMapper *resourceset.FieldMapper
 }
 
 func NewDecoder[T any]() (*Decoder[T], error) {
 	target := new(T)
 
-	m, err := patchset.NewFieldMapper(target)
+	m, err := resourceset.NewFieldMapper(target)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewFieldMapper()")
 	}
@@ -54,12 +54,12 @@ func (d *Decoder[T]) WithValidator(v ValidatorFunc) *Decoder[T] {
 	return &decoder
 }
 
-func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, permissionChecker Enforcer, perms *resourceset.ResourceSet) *DecoderWithPermissionChecker[T] {
+func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, permissionChecker Enforcer, rSet *resourceset.ResourceSet) *DecoderWithPermissionChecker[T] {
 	return &DecoderWithPermissionChecker[T]{
 		userFromReq:       userFromReq,
 		domainFromReq:     domainFromReq,
 		permissionChecker: permissionChecker,
-		permissions:       perms,
+		resourceSet:       rSet,
 		fieldMapper:       d.fieldMapper,
 	}
 }
@@ -89,8 +89,8 @@ type DecoderWithPermissionChecker[T any] struct {
 	domainFromReq     DomainFromReq
 	validate          ValidatorFunc
 	permissionChecker Enforcer
-	permissions       *resourceset.ResourceSet
-	fieldMapper       *patchset.FieldMapper
+	resourceSet       *resourceset.ResourceSet
+	fieldMapper       *resourceset.FieldMapper
 }
 
 func (d *DecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *DecoderWithPermissionChecker[T] {
@@ -108,7 +108,7 @@ func (d *DecoderWithPermissionChecker[T]) Decode(request *http.Request) (*T, err
 		return nil, err
 	}
 
-	if err := checkPermissions(request.Context(), p, d.permissionChecker, d.permissions, d.domainFromReq(request), d.userFromReq(request)); err != nil {
+	if err := checkPermissions(request.Context(), p, d.permissionChecker, d.resourceSet, d.domainFromReq(request), d.userFromReq(request)); err != nil {
 		return nil, err
 	}
 
@@ -122,28 +122,33 @@ func (d *DecoderWithPermissionChecker[T]) DecodeToPatchSet(request *http.Request
 		return nil, err
 	}
 
-	if err := checkPermissions(request.Context(), p, d.permissionChecker, d.permissions, d.domainFromReq(request), d.userFromReq(request)); err != nil {
+	if err := checkPermissions(request.Context(), p, d.permissionChecker, d.resourceSet, d.domainFromReq(request), d.userFromReq(request)); err != nil {
 		return nil, err
 	}
 
 	return p, nil
 }
 
-func decodeToMap[T any](fieldMapper *patchset.FieldMapper, request *http.Request, target *T, validate ValidatorFunc) (*patchset.PatchSet, error) {
-	// This can be optimized with a forkReader
-	bodyBuf := &bytes.Buffer{}
-	if _, err := io.Copy(bodyBuf, request.Body); err != nil {
-		return nil, errors.Wrap(err, "io.Copy()")
-	}
+func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Request, target *T, validate ValidatorFunc) (*patchset.PatchSet, error) {
+	pr, pw := io.Pipe()
+	tr := io.TeeReader(request.Body, pw)
 
-	bodyReader := bytes.NewReader(bodyBuf.Bytes())
-	if err := json.NewDecoder(bodyReader).Decode(target); err != nil {
-		return nil, errors.Wrap(err, "Decoder.Decode()")
-	}
+	var wg sync.WaitGroup
+	var err error
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err = json.NewDecoder(pr).Decode(target)
+	}()
 
 	jsonData := make(map[string]any)
-	if err := json.Unmarshal(bodyBuf.Bytes(), &jsonData); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal request body")
+	if err := json.NewDecoder(tr).Decode(&jsonData); err != nil {
+		return nil, errors.Wrap(err, "failed to decode request body into map")
+	}
+
+	wg.Wait()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal request body into struct")
 	}
 
 	if validate != nil {
@@ -183,10 +188,10 @@ func decodeToMap[T any](fieldMapper *patchset.FieldMapper, request *http.Request
 }
 
 func checkPermissions(ctx context.Context, patchSet *patchset.PatchSet, permissionChecker Enforcer, resourceSet *resourceset.ResourceSet, domain accesstypes.Domain, user accesstypes.User) error {
-	resources := make([]accesstypes.Resource, 0, len(patchSet.Fields()))
-	for _, fieldName := range patchSet.Fields() {
+	resources := make([]accesstypes.Resource, 0, patchSet.Len())
+	for _, fieldName := range patchSet.StructFields() {
 		if resourceSet.Contains(fieldName) {
-			resources = append(resources, accesstypes.Resource(fieldName))
+			resources = append(resources, resourceSet.Resource(fieldName))
 		}
 	}
 

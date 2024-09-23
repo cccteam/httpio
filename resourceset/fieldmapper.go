@@ -1,7 +1,9 @@
-package patchset
+package resourceset
 
 import (
+	"maps"
 	"reflect"
+	"slices"
 	"strings"
 
 	"github.com/go-playground/errors/v5"
@@ -26,6 +28,14 @@ func (f *FieldMapper) StructFieldName(tag string) (string, bool) {
 	fieldName, ok := f.jsonTagToFields[tag]
 
 	return fieldName, ok
+}
+
+func (f *FieldMapper) Len() int {
+	return len(f.jsonTagToFields)
+}
+
+func (f *FieldMapper) Fields() []string {
+	return slices.Collect(maps.Values(f.jsonTagToFields))
 }
 
 func tagToFieldMap(v any) (map[string]string, error) {

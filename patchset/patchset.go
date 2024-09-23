@@ -20,7 +20,7 @@ func (p *PatchSet) Set(field string, value any) {
 	p.data[field] = value
 }
 
-func (p *PatchSet) Fields() []string {
+func (p *PatchSet) StructFields() []string {
 	return slices.Collect(maps.Keys(p.data))
 }
 

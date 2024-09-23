@@ -18,6 +18,8 @@ contrib.go.opencensus.io/exporter/stackdriver v0.13.14/go.mod h1:5pSSGY0Bhuk7waT
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/cccteam/ccc v0.2.2 h1:P5NPtl37TX+TVOn9WWbkvH176iKQbyZIzOj/JBD7JGY=
 github.com/cccteam/ccc v0.2.2/go.mod h1:25HYwHhGDaySryecj23Zj+WiMq57NVoKGfOTcHON8yg=
+github.com/cccteam/ccc v0.2.3 h1:ughVR6n6MpLTo6kBX4dytNVHRbFkvWiseTZuZth6kuk=
+github.com/cccteam/ccc v0.2.3/go.mod h1:25HYwHhGDaySryecj23Zj+WiMq57NVoKGfOTcHON8yg=
 github.com/cccteam/logger v0.1.12 h1:qmNPJKb9wOlTHYN+WUUaOkKM1YxVyXsOusuA2Xp7/tE=
 github.com/cccteam/logger v0.1.12/go.mod h1:sctqFYiCg0KkKszjmAkWV4ynkuHNbFwTdsAPn8IlWh0=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
