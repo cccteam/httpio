@@ -10,8 +10,8 @@ import (
 	"sync"
 
 	"github.com/cccteam/ccc/accesstypes"
-	"github.com/cccteam/httpio/patchset"
-	"github.com/cccteam/httpio/resourceset"
+	"github.com/cccteam/ccc/patchset"
+	"github.com/cccteam/ccc/resourceset"
 	"github.com/go-playground/errors/v5"
 )
 
