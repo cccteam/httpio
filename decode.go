@@ -10,18 +10,14 @@ import (
 	"sync"
 
 	"github.com/cccteam/ccc/accesstypes"
-	"github.com/cccteam/httpio/patchset"
-	"github.com/cccteam/httpio/resourceset"
+	"github.com/cccteam/ccc/patchset"
+	"github.com/cccteam/ccc/resourceset"
 	"github.com/go-playground/errors/v5"
 )
 
 // ValidatorFunc is a function that validates s
 // It returns an error if the validation fails
 type ValidatorFunc func(s interface{}) error
-
-type Enforcer interface {
-	RequireResources(ctx context.Context, user accesstypes.User, domain accesstypes.Domain, perms accesstypes.Permission, resources ...accesstypes.Resource) error
-}
 
 type (
 	DomainFromReq func(*http.Request) accesstypes.Domain
@@ -54,13 +50,13 @@ func (d *Decoder[T]) WithValidator(v ValidatorFunc) *Decoder[T] {
 	return &decoder
 }
 
-func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, permissionChecker Enforcer, rSet *resourceset.ResourceSet) *DecoderWithPermissionChecker[T] {
+func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resourceset.ResourceSet) *DecoderWithPermissionChecker[T] {
 	return &DecoderWithPermissionChecker[T]{
-		userFromReq:       userFromReq,
-		domainFromReq:     domainFromReq,
-		permissionChecker: permissionChecker,
-		resourceSet:       rSet,
-		fieldMapper:       d.fieldMapper,
+		userFromReq:   userFromReq,
+		domainFromReq: domainFromReq,
+		enforcer:      enforcer,
+		resourceSet:   rSet,
+		fieldMapper:   d.fieldMapper,
 	}
 }
 
@@ -85,12 +81,12 @@ func (d *Decoder[T]) DecodeToPatchSet(request *http.Request) (*patchset.PatchSet
 }
 
 type DecoderWithPermissionChecker[T any] struct {
-	userFromReq       UserFromReq
-	domainFromReq     DomainFromReq
-	validate          ValidatorFunc
-	permissionChecker Enforcer
-	resourceSet       *resourceset.ResourceSet
-	fieldMapper       *resourceset.FieldMapper
+	userFromReq   UserFromReq
+	domainFromReq DomainFromReq
+	validate      ValidatorFunc
+	enforcer      accesstypes.Enforcer
+	resourceSet   *resourceset.ResourceSet
+	fieldMapper   *resourceset.FieldMapper
 }
 
 func (d *DecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *DecoderWithPermissionChecker[T] {
@@ -108,7 +104,7 @@ func (d *DecoderWithPermissionChecker[T]) Decode(request *http.Request) (*T, err
 		return nil, err
 	}
 
-	if err := checkPermissions(request.Context(), p, d.permissionChecker, d.resourceSet, d.domainFromReq(request), d.userFromReq(request)); err != nil {
+	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.domainFromReq(request), d.userFromReq(request)); err != nil {
 		return nil, err
 	}
 
@@ -122,7 +118,7 @@ func (d *DecoderWithPermissionChecker[T]) DecodeToPatchSet(request *http.Request
 		return nil, err
 	}
 
-	if err := checkPermissions(request.Context(), p, d.permissionChecker, d.resourceSet, d.domainFromReq(request), d.userFromReq(request)); err != nil {
+	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.domainFromReq(request), d.userFromReq(request)); err != nil {
 		return nil, err
 	}
 
@@ -161,7 +157,7 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 	if vValue.Kind() == reflect.Ptr {
 		vValue = vValue.Elem()
 	}
-	changes := make(map[string]any)
+	changes := make(map[accesstypes.Field]any)
 	for jsonField := range jsonData {
 		fieldName, ok := fieldMapper.StructFieldName(jsonField)
 		if !ok {
@@ -171,7 +167,7 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 			}
 		}
 
-		value := vValue.FieldByName(fieldName).Interface()
+		value := vValue.FieldByName(string(fieldName)).Interface()
 		if value == nil {
 			return nil, NewBadRequestMessagef("invalid field in json - %s", jsonField)
 		}
@@ -187,16 +183,18 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 	return patchSet, nil
 }
 
-func checkPermissions(ctx context.Context, patchSet *patchset.PatchSet, permissionChecker Enforcer, resourceSet *resourceset.ResourceSet, domain accesstypes.Domain, user accesstypes.User) error {
+func checkPermissions(ctx context.Context, patchSet *patchset.PatchSet, enforcer accesstypes.Enforcer, resourceSet *resourceset.ResourceSet, domain accesstypes.Domain, user accesstypes.User) error {
 	resources := make([]accesstypes.Resource, 0, patchSet.Len())
 	for _, fieldName := range patchSet.StructFields() {
-		if resourceSet.Contains(fieldName) {
+		if resourceSet.PermissionRequired(fieldName) {
 			resources = append(resources, resourceSet.Resource(fieldName))
 		}
 	}
 
-	if err := permissionChecker.RequireResources(ctx, user, domain, resourceSet.RequiredPermission(), resources...); err != nil {
-		return errors.Wrap(err, "permissionChecker.RequireResource()")
+	if ok, missing, err := enforcer.RequireResources(ctx, user, domain, resourceSet.RequiredPermission(), resources...); err != nil {
+		return errors.Wrap(err, "enforcer.RequireResource()")
+	} else if !ok {
+		return NewForbiddenMessagef("user %s does not have %s on %s", user, resourceSet.RequiredPermission(), missing)
 	}
 
 	return nil
