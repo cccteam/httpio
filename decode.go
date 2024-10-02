@@ -157,7 +157,7 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 	if vValue.Kind() == reflect.Ptr {
 		vValue = vValue.Elem()
 	}
-	changes := make(map[string]any)
+	changes := make(map[accesstypes.Field]any)
 	for jsonField := range jsonData {
 		fieldName, ok := fieldMapper.StructFieldName(jsonField)
 		if !ok {
@@ -167,7 +167,7 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 			}
 		}
 
-		value := vValue.FieldByName(fieldName).Interface()
+		value := vValue.FieldByName(string(fieldName)).Interface()
 		if value == nil {
 			return nil, NewBadRequestMessagef("invalid field in json - %s", jsonField)
 		}
