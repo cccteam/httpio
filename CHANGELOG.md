@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.0](https://github.com/cccteam/httpio/compare/v0.4.1...v0.5.0) (2024-10-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* Move packages out of httpio ([#63](https://github.com/cccteam/httpio/issues/63))
+
+### Features
+
+* Move packages out of httpio ([#63](https://github.com/cccteam/httpio/issues/63)) ([ca71b41](https://github.com/cccteam/httpio/commit/ca71b413f8df3ea24dde7f15d0b40ad355414a73))
+
+
+### Code Refactoring
+
+* Update for new types from resourceset package ([#63](https://github.com/cccteam/httpio/issues/63)) ([ca71b41](https://github.com/cccteam/httpio/commit/ca71b413f8df3ea24dde7f15d0b40ad355414a73))
+
 ## [0.4.1](https://github.com/cccteam/httpio/compare/v0.4.0...v0.4.1) (2024-09-23)
 
 
