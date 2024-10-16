@@ -139,17 +139,17 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 
 	jsonData := make(map[string]any)
 	if err := json.NewDecoder(tr).Decode(&jsonData); err != nil {
-		return nil, errors.Wrap(err, "failed to decode request body into map")
+		return nil, NewBadRequestMessageWithError(err, "failed to decode request body")
 	}
 
 	wg.Wait()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal request body into struct")
+		return nil, NewBadRequestMessageWithError(err, "failed to unmarshal request body")
 	}
 
 	if validate != nil {
 		if err := validate(target); err != nil {
-			return nil, NewBadRequestMessageWithErrorf(err, "failed validating the request")
+			return nil, NewBadRequestMessageWithError(err, "failed validating the request")
 		}
 	}
 
