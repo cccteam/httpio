@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/cccteam/httpio/compare/v0.5.0...v0.5.1) (2024-10-16)
+
+
+### Bug Fixes
+
+* Reclassify decode failure to Client error instead of Server error ([#68](https://github.com/cccteam/httpio/issues/68)) ([411566f](https://github.com/cccteam/httpio/commit/411566fa8fcec8893ab5a7e6bbc4843d36ab8e8b))
+
 ## [0.5.0](https://github.com/cccteam/httpio/compare/v0.4.1...v0.5.0) (2024-10-02)
 
 
