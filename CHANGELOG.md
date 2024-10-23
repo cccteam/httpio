@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/cccteam/httpio/compare/v0.5.1...v0.6.0) (2024-10-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removed support for generic patchset ([#70](https://github.com/cccteam/httpio/issues/70))
+
+### Features
+
+* Added support for generic named patchsets ([#70](https://github.com/cccteam/httpio/issues/70)) ([3e67c62](https://github.com/cccteam/httpio/commit/3e67c623b0ef83eb534eae8534880055a8ed9ab9))
+* Removed support for generic patchset ([#70](https://github.com/cccteam/httpio/issues/70)) ([3e67c62](https://github.com/cccteam/httpio/commit/3e67c623b0ef83eb534eae8534880055a8ed9ab9))
+
 ## [0.5.1](https://github.com/cccteam/httpio/compare/v0.5.0...v0.5.1) (2024-10-16)
 
 
