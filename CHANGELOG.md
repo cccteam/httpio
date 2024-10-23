@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/cccteam/httpio/compare/v0.6.0...v0.6.1) (2024-10-23)
+
+
+### Code Upgrade
+
+* Dependency updates ([#72](https://github.com/cccteam/httpio/issues/72)) ([23dff62](https://github.com/cccteam/httpio/commit/23dff62ebd7e83999ba4e49c619dd79fc8fbb50c))
+
 ## [0.6.0](https://github.com/cccteam/httpio/compare/v0.5.1...v0.6.0) (2024-10-23)
 
 
