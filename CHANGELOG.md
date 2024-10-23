@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/cccteam/httpio/compare/v0.6.1...v0.6.2) (2024-10-23)
+
+
+### Bug Fixes
+
+* Fix bug where messages were lost when only a msg existed in wrapped err ([#74](https://github.com/cccteam/httpio/issues/74)) ([7103595](https://github.com/cccteam/httpio/commit/71035954785a2a26d4cc1760443d16b2bf107273))
+
 ## [0.6.1](https://github.com/cccteam/httpio/compare/v0.6.0...v0.6.1) (2024-10-23)
 
 
