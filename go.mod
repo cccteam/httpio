@@ -6,7 +6,7 @@ require (
 	github.com/cccteam/ccc v0.2.9
 	github.com/cccteam/ccc/accesstypes v0.4.1
 	github.com/cccteam/ccc/patchset v0.2.2
-	github.com/cccteam/ccc/resourceset v0.3.2
+	github.com/cccteam/ccc/resourceset v0.3.3
 	github.com/cccteam/logger v0.1.12
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-playground/errors/v5 v5.4.0
@@ -44,7 +44,7 @@ require (
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
-	google.golang.org/api v0.202.0 // indirect
+	google.golang.org/api v0.203.0 // indirect
 	google.golang.org/genproto v0.0.0-20241021214115-324edc3d5d38 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241021214115-324edc3d5d38 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241021214115-324edc3d5d38 // indirect
