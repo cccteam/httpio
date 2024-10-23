@@ -143,56 +143,63 @@ func (e *Encoder) ServiceUnavailable(ctx context.Context) error {
 // BadRequestWithError wraps an existing error while creating a new empty client message and a BadRequest (400) return code
 func (e *Encoder) BadRequestWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType: badRequest,
-		error:   err,
+		msgType:       badRequest,
+		clientMessage: Message(err),
+		error:         err,
 	}, "")
 }
 
 // UnauthorizedWithError wraps an existing error while creating a new empty client message and a Unauthorized (401) return code
 func (e *Encoder) UnauthorizedWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType: unauthorized,
-		error:   err,
+		msgType:       unauthorized,
+		clientMessage: Message(err),
+		error:         err,
 	}, "")
 }
 
 // ForbiddenWithError wraps an existing error while creating a new empty client message and a Forbidden (403) return code
 func (e *Encoder) ForbiddenWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType: forbidden,
-		error:   err,
+		msgType:       forbidden,
+		clientMessage: Message(err),
+		error:         err,
 	}, "")
 }
 
 // NotFoundWithError wraps an existing error while creating a new empty client message and a NotFound (404) return code
 func (e *Encoder) NotFoundWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType: notFound,
-		error:   err,
+		msgType:       notFound,
+		clientMessage: Message(err),
+		error:         err,
 	}, "")
 }
 
 // ConflictWithError wraps an existing error while creating a new empty client message and a Conflict (409) return code
 func (e *Encoder) ConflictWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType: conflict,
-		error:   err,
+		msgType:       conflict,
+		clientMessage: Message(err),
+		error:         err,
 	}, "")
 }
 
 // InternalServerErrorWithError wraps an existing error while creating a new empty client message and a InternalServerError (500) return code
 func (e *Encoder) InternalServerErrorWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType: internalServerError,
-		error:   err,
+		msgType:       internalServerError,
+		clientMessage: Message(err),
+		error:         err,
 	}, "")
 }
 
 // ServiceUnavailableWithError wraps an existing error while creating a new empty client message and a ServiceUnavailable (503) return code
 func (e *Encoder) ServiceUnavailableWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType: serviceUnavailable,
-		error:   err,
+		msgType:       serviceUnavailable,
+		clientMessage: Message(err),
+		error:         err,
 	}, "")
 }
 
