@@ -58,7 +58,7 @@ func TestDecoder_Decode(t *testing.T) {
 				Name string
 			}
 
-			decoder, err := NewDecoder[request]()
+			decoder, err := NewStructDecoder[request]()
 			if err != nil {
 				t.Fatalf("NewDecoder() error = %v", err)
 			}
@@ -111,7 +111,7 @@ func TestDecoder_Decode_Error(t *testing.T) {
 				NAME string
 			}
 
-			_, err := NewDecoder[request]()
+			_, err := NewStructDecoder[request]()
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("NewDecoder() error = %v, wantErr %v", err, tt.wantErr)
 			}
