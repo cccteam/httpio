@@ -19,6 +19,7 @@ import (
 type MockHTTPEncoder struct {
 	ctrl     *gomock.Controller
 	recorder *MockHTTPEncoderMockRecorder
+	isgomock struct{}
 }
 
 // MockHTTPEncoderMockRecorder is the mock recorder for MockHTTPEncoder.
@@ -39,15 +40,15 @@ func (m *MockHTTPEncoder) EXPECT() *MockHTTPEncoderMockRecorder {
 }
 
 // Encode mocks base method.
-func (m *MockHTTPEncoder) Encode(arg0 any) error {
+func (m *MockHTTPEncoder) Encode(v any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Encode", arg0)
+	ret := m.ctrl.Call(m, "Encode", v)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Encode indicates an expected call of Encode.
-func (mr *MockHTTPEncoderMockRecorder) Encode(arg0 any) *gomock.Call {
+func (mr *MockHTTPEncoderMockRecorder) Encode(v any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encode", reflect.TypeOf((*MockHTTPEncoder)(nil).Encode), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encode", reflect.TypeOf((*MockHTTPEncoder)(nil).Encode), v)
 }
