@@ -18,7 +18,10 @@ import (
 
 // ValidatorFunc is a function that validates s
 // It returns an error if the validation fails
-type ValidatorFunc func(s interface{}) error
+type ValidatorFunc interface {
+	Struct(s interface{}) error
+	StructPartial(s interface{}, fields ...string) error
+}
 
 type (
 	DomainFromReq func(*http.Request) accesstypes.Domain
@@ -136,12 +139,6 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 		return nil, NewBadRequestMessageWithError(err, "failed to unmarshal request body")
 	}
 
-	if validate != nil {
-		if err := validate(target); err != nil {
-			return nil, NewBadRequestMessageWithError(err, "failed validating the request")
-		}
-	}
-
 	vValue := reflect.ValueOf(target)
 	if vValue.Kind() == reflect.Ptr {
 		vValue = vValue.Elem()
@@ -168,6 +165,23 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 	}
 
 	patchSet := patchset.NewPatchSet(changes)
+
+	if validate != nil {
+		switch request.Method {
+		case http.MethodPatch:
+			fields := make([]string, 0, patchSet.Len())
+			for _, field := range patchSet.StructFields() {
+				fields = append(fields, string(field))
+			}
+			if err := validate.StructPartial(target, fields...); err != nil {
+				return nil, NewBadRequestMessageWithError(err, "failed validating the request")
+			}
+		default:
+			if err := validate.Struct(target); err != nil {
+				return nil, NewBadRequestMessageWithError(err, "failed validating the request")
+			}
+		}
+	}
 
 	return patchSet, nil
 }
