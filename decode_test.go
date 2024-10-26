@@ -9,6 +9,19 @@ import (
 	"github.com/go-playground/errors/v5"
 )
 
+type validateMock struct {
+	validateFunc        func(s interface{}) error
+	validatePartialFunc func(s interface{}, fields ...string) error
+}
+
+func (v *validateMock) Struct(s interface{}) error {
+	return v.validateFunc(s)
+}
+
+func (v *validateMock) StructPartial(s interface{}, fields ...string) error {
+	return v.validatePartialFunc(s, fields...)
+}
+
 func TestDecoder_Decode(t *testing.T) {
 	t.Parallel()
 
@@ -26,8 +39,10 @@ func TestDecoder_Decode(t *testing.T) {
 			name: "successfully decodes the request",
 			args: args{
 				body: `{"Name":"Zach"}`,
-				validatorFunc: func(_ interface{}) error {
-					return nil
+				validatorFunc: &validateMock{
+					validateFunc: func(_ interface{}) error {
+						return nil
+					},
 				},
 			},
 		},
@@ -42,8 +57,10 @@ func TestDecoder_Decode(t *testing.T) {
 			name: "fails to validate the request",
 			args: args{
 				body: `{"Name":"Zach"}`,
-				validatorFunc: func(_ interface{}) error {
-					return errors.New("Failed to validate the request")
+				validatorFunc: &validateMock{
+					validateFunc: func(_ interface{}) error {
+						return errors.New("Failed to validate the request")
+					},
 				},
 			},
 			wantValidatorErr: true,
