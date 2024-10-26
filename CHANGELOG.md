@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/cccteam/httpio/compare/v0.6.2...v0.6.3) (2024-10-26)
+
+
+### Bug Fixes
+
+* Handle partial validation for Patches ([#76](https://github.com/cccteam/httpio/issues/76)) ([cc51d86](https://github.com/cccteam/httpio/commit/cc51d862894686eb8dba34f962835eac8326ef2e))
+
 ## [0.6.2](https://github.com/cccteam/httpio/compare/v0.6.1...v0.6.2) (2024-10-23)
 
 
