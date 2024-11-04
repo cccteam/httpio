@@ -36,8 +36,8 @@ func (d *StructDecoder[T]) WithValidator(v ValidatorFunc) *StructDecoder[T] {
 
 func (d *StructDecoder[T]) WithPermissionChecker(
 	domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resourceset.ResourceSet,
-) *CustomDecoderWithPermissionChecker[T] {
-	return &CustomDecoderWithPermissionChecker[T]{
+) *StructDecoderWithPermissionChecker[T] {
+	return &StructDecoderWithPermissionChecker[T]{
 		userFromReq:   userFromReq,
 		domainFromReq: domainFromReq,
 		enforcer:      enforcer,
@@ -57,7 +57,7 @@ func (d *StructDecoder[T]) Decode(request *http.Request) (*T, error) {
 	return target, nil
 }
 
-type CustomDecoderWithPermissionChecker[T any] struct {
+type StructDecoderWithPermissionChecker[T any] struct {
 	userFromReq   UserFromReq
 	domainFromReq DomainFromReq
 	validate      ValidatorFunc
@@ -66,7 +66,7 @@ type CustomDecoderWithPermissionChecker[T any] struct {
 	fieldMapper   *resourceset.FieldMapper
 }
 
-func (d *CustomDecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *CustomDecoderWithPermissionChecker[T] {
+func (d *StructDecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *StructDecoderWithPermissionChecker[T] {
 	decoder := *d
 	decoder.validate = v
 
@@ -74,7 +74,7 @@ func (d *CustomDecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *
 }
 
 // Decode parses the http request body and validates it against the struct validation rules
-func (d *CustomDecoderWithPermissionChecker[T]) Decode(request *http.Request, perm accesstypes.Permission) (*T, error) {
+func (d *StructDecoderWithPermissionChecker[T]) Decode(request *http.Request, perm accesstypes.Permission) (*T, error) {
 	target := new(T)
 	p, err := decodeToMap(d.fieldMapper, request, target, d.validate)
 	if err != nil {
