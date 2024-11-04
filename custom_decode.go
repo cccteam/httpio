@@ -74,14 +74,14 @@ func (d *CustomDecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *
 }
 
 // Decode parses the http request body and validates it against the struct validation rules
-func (d *CustomDecoderWithPermissionChecker[T]) Decode(request *http.Request) (*T, error) {
+func (d *CustomDecoderWithPermissionChecker[T]) Decode(request *http.Request, perm accesstypes.Permission) (*T, error) {
 	target := new(T)
 	p, err := decodeToMap(d.fieldMapper, request, target, d.validate)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.domainFromReq(request), d.userFromReq(request)); err != nil {
+	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.domainFromReq(request), d.userFromReq(request), perm); err != nil {
 		return nil, err
 	}
 

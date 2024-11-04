@@ -101,14 +101,14 @@ func (d *DecoderWithPermissionChecker[P, T]) WithValidator(v ValidatorFunc) *Dec
 	return &decoder
 }
 
-func (d *DecoderWithPermissionChecker[P, T]) Decode(request *http.Request) (*P, error) {
+func (d *DecoderWithPermissionChecker[P, T]) Decode(request *http.Request, perm accesstypes.Permission) (*P, error) {
 	target := new(T)
 	p, err := decodeToMap(d.fieldMapper, request, target, d.validate)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.domainFromReq(request), d.userFromReq(request)); err != nil {
+	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.domainFromReq(request), d.userFromReq(request), perm); err != nil {
 		return nil, err
 	}
 
@@ -186,18 +186,18 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 	return patchSet, nil
 }
 
-func checkPermissions(ctx context.Context, patchSet *patchset.PatchSet, enforcer accesstypes.Enforcer, resourceSet *resourceset.ResourceSet, domain accesstypes.Domain, user accesstypes.User) error {
+func checkPermissions(ctx context.Context, patchSet *patchset.PatchSet, enforcer accesstypes.Enforcer, resourceSet *resourceset.ResourceSet, domain accesstypes.Domain, user accesstypes.User, perm accesstypes.Permission) error {
 	resources := make([]accesstypes.Resource, 0, patchSet.Len())
 	for _, fieldName := range patchSet.StructFields() {
-		if resourceSet.PermissionRequired(fieldName) {
+		if resourceSet.PermissionRequired(fieldName, perm) {
 			resources = append(resources, resourceSet.Resource(fieldName))
 		}
 	}
 
-	if ok, missing, err := enforcer.RequireResources(ctx, user, domain, resourceSet.RequiredPermission(), resources...); err != nil {
+	if ok, missing, err := enforcer.RequireResources(ctx, user, domain, perm, resources...); err != nil {
 		return errors.Wrap(err, "enforcer.RequireResource()")
 	} else if !ok {
-		return NewForbiddenMessagef("user %s does not have %s on %s", user, resourceSet.RequiredPermission(), missing)
+		return NewForbiddenMessagef("user %s does not have %s on %s", user, perm, missing)
 	}
 
 	return nil
