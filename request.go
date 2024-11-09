@@ -65,13 +65,7 @@ func Requests(r *http.Request, pattern string) iter.Seq2[*http.Request, error] {
 			}
 
 			ctx := r.Context()
-			ctx, err = withParams(ctx, method, pattern, op.Path)
-			if err != nil {
-				yield(nil, err)
-
-				return
-			}
-
+			ctx = withParams(ctx, method, pattern, op.Path)
 			r2, err := http.NewRequestWithContext(ctx, method, op.Path, bytes.NewReader([]byte(op.Value)))
 			if err != nil {
 				yield(nil, err)
@@ -111,12 +105,12 @@ func httpMethod(op string) (string, error) {
 	}
 }
 
-func withParams(ctx context.Context, method, pattern, path string) (context.Context, error) {
+func withParams(ctx context.Context, method, pattern, path string) context.Context {
 	switch method {
 	case http.MethodPatch, http.MethodDelete:
 		var chiContext *chi.Context
 		r := chi.NewRouter()
-		r.Handle(pattern, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Handle(pattern, http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 			chiContext = chi.RouteContext(r.Context())
 		}))
 		r.ServeHTTP(nil, &http.Request{Method: method, URL: &url.URL{Path: path}})
@@ -124,7 +118,7 @@ func withParams(ctx context.Context, method, pattern, path string) (context.Cont
 		ctx = context.WithValue(ctx, chi.RouteCtxKey, chiContext)
 	}
 
-	return ctx, nil
+	return ctx
 }
 
 func PermissionFromRequest(r *http.Request) (accesstypes.Permission, error) {
