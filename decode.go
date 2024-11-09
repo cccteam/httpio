@@ -3,7 +3,6 @@ package httpio
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"reflect"
@@ -28,43 +27,33 @@ type (
 	UserFromReq   func(*http.Request) accesstypes.User
 )
 
-type NamedPatchSet[P any] interface {
-	NamedPatchSet(*patchset.PatchSet) *P
-	Instance() any
-}
-
 // Decoder is a struct that can be used for decoding http requests and validating those requests
-type Decoder[P NamedPatchSet[P], T any] struct {
+type Decoder[T any] struct {
 	validate    ValidatorFunc
 	fieldMapper *resourceset.FieldMapper
 }
 
-func NewDecoder[P NamedPatchSet[P], T any]() (*Decoder[P, T], error) {
-	patchSet := *new(P)
+func NewDecoder[T any]() (*Decoder[T], error) {
 	target := new(T)
-	if !reflect.TypeOf(target).Elem().ConvertibleTo(reflect.TypeOf(patchSet.Instance())) {
-		panic(fmt.Sprintf("(%T) can not be stored in (%T), which holds a PatchSet for (%s)", *target, patchSet, reflect.TypeOf(patchSet.Instance()).String()))
-	}
-
 	m, err := resourceset.NewFieldMapper(target)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewFieldMapper()")
 	}
 
-	return &Decoder[P, T]{
+	return &Decoder[T]{
 		fieldMapper: m,
 	}, nil
 }
 
-func (d *Decoder[P, T]) WithValidator(v ValidatorFunc) *Decoder[P, T] {
+func (d *Decoder[T]) WithValidator(v ValidatorFunc) *Decoder[T] {
 	decoder := *d
 	decoder.validate = v
 
 	return &decoder
 }
 
-func (d *Decoder[P, T]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resourceset.ResourceSet) *DecoderWithPermissionChecker[P, T] {
-	return &DecoderWithPermissionChecker[P, T]{
+func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resourceset.ResourceSet) *DecoderWithPermissionChecker[T] {
+	return &DecoderWithPermissionChecker[T]{
 		userFromReq:   userFromReq,
 		domainFromReq: domainFromReq,
 		enforcer:      enforcer,
@@ -73,19 +62,17 @@ func (d *Decoder[P, T]) WithPermissionChecker(domainFromReq DomainFromReq, userF
 	}
 }
 
-func (d *Decoder[P, T]) Decode(request *http.Request) (*P, error) {
+func (d *Decoder[T]) Decode(request *http.Request) (*patchset.PatchSet, error) {
 	target := new(T)
 	p, err := decodeToMap(d.fieldMapper, request, target, d.validate)
 	if err != nil {
 		return nil, err
 	}
 
-	patchSet := *new(P)
-
-	return patchSet.NamedPatchSet(p), nil
+	return p, nil
 }
 
-type DecoderWithPermissionChecker[P NamedPatchSet[P], T any] struct {
+type DecoderWithPermissionChecker[T any] struct {
 	userFromReq   UserFromReq
 	domainFromReq DomainFromReq
 	validate      ValidatorFunc
@@ -94,14 +81,14 @@ type DecoderWithPermissionChecker[P NamedPatchSet[P], T any] struct {
 	fieldMapper   *resourceset.FieldMapper
 }
 
-func (d *DecoderWithPermissionChecker[P, T]) WithValidator(v ValidatorFunc) *DecoderWithPermissionChecker[P, T] {
+func (d *DecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *DecoderWithPermissionChecker[T] {
 	decoder := *d
 	decoder.validate = v
 
 	return &decoder
 }
 
-func (d *DecoderWithPermissionChecker[P, T]) Decode(request *http.Request, perm accesstypes.Permission) (*P, error) {
+func (d *DecoderWithPermissionChecker[T]) Decode(request *http.Request, perm accesstypes.Permission) (*patchset.PatchSet, error) {
 	target := new(T)
 	p, err := decodeToMap(d.fieldMapper, request, target, d.validate)
 	if err != nil {
@@ -112,9 +99,35 @@ func (d *DecoderWithPermissionChecker[P, T]) Decode(request *http.Request, perm 
 		return nil, err
 	}
 
-	patchSet := *new(P)
+	return p, nil
+}
 
-	return patchSet.NamedPatchSet(p), nil
+type ConsolidatedDecoder[T any] struct {
+	dec *DecoderWithPermissionChecker[T]
+}
+
+func NewConsolidatedDecoder[T any](d *DecoderWithPermissionChecker[T]) *ConsolidatedDecoder[T] {
+	return &ConsolidatedDecoder[T]{
+		dec: d,
+	}
+}
+
+func (d *ConsolidatedDecoder[T]) Decode(r *http.Request) (*patchset.PatchSet, accesstypes.Permission, error) {
+	perm, err := PermissionFromRequest(r)
+	if err != nil {
+		return nil, perm, errors.Wrap(err, "httpio.RequestPermission()")
+	}
+
+	if perm == accesstypes.Delete {
+		return nil, perm, nil
+	}
+
+	patchSet, err := d.dec.Decode(r, perm)
+	if err != nil {
+		return nil, perm, errors.Wrap(err, "httpio.DecoderWithPermissionChecker[T].Decode()")
+	}
+
+	return patchSet, perm, nil
 }
 
 func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Request, target *T, validate ValidatorFunc) (*patchset.PatchSet, error) {
@@ -186,8 +199,12 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 	return patchSet, nil
 }
 
-func checkPermissions(ctx context.Context, patchSet *patchset.PatchSet, enforcer accesstypes.Enforcer, resourceSet *resourceset.ResourceSet, domain accesstypes.Domain, user accesstypes.User, perm accesstypes.Permission) error {
-	resources := make([]accesstypes.Resource, 0, patchSet.Len())
+func checkPermissions(
+	ctx context.Context, patchSet *patchset.PatchSet, enforcer accesstypes.Enforcer, resourceSet *resourceset.ResourceSet,
+	domain accesstypes.Domain, user accesstypes.User, perm accesstypes.Permission,
+) error {
+	resources := make([]accesstypes.Resource, 0, patchSet.Len()+1)
+	resources = append(resources, resourceSet.BaseResource())
 	for _, fieldName := range patchSet.StructFields() {
 		if resourceSet.PermissionRequired(fieldName, perm) {
 			resources = append(resources, resourceSet.Resource(fieldName))
