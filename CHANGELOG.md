@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.4](https://github.com/cccteam/httpio/compare/v0.6.3...v0.6.4) (2024-11-09)
+
+
+### Features
+
+* Support atomic operations across create update delete operations ([#78](https://github.com/cccteam/httpio/issues/78)) ([57e6c45](https://github.com/cccteam/httpio/commit/57e6c45ec949aad65fbb14e03a379b9a1554e8c3))
+
+
+### Code Refactoring
+
+* Rename CustomDecoderWithPermissionChecker -&gt; StructDecoderWithPermissionChecker ([#78](https://github.com/cccteam/httpio/issues/78)) ([57e6c45](https://github.com/cccteam/httpio/commit/57e6c45ec949aad65fbb14e03a379b9a1554e8c3))
+
 ## [0.6.3](https://github.com/cccteam/httpio/compare/v0.6.2...v0.6.3) (2024-10-26)
 
 
