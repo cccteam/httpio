@@ -13,7 +13,8 @@ func TestRequests(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
-		r *http.Request
+		r       *http.Request
+		pattern string
 	}
 	tests := []struct {
 		name         string
@@ -31,36 +32,40 @@ func TestRequests(t *testing.T) {
 					Method: "POST",
 					Body:   io.NopCloser(bytes.NewBufferString(`[{"op":"patch","path":"/a/b/c","value":{"c":1}}]`)),
 				},
+				pattern: "",
 			},
 			wantErr: true,
 		},
 		{
-			name: "Test Requests with invalid empty path",
+			name: "Test Requests with invalid first json token",
 			args: args{
 				r: &http.Request{
 					Method: "POST",
-					Body:   io.NopCloser(bytes.NewBufferString(`[{"op":"patch","path":"","value":{"c":1}}]`)),
+					Body:   io.NopCloser(bytes.NewBufferString(`x[{"op":"patch","path":"/","value":{"c":1}}]`)),
 				},
+				pattern: "/{id}",
 			},
 			wantErr: true,
 		},
 		{
-			name: "Test Requests with invalid id path",
+			name: "Test Requests with wrong first json token",
 			args: args{
 				r: &http.Request{
 					Method: "POST",
-					Body:   io.NopCloser(bytes.NewBufferString(`[{"op":"patch","path":"/","value":{"c":1}}]`)),
+					Body:   io.NopCloser(bytes.NewBufferString(`{[{"op":"patch","path":"/","value":{"c":1}}]`)),
 				},
+				pattern: "/{id}",
 			},
 			wantErr: true,
 		},
 		{
-			name: "Test Requests with invalid resource path",
+			name: "Test Requests with wrong last json token",
 			args: args{
 				r: &http.Request{
 					Method: "POST",
-					Body:   io.NopCloser(bytes.NewBufferString(`[{"op":"patch","path":"/resource/","value":{"c":1}}]`)),
+					Body:   io.NopCloser(bytes.NewBufferString(`{[{"op":"patch","path":"/","value":{"c":1}}}`)),
 				},
+				pattern: "/{id}",
 			},
 			wantErr: true,
 		},
@@ -76,6 +81,7 @@ func TestRequests(t *testing.T) {
 						]`,
 					)),
 				},
+				pattern: "/{id}",
 			},
 			wantMethod: []string{"PATCH", "PATCH"},
 			wantIDs:    []string{"10", "11"},
@@ -93,6 +99,7 @@ func TestRequests(t *testing.T) {
 						]`,
 					)),
 				},
+				pattern: "/{resource}/{id}",
 			},
 			wantMethod:   []string{"PATCH", "PATCH"},
 			wantResource: []string{"resource1", "resource2"},
@@ -111,6 +118,7 @@ func TestRequests(t *testing.T) {
 						]`,
 					)),
 				},
+				pattern: "/{id}",
 			},
 			wantMethod: []string{"POST", "POST"},
 			wantValues: []string{`{"c":1}`, `{"a":2}`},
@@ -127,6 +135,7 @@ func TestRequests(t *testing.T) {
 						]`,
 					)),
 				},
+				pattern: "/{id}",
 			},
 			wantMethod: []string{"DELETE", "DELETE"},
 			wantIDs:    []string{"10", "11"},
@@ -145,6 +154,7 @@ func TestRequests(t *testing.T) {
 						`,
 					)),
 				},
+				pattern: "/{id}",
 			},
 			wantMethod: []string{"POST"},
 			wantValues: []string{`{"c":1}`},
@@ -159,7 +169,7 @@ func TestRequests(t *testing.T) {
 			var gotIDs []string
 			var gotValues []string
 
-			for r, err := range Requests(tt.args.r) {
+			for r, err := range Requests(tt.args.r, tt.args.pattern) {
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Requests() error = %v, wantErr %v", err, tt.wantErr)
 				}

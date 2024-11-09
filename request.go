@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"iter"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/cccteam/ccc/accesstypes"
@@ -20,8 +21,14 @@ type Operation struct {
 	Value json.RawMessage `json:"value"`
 }
 
-func Requests(r *http.Request) iter.Seq2[*http.Request, error] {
+func Requests(r *http.Request, pattern string) iter.Seq2[*http.Request, error] {
 	return func(yield func(r *http.Request, err error) bool) {
+		if !strings.HasPrefix(pattern, "/") {
+			yield(nil, errors.New("pattern must start with /"))
+
+			return
+		}
+
 		dec := json.NewDecoder(r.Body)
 
 		for {
@@ -58,7 +65,7 @@ func Requests(r *http.Request) iter.Seq2[*http.Request, error] {
 			}
 
 			ctx := r.Context()
-			ctx, err = withParams(ctx, method, op.Path)
+			ctx, err = withParams(ctx, method, pattern, op.Path)
 			if err != nil {
 				yield(nil, err)
 
@@ -77,22 +84,16 @@ func Requests(r *http.Request) iter.Seq2[*http.Request, error] {
 			}
 		}
 
-		for {
-			t, err := dec.Token()
-			if err != nil {
-				yield(nil, NewBadRequestMessageWithErrorf(err, "failed find end of array"))
+		t, err := dec.Token()
+		if err != nil {
+			yield(nil, NewBadRequestMessageWithErrorf(err, "failed find end of array"))
 
-				return
-			}
-			token := fmt.Sprintf("%s", t)
-			if token == "]" {
-				return
-			}
-			if strings.TrimSpace(token) != "" {
-				yield(nil, NewBadRequestMessagef("expected end of array, got %q", t))
+			return
+		}
 
-				return
-			}
+		token := fmt.Sprintf("%s", t)
+		if token == "]" {
+			return
 		}
 	}
 }
@@ -110,32 +111,17 @@ func httpMethod(op string) (string, error) {
 	}
 }
 
-func withParams(ctx context.Context, method, path string) (context.Context, error) {
+func withParams(ctx context.Context, method, pattern, path string) (context.Context, error) {
 	switch method {
 	case http.MethodPatch, http.MethodDelete:
-		if !strings.HasPrefix(path, "/") {
-			return ctx, NewBadRequestMessagef("invalid path %q", path)
-		}
+		var chiContext *chi.Context
+		r := chi.NewRouter()
+		r.Handle(pattern, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			chiContext = chi.RouteContext(r.Context())
+		}))
+		r.ServeHTTP(nil, &http.Request{Method: method, URL: &url.URL{Path: path}})
 
-		var chiContext chi.Context
-		pathParts := strings.Split(path[1:], "/")
-		switch {
-		case len(pathParts) == 1:
-			if pathParts[0] == "" {
-				return ctx, NewBadRequestMessagef("invalid path %q", path)
-			}
-			chiContext.URLParams.Add("id", pathParts[0])
-		case len(pathParts) == 2:
-			if pathParts[0] == "" || pathParts[1] == "" {
-				return ctx, NewBadRequestMessagef("invalid path %q", path)
-			}
-			chiContext.URLParams.Add("resource", pathParts[0])
-			chiContext.URLParams.Add("id", pathParts[1])
-		default:
-			return ctx, NewBadRequestMessagef("invalid path %q", path)
-		}
-
-		ctx = context.WithValue(ctx, chi.RouteCtxKey, &chiContext)
+		ctx = context.WithValue(ctx, chi.RouteCtxKey, chiContext)
 	}
 
 	return ctx, nil
