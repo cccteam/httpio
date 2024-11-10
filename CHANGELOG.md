@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.0](https://github.com/cccteam/httpio/compare/v0.6.4...v0.7.0) (2024-11-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add pattern matching to Requests() ([#80](https://github.com/cccteam/httpio/issues/80))
+
+### Features
+
+* Add pattern matching to Requests() ([#80](https://github.com/cccteam/httpio/issues/80)) ([bf2d1c9](https://github.com/cccteam/httpio/commit/bf2d1c95666758adc9afb17b363820013d823004))
+
 ## [0.6.4](https://github.com/cccteam/httpio/compare/v0.6.3...v0.6.4) (2024-11-09)
 
 
