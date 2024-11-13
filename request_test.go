@@ -169,7 +169,7 @@ func TestRequests(t *testing.T) {
 			var gotIDs []string
 			var gotValues []string
 
-			for r, err := range Requests(tt.args.r, tt.args.pattern) {
+			for oper, err := range Operations(tt.args.r, tt.args.pattern) {
 				if (err != nil) != tt.wantErr {
 					t.Errorf("Requests() error = %v, wantErr %v", err, tt.wantErr)
 				}
@@ -177,20 +177,20 @@ func TestRequests(t *testing.T) {
 					return
 				}
 
-				gotMethod = append(gotMethod, r.Method)
+				gotMethod = append(gotMethod, oper.Req.Method)
 
 				if len(tt.wantResource) > 0 {
-					resource := Param[string](r, "resource")
+					resource := Param[string](oper.Req, "resource")
 					gotResource = append(gotResource, resource)
 				}
 
 				if len(tt.wantIDs) > 0 {
-					id := Param[string](r, "id")
+					id := Param[string](oper.Req, "id")
 					gotIDs = append(gotIDs, id)
 				}
 
 				if len(tt.wantValues) > 0 {
-					val, err := io.ReadAll(r.Body)
+					val, err := io.ReadAll(oper.Req.Body)
 					if err != nil {
 						t.Fatalf("io.ReadAll() error: %s", err)
 					}

@@ -15,14 +15,27 @@ import (
 	"github.com/go-playground/errors/v5"
 )
 
+type OperationType string
+
+const (
+	OperationCreate OperationType = "add"
+	OperationUpdate OperationType = "patch"
+	OperationDelete OperationType = "remove"
+)
+
 type Operation struct {
+	Type OperationType
+	Req  *http.Request
+}
+
+type patchOperation struct {
 	Op    string          `json:"op"`
 	Path  string          `json:"path"`
 	Value json.RawMessage `json:"value"`
 }
 
-func Requests(r *http.Request, pattern string) iter.Seq2[*http.Request, error] {
-	return func(yield func(r *http.Request, err error) bool) {
+func Operations(r *http.Request, pattern string) iter.Seq2[*Operation, error] {
+	return func(yield func(r *Operation, err error) bool) {
 		if !strings.HasPrefix(pattern, "/") {
 			yield(nil, errors.New("pattern must start with /"))
 
@@ -50,7 +63,7 @@ func Requests(r *http.Request, pattern string) iter.Seq2[*http.Request, error] {
 		}
 
 		for dec.More() {
-			var op Operation
+			var op patchOperation
 			if err := dec.Decode(&op); err != nil {
 				yield(nil, err)
 
@@ -73,7 +86,7 @@ func Requests(r *http.Request, pattern string) iter.Seq2[*http.Request, error] {
 				return
 			}
 
-			if !yield(r2, nil) {
+			if !yield(&Operation{Type: OperationType(op.Op), Req: r2}, nil) {
 				return
 			}
 		}
@@ -93,12 +106,12 @@ func Requests(r *http.Request, pattern string) iter.Seq2[*http.Request, error] {
 }
 
 func httpMethod(op string) (string, error) {
-	switch strings.ToLower(op) {
-	case "add":
+	switch OperationType(strings.ToLower(op)) {
+	case OperationCreate:
 		return http.MethodPost, nil
-	case "patch":
+	case OperationUpdate:
 		return http.MethodPatch, nil
-	case "remove":
+	case OperationDelete:
 		return http.MethodDelete, nil
 	default:
 		return "", errors.Newf("unsupported operation %q", op)
@@ -121,18 +134,15 @@ func withParams(ctx context.Context, method, pattern, path string) context.Conte
 	return ctx
 }
 
-func PermissionFromRequest(r *http.Request) (accesstypes.Permission, error) {
-	var perm accesstypes.Permission
-	switch r.Method {
-	case http.MethodPost:
-		perm = accesstypes.Create
-	case http.MethodPatch:
-		perm = accesstypes.Update
-	case http.MethodDelete:
-		perm = accesstypes.Delete
-	default:
-		return perm, NewBadRequestWithError(errors.Newf("unsupported method, %s", r.Method))
+func permissionFromType(typ OperationType) accesstypes.Permission {
+	switch typ {
+	case OperationCreate:
+		return accesstypes.Create
+	case OperationUpdate:
+		return accesstypes.Update
+	case OperationDelete:
+		return accesstypes.Delete
 	}
 
-	return perm, nil
+	panic("implementation error")
 }
