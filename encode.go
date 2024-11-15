@@ -219,14 +219,6 @@ func (e *Encoder) ServiceUnavailableWithError(ctx context.Context, err error) er
 	}, "")
 }
 
-func (e *Encoder) BadRequestWithErrorf(ctx context.Context, err error, format string, a ...any) error {
-	return e.clientMessage(ctx, &ClientMessage{
-		msgType:       badRequest,
-		clientMessage: fmt.Sprintf(format, a...),
-		error:         err,
-	}, "")
-}
-
 // BadRequestMessage creates a new client message with a BadRequest (400) return code
 func (e *Encoder) BadRequestMessage(ctx context.Context, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{

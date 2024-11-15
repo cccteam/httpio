@@ -287,21 +287,6 @@ func TestEncoder_encodeMethods(t *testing.T) {
 			wantContainsError: true,
 		},
 		{
-			name: "BadRequestWithErrorf",
-			args: args{
-				message: "Testing %s",
-				a:       []interface{}{"formatted"},
-				err:     errors.New("original error"),
-			},
-			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
-				return e.BadRequestWithErrorf(context.Background(), err, msg, a...)
-			},
-			wantStatus:        http.StatusBadRequest,
-			wantMessage:       "Testing formatted",
-			wantErr:           true,
-			wantContainsError: true,
-		},
-		{
 			name: "BadRequestMessage()",
 			args: args{
 				message: "Testing",
