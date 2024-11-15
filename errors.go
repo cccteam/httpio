@@ -168,6 +168,7 @@ func NewServiceUnavailable() errors.Chain {
 	})
 }
 
+// NewTooManyRequests creates a new empty client message with a TooManyRequests (429) return code
 func NewTooManyRequests() errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: tooManyRequests,
@@ -230,6 +231,7 @@ func NewServiceUnavailableWithError(err error) errors.Chain {
 	})
 }
 
+// NewTooManyRequestsWithError wraps an existing error while creating a new empty client message and a TooManyRequests (429) return code
 func NewTooManyRequestsWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: tooManyRequests,
@@ -293,6 +295,7 @@ func NewServiceUnavailableMessage(message string) errors.Chain {
 	})
 }
 
+// NewTooManyRequestsMessage creates a new client message with a TooManyRequests (429) return code
 func NewTooManyRequestsMessage(message string) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       tooManyRequests,
@@ -356,6 +359,7 @@ func NewServiceUnavailableMessagef(format string, a ...any) errors.Chain {
 	})
 }
 
+// NewTooManyRequestsMessagef creates a new client message with a TooManyRequests (429) return code
 func NewTooManyRequestsMessagef(format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       tooManyRequests,
@@ -426,6 +430,7 @@ func NewServiceUnavailableMessageWithError(err error, message string) errors.Cha
 	})
 }
 
+// NewTooManyRequestsMessageWithError wraps an existing error while creating a new client message with a TooManyRequests (429) return code
 func NewTooManyRequestsMessageWithError(err error, message string) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       tooManyRequests,
@@ -497,6 +502,7 @@ func NewServiceUnavailableMessageWithErrorf(err error, format string, a ...any) 
 	})
 }
 
+// NewTooManyRequestsMessageWithErrorf wraps an existing error while creating a new client message with a TooManyRequests (429) return code
 func NewTooManyRequestsMessageWithErrorf(err error, format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       tooManyRequests,
@@ -582,6 +588,7 @@ func HasServiceUnavailable(err error) bool {
 	return false
 }
 
+// HasTooManyRequests checks if the error contains a TooManyRequests (429) message
 func HasTooManyRequests(err error) bool {
 	cerr := &ClientMessage{}
 	if errors.As(err, &cerr) {

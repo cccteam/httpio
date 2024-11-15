@@ -126,6 +126,7 @@ func (e *Encoder) Conflict(ctx context.Context) error {
 	}, "")
 }
 
+// TooManyRequests creates a new empty client message with a TooManyRequests (429) return code
 func (e *Encoder) TooManyRequests(ctx context.Context) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: tooManyRequests,
@@ -282,6 +283,7 @@ func (e *Encoder) ServiceUnavailableMessage(ctx context.Context, message string)
 	}, "")
 }
 
+// TooManyRequestsMessage creates a new client message with a TooManyRequests (429) return code
 func (e *Encoder) TooManyRequestsMessage(ctx context.Context, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       tooManyRequests,
@@ -345,6 +347,7 @@ func (e *Encoder) ServiceUnavailableMessagef(ctx context.Context, format string,
 	}, "")
 }
 
+// TooManyRequestsMessagef creates a new client message with a TooManyRequests (429) return code
 func (e *Encoder) TooManyRequestsMessagef(ctx context.Context, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       tooManyRequests,
@@ -415,6 +418,7 @@ func (e *Encoder) ServiceUnavailableMessageWithError(ctx context.Context, err er
 	}, "")
 }
 
+// TooManyRequestsMessageWithError wraps an existing error while creating a new client message with a TooManyRequests (429) return code
 func (e *Encoder) TooManyRequestsMessageWithError(ctx context.Context, err error, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       tooManyRequests,
@@ -486,6 +490,7 @@ func (e *Encoder) ServiceUnavailableMessageWithErrorf(ctx context.Context, err e
 	}, "")
 }
 
+// TooManyRequestsMessageWithErrorf wraps an existing error while creating a new client message with a TooManyRequests (429) return code
 func (e *Encoder) TooManyRequestsMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       tooManyRequests,
