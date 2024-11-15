@@ -126,6 +126,12 @@ func (e *Encoder) Conflict(ctx context.Context) error {
 	}, "")
 }
 
+func (e *Encoder) TooManyRequests(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: tooManyRequests,
+	}, "")
+}
+
 // InternalServerError creates a new empty client message with a InternalServerError (500) return code
 func (e *Encoder) InternalServerError(ctx context.Context) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -185,6 +191,15 @@ func (e *Encoder) ConflictWithError(ctx context.Context, err error) error {
 	}, "")
 }
 
+// TooManyRequestsWithError wraps an existing error while creating a new client message with a TooManyRequests (429) return code
+func (e *Encoder) TooManyRequestsWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       tooManyRequests,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
 // InternalServerErrorWithError wraps an existing error while creating a new empty client message and a InternalServerError (500) return code
 func (e *Encoder) InternalServerErrorWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -199,6 +214,14 @@ func (e *Encoder) ServiceUnavailableWithError(ctx context.Context, err error) er
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       serviceUnavailable,
 		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
+func (e *Encoder) BadRequestWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       badRequest,
+		clientMessage: fmt.Sprintf(format, a...),
 		error:         err,
 	}, "")
 }
@@ -259,6 +282,13 @@ func (e *Encoder) ServiceUnavailableMessage(ctx context.Context, message string)
 	}, "")
 }
 
+func (e *Encoder) TooManyRequestsMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       tooManyRequests,
+		clientMessage: message,
+	}, "")
+}
+
 // BadRequestMessagef creates a new client message with a BadRequest (400) return code
 func (e *Encoder) BadRequestMessagef(ctx context.Context, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -311,6 +341,13 @@ func (e *Encoder) InternalServerErrorMessagef(ctx context.Context, format string
 func (e *Encoder) ServiceUnavailableMessagef(ctx context.Context, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       serviceUnavailable,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
+func (e *Encoder) TooManyRequestsMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: fmt.Sprintf(format, a...),
 	}, "")
 }
@@ -373,6 +410,14 @@ func (e *Encoder) InternalServerErrorMessageWithError(ctx context.Context, err e
 func (e *Encoder) ServiceUnavailableMessageWithError(ctx context.Context, err error, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       serviceUnavailable,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
+func (e *Encoder) TooManyRequestsMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: message,
 		error:         err,
 	}, "")
@@ -441,6 +486,14 @@ func (e *Encoder) ServiceUnavailableMessageWithErrorf(ctx context.Context, err e
 	}, "")
 }
 
+func (e *Encoder) TooManyRequestsMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       tooManyRequests,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
 // ClientMessage sets an http code and formats a client message based upon the
 // message type found in the error chain. If no message type is found
 // it defaults to InternalServerError (500) with no message
@@ -467,6 +520,8 @@ func (e *Encoder) clientMessage(ctx context.Context, err error, prefix string) e
 			return e.statusCodeWithMessage(ctx, http.StatusNotFound, rerr, cerr.clientMessage)
 		case conflict:
 			return e.statusCodeWithMessage(ctx, http.StatusConflict, rerr, cerr.clientMessage)
+		case tooManyRequests:
+			return e.statusCodeWithMessage(ctx, http.StatusTooManyRequests, rerr, cerr.clientMessage)
 		case internalServerError:
 			return e.statusCodeWithMessage(ctx, http.StatusInternalServerError, rerr, cerr.clientMessage)
 		case serviceUnavailable:
