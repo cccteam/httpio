@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.1](https://github.com/cccteam/httpio/compare/v0.7.0...v0.7.1) (2024-11-16)
+
+
+### Features
+
+* Too Many Requests 429 ([#83](https://github.com/cccteam/httpio/issues/83)) ([dae8877](https://github.com/cccteam/httpio/commit/dae88778d624ae0545754e81a61a19b0f0b48269))
+
+
+### Code Refactoring
+
+* Refactor Requests to Operations and consolidate decoders ([#82](https://github.com/cccteam/httpio/issues/82)) ([04e381e](https://github.com/cccteam/httpio/commit/04e381e35e371860d1f42aef6f4a436951a345ec))
+
 ## [0.7.0](https://github.com/cccteam/httpio/compare/v0.6.4...v0.7.0) (2024-11-09)
 
 
