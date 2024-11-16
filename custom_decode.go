@@ -81,7 +81,7 @@ func (d *StructDecoderWithPermissionChecker[T]) Decode(request *http.Request, pe
 		return nil, err
 	}
 
-	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.domainFromReq(request), d.userFromReq(request), perm); err != nil {
+	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.userFromReq(request), d.domainFromReq(request), perm); err != nil {
 		return nil, err
 	}
 
