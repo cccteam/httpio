@@ -263,6 +263,10 @@ func TestClientMessage_Message(t *testing.T) {
 		{name: "ServiceUnavailable (with messagef)", args: args{err: NewServiceUnavailableMessagef("msg %v", "arg")}, want: "msg arg"},
 		{name: "ServiceUnavailable (with message and error)", args: args{err: NewServiceUnavailableMessageWithError(stderr.New("err"), "msg")}, want: "msg"},
 		{name: "ServiceUnavailable (with message and errorf)", args: args{err: NewServiceUnavailableMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: "msg arg"},
+		{name: "TooManyRequests (with message)", args: args{err: NewTooManyRequestsMessage("msg")}, want: "msg"},
+		{name: "TooManyRequests (with messagef)", args: args{err: NewTooManyRequestsMessagef("msg %v", "arg")}, want: "msg arg"},
+		{name: "TooManyRequests (with message and error)", args: args{err: NewTooManyRequestsMessageWithError(stderr.New("err"), "msg")}, want: "msg"},
+		{name: "TooManyRequests (with message and errorf)", args: args{err: NewTooManyRequestsMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: "msg arg"},
 		{name: "Other error", args: args{err: stderr.New("err")}, want: ""},
 	}
 	for _, tt := range tests {
@@ -337,6 +341,13 @@ func TestHasClientMessage(t *testing.T) {
 		{name: "ServiceUnavailable (with messagef)", args: args{err: NewServiceUnavailableMessagef("msg %v", "arg")}, want: true},
 		{name: "ServiceUnavailable (with message and error)", args: args{err: NewServiceUnavailableMessageWithError(stderr.New("err"), "msg")}, want: true},
 		{name: "ServiceUnavailable (with message and errorf)", args: args{err: NewServiceUnavailableMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+
+		{name: "TooManyRequests", args: args{err: NewTooManyRequests()}, want: true},
+		{name: "TooManyRequests (with error)", args: args{err: NewTooManyRequestsWithError(stderr.New("msg"))}, want: true},
+		{name: "TooManyRequests (with message)", args: args{err: NewTooManyRequestsMessage("msg")}, want: true},
+		{name: "TooManyRequests (with messagef)", args: args{err: NewTooManyRequestsMessagef("msg %v", "arg")}, want: true},
+		{name: "TooManyRequests (with message and error)", args: args{err: NewTooManyRequestsMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "TooManyRequests (with message and errorf)", args: args{err: NewTooManyRequestsMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
 
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
@@ -556,6 +567,36 @@ func TestHasServiceUnavailable(t *testing.T) {
 			t.Parallel()
 			if got := HasServiceUnavailable(tt.args.err); got != tt.want {
 				t.Errorf("HasServiceUnavailable() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHasTooManyRequests(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "TooManyRequests", args: args{err: NewTooManyRequests()}, want: true},
+		{name: "TooManyRequests (with error)", args: args{err: NewTooManyRequestsWithError(stderr.New("msg"))}, want: true},
+		{name: "TooManyRequests (with message)", args: args{err: NewTooManyRequestsMessage("msg")}, want: true},
+		{name: "TooManyRequests (with messagef)", args: args{err: NewTooManyRequestsMessagef("msg %v", "arg")}, want: true},
+		{name: "TooManyRequests (with message and error)", args: args{err: NewTooManyRequestsMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "TooManyRequests (with message and errorf)", args: args{err: NewTooManyRequestsMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := HasTooManyRequests(tt.args.err); got != tt.want {
+				t.Errorf("HasTooManyRequests() = %v, want %v", got, tt.want)
 			}
 		})
 	}

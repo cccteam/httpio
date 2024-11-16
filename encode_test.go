@@ -659,6 +659,85 @@ func TestEncoder_encodeMethods(t *testing.T) {
 			wantContainsError: true,
 		},
 		{
+			name: "TooManyRequests()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.TooManyRequests(context.Background())
+			},
+			wantStatus:        http.StatusTooManyRequests,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "TooManyRequestsWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.TooManyRequestsWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusTooManyRequests,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "TooManyRequestsMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.TooManyRequestsMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusTooManyRequests,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "TooManyRequestsMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.TooManyRequestsMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusTooManyRequests,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "TooManyRequestsMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.TooManyRequestsMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusTooManyRequests,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "TooManyRequestsMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.TooManyRequestsMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusTooManyRequests,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
 			name: "InternalServerError()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
 				return e.InternalServerError(context.Background())
@@ -907,6 +986,14 @@ func TestEncoder_ClientMessage(t *testing.T) {
 			},
 			wantMessage: "Testing",
 			wantStatus:  http.StatusConflict,
+		},
+		{
+			name: "TooManyRequests",
+			args: args{
+				err: NewTooManyRequestsMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusTooManyRequests,
 		},
 		{
 			name: "InternalServerError",

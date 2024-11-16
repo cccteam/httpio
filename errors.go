@@ -16,6 +16,7 @@ const (
 	forbidden                          // http code 403
 	notFound                           // http code 404
 	conflict                           // http code 409
+	tooManyRequests                    // http code 429
 	internalServerError                // http code 500
 	serviceUnavailable                 // http code 503
 )
@@ -167,6 +168,13 @@ func NewServiceUnavailable() errors.Chain {
 	})
 }
 
+// NewTooManyRequests creates a new empty client message with a TooManyRequests (429) return code
+func NewTooManyRequests() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: tooManyRequests,
+	})
+}
+
 // NewBadRequestWithError wraps an existing error while creating a new empty client message and a BadRequest (400) return code
 func NewBadRequestWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
@@ -219,6 +227,14 @@ func NewInternalServerErrorWithError(err error) errors.Chain {
 func NewServiceUnavailableWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: serviceUnavailable,
+		error:   err,
+	})
+}
+
+// NewTooManyRequestsWithError wraps an existing error while creating a new empty client message and a TooManyRequests (429) return code
+func NewTooManyRequestsWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: tooManyRequests,
 		error:   err,
 	})
 }
@@ -279,6 +295,14 @@ func NewServiceUnavailableMessage(message string) errors.Chain {
 	})
 }
 
+// NewTooManyRequestsMessage creates a new client message with a TooManyRequests (429) return code
+func NewTooManyRequestsMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       tooManyRequests,
+		clientMessage: message,
+	})
+}
+
 // NewBadRequestMessagef creates a new client message with a BadRequest (400) return code
 func NewBadRequestMessagef(format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
@@ -331,6 +355,14 @@ func NewInternalServerErrorMessagef(format string, a ...any) errors.Chain {
 func NewServiceUnavailableMessagef(format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       serviceUnavailable,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
+// NewTooManyRequestsMessagef creates a new client message with a TooManyRequests (429) return code
+func NewTooManyRequestsMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: fmt.Sprintf(format, a...),
 	})
 }
@@ -398,6 +430,15 @@ func NewServiceUnavailableMessageWithError(err error, message string) errors.Cha
 	})
 }
 
+// NewTooManyRequestsMessageWithError wraps an existing error while creating a new client message with a TooManyRequests (429) return code
+func NewTooManyRequestsMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       tooManyRequests,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
 // NewBadRequestMessageWithErrorf wraps an existing error while creating a new client message with a BadRequest (400) return code
 func NewBadRequestMessageWithErrorf(err error, format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
@@ -456,6 +497,15 @@ func NewInternalServerErrorMessageWithErrorf(err error, format string, a ...any)
 func NewServiceUnavailableMessageWithErrorf(err error, format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       serviceUnavailable,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
+// NewTooManyRequestsMessageWithErrorf wraps an existing error while creating a new client message with a TooManyRequests (429) return code
+func NewTooManyRequestsMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: fmt.Sprintf(format, a...),
 		error:         err,
 	})
@@ -533,6 +583,16 @@ func HasServiceUnavailable(err error) bool {
 	cerr := &ClientMessage{}
 	if errors.As(err, &cerr) {
 		return cerr.msgType == serviceUnavailable
+	}
+
+	return false
+}
+
+// HasTooManyRequests checks if the error contains a TooManyRequests (429) message
+func HasTooManyRequests(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == tooManyRequests
 	}
 
 	return false
