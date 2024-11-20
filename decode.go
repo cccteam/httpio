@@ -56,6 +56,7 @@ func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFrom
 	return &DecoderWithPermissionChecker[T]{
 		userFromReq:   userFromReq,
 		domainFromReq: domainFromReq,
+		validate:      d.validate,
 		enforcer:      enforcer,
 		resourceSet:   rSet,
 		fieldMapper:   d.fieldMapper,
