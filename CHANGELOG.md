@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/cccteam/httpio/compare/v0.7.1...v0.7.2) (2024-11-21)
+
+
+### Bug Fixes
+
+* Fix validation bug where validatorFunc was lost on upgrade to permission checker ([#85](https://github.com/cccteam/httpio/issues/85)) ([600e8ff](https://github.com/cccteam/httpio/commit/600e8ff3f62a34e6a73c07aed63b61a9c2fb3d72))
+
 ## [0.7.1](https://github.com/cccteam/httpio/compare/v0.7.0...v0.7.1) (2024-11-16)
 
 
