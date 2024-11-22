@@ -65,7 +65,7 @@ func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFrom
 
 func (d *Decoder[T]) Decode(request *http.Request) (*patchset.PatchSet, error) {
 	target := new(T)
-	p, err := decodeToMap(d.fieldMapper, request, target, d.validate)
+	p, err := decodeToPatch(d.fieldMapper, request, target, d.validate)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (d *DecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *Decode
 
 func (d *DecoderWithPermissionChecker[T]) Decode(request *http.Request, perm accesstypes.Permission) (*patchset.PatchSet, error) {
 	target := new(T)
-	p, err := decodeToMap(d.fieldMapper, request, target, d.validate)
+	p, err := decodeToPatch(d.fieldMapper, request, target, d.validate)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func (d *DecoderWithPermissionChecker[T]) DecodeOperation(oper *Operation) (*pat
 	return patchSet, nil
 }
 
-func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Request, target *T, validate ValidatorFunc) (*patchset.PatchSet, error) {
+func decodeToPatch[T any](fieldMapper *resourceset.FieldMapper, request *http.Request, target *T, validate ValidatorFunc) (*patchset.PatchSet, error) {
 	pr, pw := io.Pipe()
 	tr := io.TeeReader(request.Body, pw)
 
@@ -149,6 +149,7 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 	if vValue.Kind() == reflect.Ptr {
 		vValue = vValue.Elem()
 	}
+
 	changes := make(map[accesstypes.Field]any)
 	for jsonField := range jsonData {
 		fieldName, ok := fieldMapper.StructFieldName(jsonField)
@@ -170,7 +171,15 @@ func decodeToMap[T any](fieldMapper *resourceset.FieldMapper, request *http.Requ
 		changes[fieldName] = value
 	}
 
-	patchSet := patchset.NewPatchSet(changes)
+	patchSet := patchset.New()
+	// Add to patchset in order of struct fields
+	// Every key in changes is guaranteed to be a field in the struct
+	for _, f := range reflect.VisibleFields(vValue.Type()) {
+		field := accesstypes.Field(f.Name)
+		if value, ok := changes[field]; ok {
+			patchSet.Set(field, value)
+		}
+	}
 
 	if validate != nil {
 		switch request.Method {

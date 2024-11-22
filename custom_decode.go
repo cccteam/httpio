@@ -50,7 +50,7 @@ func (d *StructDecoder[T]) WithPermissionChecker(
 // and returns a named patchset
 func (d *StructDecoder[T]) Decode(request *http.Request) (*T, error) {
 	target := new(T)
-	if _, err := decodeToMap(d.fieldMapper, request, target, d.validate); err != nil {
+	if _, err := decodeToPatch(d.fieldMapper, request, target, d.validate); err != nil {
 		return nil, err
 	}
 
@@ -76,7 +76,7 @@ func (d *StructDecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *
 // Decode parses the http request body and validates it against the struct validation rules
 func (d *StructDecoderWithPermissionChecker[T]) Decode(request *http.Request, perm accesstypes.Permission) (*T, error) {
 	target := new(T)
-	p, err := decodeToMap(d.fieldMapper, request, target, d.validate)
+	p, err := decodeToPatch(d.fieldMapper, request, target, d.validate)
 	if err != nil {
 		return nil, err
 	}
