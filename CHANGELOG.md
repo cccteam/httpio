@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.3](https://github.com/cccteam/httpio/compare/v0.7.2...v0.7.3) (2024-11-22)
+
+
+### Bug Fixes
+
+* Add changes to patchset in struct field order ([#87](https://github.com/cccteam/httpio/issues/87)) ([8032734](https://github.com/cccteam/httpio/commit/8032734da2938d82b09eb1e4a4360e24bd0c51f6))
+
 ## [0.7.2](https://github.com/cccteam/httpio/compare/v0.7.1...v0.7.2) (2024-11-21)
 
 
