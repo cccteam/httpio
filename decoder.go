@@ -185,7 +185,7 @@ func decodeToPatch[T any](fieldMapper *resourceset.FieldMapper, request *http.Re
 		switch request.Method {
 		case http.MethodPatch:
 			fields := make([]string, 0, patchSet.Len())
-			for _, field := range patchSet.StructFields() {
+			for _, field := range patchSet.Fields() {
 				fields = append(fields, string(field))
 			}
 			if err := validate.StructPartial(target, fields...); err != nil {
@@ -207,7 +207,7 @@ func checkPermissions(
 ) error {
 	resources := make([]accesstypes.Resource, 0, patchSet.Len()+1)
 	resources = append(resources, resourceSet.BaseResource())
-	for _, fieldName := range patchSet.StructFields() {
+	for _, fieldName := range patchSet.Fields() {
 		if resourceSet.PermissionRequired(fieldName, perm) {
 			resources = append(resources, resourceSet.Resource(fieldName))
 		}
