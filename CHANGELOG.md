@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.4](https://github.com/cccteam/httpio/compare/v0.7.3...v0.7.4) (2024-12-05)
+
+
+### Features
+
+* Implement a Query Decoder ([#89](https://github.com/cccteam/httpio/issues/89)) ([96ece81](https://github.com/cccteam/httpio/commit/96ece81c9ace31c3470ecea54e69c18ae678d0d6))
+
 ## [0.7.3](https://github.com/cccteam/httpio/compare/v0.7.2...v0.7.3) (2024-11-22)
 
 
