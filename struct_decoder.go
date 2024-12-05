@@ -4,20 +4,20 @@ import (
 	"net/http"
 
 	"github.com/cccteam/ccc/accesstypes"
-	"github.com/cccteam/ccc/resourceset"
+	"github.com/cccteam/ccc/resource"
 	"github.com/go-playground/errors/v5"
 )
 
 // StructDecoder is a struct that can be used for decoding http requests and validating those requests
 type StructDecoder[T any] struct {
 	validate    ValidatorFunc
-	fieldMapper *resourceset.FieldMapper
+	fieldMapper *resource.FieldMapper
 }
 
 func NewStructDecoder[T any]() (*StructDecoder[T], error) {
 	target := new(T)
 
-	m, err := resourceset.NewFieldMapper(target)
+	m, err := resource.NewFieldMapper(target)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewFieldMapper()")
 	}
@@ -35,7 +35,7 @@ func (d *StructDecoder[T]) WithValidator(v ValidatorFunc) *StructDecoder[T] {
 }
 
 func (d *StructDecoder[T]) WithPermissionChecker(
-	domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resourceset.ResourceSet,
+	domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resource.ResourceSet,
 ) *StructDecoderWithPermissionChecker[T] {
 	return &StructDecoderWithPermissionChecker[T]{
 		userFromReq:   userFromReq,
@@ -62,8 +62,8 @@ type StructDecoderWithPermissionChecker[T any] struct {
 	domainFromReq DomainFromReq
 	validate      ValidatorFunc
 	enforcer      accesstypes.Enforcer
-	resourceSet   *resourceset.ResourceSet
-	fieldMapper   *resourceset.FieldMapper
+	resourceSet   *resource.ResourceSet
+	fieldMapper   *resource.FieldMapper
 }
 
 func (d *StructDecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *StructDecoderWithPermissionChecker[T] {

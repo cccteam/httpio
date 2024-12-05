@@ -5,8 +5,7 @@ import (
 	"net/http"
 
 	"github.com/cccteam/ccc/accesstypes"
-	"github.com/cccteam/ccc/queryset"
-	"github.com/cccteam/ccc/resourceset"
+	"github.com/cccteam/ccc/resource"
 	"github.com/go-playground/errors/v5"
 )
 
@@ -17,17 +16,17 @@ type (
 
 // QueryDecoder is a struct that returns columns that a given user has access to view
 type QueryDecoder[T any] struct {
-	fieldMapper       *resourceset.FieldMapper
-	resourceSet       *resourceset.ResourceSet
+	fieldMapper       *resource.FieldMapper
+	resourceSet       *resource.ResourceSet
 	permissionChecker accesstypes.Enforcer
 	domainFromCtx     DomainFromCtx
 	userFromCtx       UserFromCtx
 }
 
-func NewQueryDecoder[T any](rSet *resourceset.ResourceSet, permissionChecker accesstypes.Enforcer, domainFromCtx DomainFromCtx, userFromCtx UserFromCtx) (*QueryDecoder[T], error) {
+func NewQueryDecoder[T any](rSet *resource.ResourceSet, permissionChecker accesstypes.Enforcer, domainFromCtx DomainFromCtx, userFromCtx UserFromCtx) (*QueryDecoder[T], error) {
 	target := new(T)
 
-	m, err := resourceset.NewFieldMapper(target)
+	m, err := resource.NewFieldMapper(target)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewFieldMapper()")
 	}
@@ -41,13 +40,13 @@ func NewQueryDecoder[T any](rSet *resourceset.ResourceSet, permissionChecker acc
 	}, nil
 }
 
-func (d *QueryDecoder[T]) Decode(request *http.Request) (*queryset.QuerySet, error) {
+func (d *QueryDecoder[T]) Decode(request *http.Request) (*resource.QuerySet, error) {
 	fields, err := d.fields(request.Context())
 	if err != nil {
 		return nil, err
 	}
 
-	colSet := queryset.New()
+	colSet := resource.NewQuerySet()
 	for _, field := range fields {
 		colSet.AddField(field)
 	}
