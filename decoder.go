@@ -27,32 +27,32 @@ type (
 )
 
 // Decoder is a struct that can be used for decoding http requests and validating those requests
-type Decoder[T any] struct {
+type Decoder[Resource resource.Resourcer, Request any] struct {
 	validate    ValidatorFunc
 	fieldMapper *resource.FieldMapper
 }
 
-func NewDecoder[T any]() (*Decoder[T], error) {
-	target := new(T)
+func NewDecoder[Resource resource.Resourcer, Request any]() (*Decoder[Resource, Request], error) {
+	target := new(Request)
 	m, err := resource.NewFieldMapper(target)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewFieldMapper()")
 	}
 
-	return &Decoder[T]{
+	return &Decoder[Resource, Request]{
 		fieldMapper: m,
 	}, nil
 }
 
-func (d *Decoder[T]) WithValidator(v ValidatorFunc) *Decoder[T] {
+func (d *Decoder[Resource, Request]) WithValidator(v ValidatorFunc) *Decoder[Resource, Request] {
 	decoder := *d
 	decoder.validate = v
 
 	return &decoder
 }
 
-func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resource.ResourceSet) *DecoderWithPermissionChecker[T] {
-	return &DecoderWithPermissionChecker[T]{
+func (d *Decoder[Resource, Request]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resource.ResourceSet) *DecoderWithPermissionChecker[Resource, Request] {
+	return &DecoderWithPermissionChecker[Resource, Request]{
 		userFromReq:   userFromReq,
 		domainFromReq: domainFromReq,
 		validate:      d.validate,
@@ -62,9 +62,8 @@ func (d *Decoder[T]) WithPermissionChecker(domainFromReq DomainFromReq, userFrom
 	}
 }
 
-func (d *Decoder[T]) Decode(request *http.Request) (*resource.PatchSet, error) {
-	target := new(T)
-	p, err := decodeToPatch(d.fieldMapper, request, target, d.validate)
+func (d *Decoder[Resource, Request]) Decode(request *http.Request) (*resource.PatchSet, error) {
+	p, _, err := decodeToPatch[Resource, Request](d.fieldMapper, request, d.validate)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +71,7 @@ func (d *Decoder[T]) Decode(request *http.Request) (*resource.PatchSet, error) {
 	return p, nil
 }
 
-type DecoderWithPermissionChecker[T any] struct {
+type DecoderWithPermissionChecker[Resource resource.Resourcer, T any] struct {
 	userFromReq   UserFromReq
 	domainFromReq DomainFromReq
 	validate      ValidatorFunc
@@ -81,28 +80,27 @@ type DecoderWithPermissionChecker[T any] struct {
 	fieldMapper   *resource.FieldMapper
 }
 
-func (d *DecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *DecoderWithPermissionChecker[T] {
+func (d *DecoderWithPermissionChecker[Resource, Request]) WithValidator(v ValidatorFunc) *DecoderWithPermissionChecker[Resource, Request] {
 	decoder := *d
 	decoder.validate = v
 
 	return &decoder
 }
 
-func (d *DecoderWithPermissionChecker[T]) Decode(request *http.Request, perm accesstypes.Permission) (*resource.PatchSet, error) {
-	target := new(T)
-	p, err := decodeToPatch(d.fieldMapper, request, target, d.validate)
+func (d *DecoderWithPermissionChecker[Resource, Request]) Decode(request *http.Request, perm accesstypes.Permission) (*resource.PatchSet, error) {
+	p, _, err := decodeToPatch[Resource, Request](d.fieldMapper, request, d.validate)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.userFromReq(request), d.domainFromReq(request), perm); err != nil {
+	if err := checkPermissions(request.Context(), p.Fields(), d.enforcer, d.resourceSet, d.userFromReq(request), d.domainFromReq(request), perm); err != nil {
 		return nil, err
 	}
 
 	return p, nil
 }
 
-func (d *DecoderWithPermissionChecker[T]) DecodeOperation(oper *Operation) (*resource.PatchSet, error) {
+func (d *DecoderWithPermissionChecker[Resource, Request]) DecodeOperation(oper *Operation) (*resource.PatchSet, error) {
 	if oper.Type == OperationDelete {
 		ctx, user, domain := oper.Req.Context(), d.userFromReq(oper.Req), d.domainFromReq(oper.Req)
 		if ok, missing, err := d.enforcer.RequireResources(ctx, user, domain, accesstypes.Delete, d.resourceSet.BaseResource()); err != nil {
@@ -116,13 +114,14 @@ func (d *DecoderWithPermissionChecker[T]) DecodeOperation(oper *Operation) (*res
 
 	patchSet, err := d.Decode(oper.Req, permissionFromType(oper.Type))
 	if err != nil {
-		return nil, errors.Wrap(err, "httpio.DecoderWithPermissionChecker[T].Decode()")
+		return nil, errors.Wrap(err, "httpio.DecoderWithPermissionChecker[Request].Decode()")
 	}
 
 	return patchSet, nil
 }
 
-func decodeToPatch[T any](fieldMapper *resource.FieldMapper, request *http.Request, target *T, validate ValidatorFunc) (*resource.PatchSet, error) {
+func decodeToPatch[Resource resource.Resourcer, Request any](fieldMapper *resource.FieldMapper, request *http.Request, validate ValidatorFunc) (*resource.PatchSet, *Request, error) {
+	target := new(Request)
 	pr, pw := io.Pipe()
 	tr := io.TeeReader(request.Body, pw)
 
@@ -136,12 +135,12 @@ func decodeToPatch[T any](fieldMapper *resource.FieldMapper, request *http.Reque
 
 	jsonData := make(map[string]any)
 	if err := json.NewDecoder(tr).Decode(&jsonData); err != nil {
-		return nil, NewBadRequestMessageWithError(err, "failed to decode request body")
+		return nil, nil, NewBadRequestMessageWithError(err, "failed to decode request body")
 	}
 
 	wg.Wait()
 	if err != nil {
-		return nil, NewBadRequestMessageWithError(err, "failed to unmarshal request body")
+		return nil, nil, NewBadRequestMessageWithError(err, "failed to unmarshal request body")
 	}
 
 	vValue := reflect.ValueOf(target)
@@ -155,22 +154,22 @@ func decodeToPatch[T any](fieldMapper *resource.FieldMapper, request *http.Reque
 		if !ok {
 			fieldName, ok = fieldMapper.StructFieldName(strings.ToLower(jsonField))
 			if !ok {
-				return nil, NewBadRequestMessagef("invalid field in json - %s", jsonField)
+				return nil, nil, NewBadRequestMessagef("invalid field in json - %s", jsonField)
 			}
 		}
 
 		value := vValue.FieldByName(string(fieldName)).Interface()
 		if value == nil {
-			return nil, NewBadRequestMessagef("invalid field in json - %s", jsonField)
+			return nil, nil, NewBadRequestMessagef("invalid field in json - %s", jsonField)
 		}
 
 		if _, ok := changes[fieldName]; ok {
-			return nil, NewBadRequestMessagef("json field name %s collides with another field name of different case", fieldName)
+			return nil, nil, NewBadRequestMessagef("json field name %s collides with another field name of different case", fieldName)
 		}
 		changes[fieldName] = value
 	}
 
-	patchSet := resource.NewPatchSet()
+	patchSet := resource.NewPatchSet(resource.NewRow[Resource]())
 	// Add to patchset in order of struct fields
 	// Every key in changes is guaranteed to be a field in the struct
 	for _, f := range reflect.VisibleFields(vValue.Type()) {
@@ -188,25 +187,25 @@ func decodeToPatch[T any](fieldMapper *resource.FieldMapper, request *http.Reque
 				fields = append(fields, string(field))
 			}
 			if err := validate.StructPartial(target, fields...); err != nil {
-				return nil, NewBadRequestMessageWithError(err, "failed validating the request")
+				return nil, nil, NewBadRequestMessageWithError(err, "failed validating the request")
 			}
 		default:
 			if err := validate.Struct(target); err != nil {
-				return nil, NewBadRequestMessageWithError(err, "failed validating the request")
+				return nil, nil, NewBadRequestMessageWithError(err, "failed validating the request")
 			}
 		}
 	}
 
-	return patchSet, nil
+	return patchSet, target, nil
 }
 
 func checkPermissions(
-	ctx context.Context, patchSet *resource.PatchSet, enforcer accesstypes.Enforcer, resourceSet *resource.ResourceSet,
+	ctx context.Context, fields []accesstypes.Field, enforcer accesstypes.Enforcer, resourceSet *resource.ResourceSet,
 	user accesstypes.User, domain accesstypes.Domain, perm accesstypes.Permission,
 ) error {
-	resources := make([]accesstypes.Resource, 0, patchSet.Len()+1)
+	resources := make([]accesstypes.Resource, 0, len(fields)+1)
 	resources = append(resources, resourceSet.BaseResource())
-	for _, fieldName := range patchSet.Fields() {
+	for _, fieldName := range fields {
 		if resourceSet.PermissionRequired(fieldName, perm) {
 			resources = append(resources, resourceSet.Resource(fieldName))
 		}

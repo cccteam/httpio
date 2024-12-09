@@ -9,35 +9,35 @@ import (
 )
 
 // StructDecoder is a struct that can be used for decoding http requests and validating those requests
-type StructDecoder[T any] struct {
+type StructDecoder[Request any] struct {
 	validate    ValidatorFunc
 	fieldMapper *resource.FieldMapper
 }
 
-func NewStructDecoder[T any]() (*StructDecoder[T], error) {
-	target := new(T)
+func NewStructDecoder[Request any]() (*StructDecoder[Request], error) {
+	target := new(Request)
 
 	m, err := resource.NewFieldMapper(target)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewFieldMapper()")
 	}
 
-	return &StructDecoder[T]{
+	return &StructDecoder[Request]{
 		fieldMapper: m,
 	}, nil
 }
 
-func (d *StructDecoder[T]) WithValidator(v ValidatorFunc) *StructDecoder[T] {
+func (d *StructDecoder[Request]) WithValidator(v ValidatorFunc) *StructDecoder[Request] {
 	decoder := *d
 	decoder.validate = v
 
 	return &decoder
 }
 
-func (d *StructDecoder[T]) WithPermissionChecker(
+func (d *StructDecoder[Request]) WithPermissionChecker(
 	domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resource.ResourceSet,
-) *StructDecoderWithPermissionChecker[T] {
-	return &StructDecoderWithPermissionChecker[T]{
+) *StructDecoderWithPermissionChecker[Request] {
+	return &StructDecoderWithPermissionChecker[Request]{
 		userFromReq:   userFromReq,
 		domainFromReq: domainFromReq,
 		enforcer:      enforcer,
@@ -48,16 +48,22 @@ func (d *StructDecoder[T]) WithPermissionChecker(
 
 // Decode parses the http request body and validates it against the struct validation rules
 // and returns a named patchset
-func (d *StructDecoder[T]) Decode(request *http.Request) (*T, error) {
-	target := new(T)
-	if _, err := decodeToPatch(d.fieldMapper, request, target, d.validate); err != nil {
+func (d *StructDecoder[Request]) Decode(request *http.Request) (*Request, error) {
+	_, target, err := decodeToPatch[nilResouce, Request](d.fieldMapper, request, d.validate)
+	if err != nil {
 		return nil, err
 	}
 
 	return target, nil
 }
 
-type StructDecoderWithPermissionChecker[T any] struct {
+type nilResouce struct{}
+
+func (n nilResouce) Resource() accesstypes.Resource {
+	return "nil"
+}
+
+type StructDecoderWithPermissionChecker[Request any] struct {
 	userFromReq   UserFromReq
 	domainFromReq DomainFromReq
 	validate      ValidatorFunc
@@ -66,7 +72,7 @@ type StructDecoderWithPermissionChecker[T any] struct {
 	fieldMapper   *resource.FieldMapper
 }
 
-func (d *StructDecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *StructDecoderWithPermissionChecker[T] {
+func (d *StructDecoderWithPermissionChecker[Request]) WithValidator(v ValidatorFunc) *StructDecoderWithPermissionChecker[Request] {
 	decoder := *d
 	decoder.validate = v
 
@@ -74,14 +80,13 @@ func (d *StructDecoderWithPermissionChecker[T]) WithValidator(v ValidatorFunc) *
 }
 
 // Decode parses the http request body and validates it against the struct validation rules
-func (d *StructDecoderWithPermissionChecker[T]) Decode(request *http.Request, perm accesstypes.Permission) (*T, error) {
-	target := new(T)
-	p, err := decodeToPatch(d.fieldMapper, request, target, d.validate)
+func (d *StructDecoderWithPermissionChecker[Resouce]) Decode(request *http.Request, perm accesstypes.Permission) (*Resouce, error) {
+	p, target, err := decodeToPatch[nilResouce, Resouce](d.fieldMapper, request, d.validate)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := checkPermissions(request.Context(), p, d.enforcer, d.resourceSet, d.userFromReq(request), d.domainFromReq(request), perm); err != nil {
+	if err := checkPermissions(request.Context(), p.Fields(), d.enforcer, d.resourceSet, d.userFromReq(request), d.domainFromReq(request), perm); err != nil {
 		return nil, err
 	}
 

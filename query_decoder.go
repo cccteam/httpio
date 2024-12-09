@@ -15,7 +15,7 @@ type (
 )
 
 // QueryDecoder is a struct that returns columns that a given user has access to view
-type QueryDecoder[T any] struct {
+type QueryDecoder[Resource resource.Resourcer, Request any] struct {
 	fieldMapper       *resource.FieldMapper
 	resourceSet       *resource.ResourceSet
 	permissionChecker accesstypes.Enforcer
@@ -23,15 +23,15 @@ type QueryDecoder[T any] struct {
 	userFromCtx       UserFromCtx
 }
 
-func NewQueryDecoder[T any](rSet *resource.ResourceSet, permissionChecker accesstypes.Enforcer, domainFromCtx DomainFromCtx, userFromCtx UserFromCtx) (*QueryDecoder[T], error) {
-	target := new(T)
+func NewQueryDecoder[Resource resource.Resourcer, Request any](rSet *resource.ResourceSet, permissionChecker accesstypes.Enforcer, domainFromCtx DomainFromCtx, userFromCtx UserFromCtx) (*QueryDecoder[Resource, Request], error) {
+	target := new(Request)
 
 	m, err := resource.NewFieldMapper(target)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewFieldMapper()")
 	}
 
-	return &QueryDecoder[T]{
+	return &QueryDecoder[Resource, Request]{
 		fieldMapper:       m,
 		resourceSet:       rSet,
 		permissionChecker: permissionChecker,
@@ -40,21 +40,22 @@ func NewQueryDecoder[T any](rSet *resource.ResourceSet, permissionChecker access
 	}, nil
 }
 
-func (d *QueryDecoder[T]) Decode(request *http.Request) (*resource.QuerySet, error) {
+func (d *QueryDecoder[Resource, Request]) Decode(request *http.Request) (*resource.Query[Resource], error) {
 	fields, err := d.fields(request.Context())
 	if err != nil {
 		return nil, err
 	}
 
-	colSet := resource.NewQuerySet()
+	row := resource.NewRow[Resource]()
+	qSet := resource.NewQuerySet(row)
 	for _, field := range fields {
-		colSet.AddField(field)
+		qSet.AddField(field)
 	}
 
-	return colSet, nil
+	return &resource.Query[Resource]{Set: qSet}, nil
 }
 
-func (d *QueryDecoder[T]) fields(ctx context.Context) ([]accesstypes.Field, error) {
+func (d *QueryDecoder[Resource, Request]) fields(ctx context.Context) ([]accesstypes.Field, error) {
 	domain, user := d.domainFromCtx(ctx), d.userFromCtx(ctx)
 
 	if ok, _, err := d.permissionChecker.RequireResources(ctx, user, domain, d.resourceSet.Permission(), d.resourceSet.BaseResource()); err != nil {
