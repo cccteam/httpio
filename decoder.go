@@ -30,9 +30,10 @@ type (
 type Decoder[Resource resource.Resourcer, Request any] struct {
 	validate    ValidatorFunc
 	fieldMapper *resource.FieldMapper
+	resourceSet *resource.ResourceSet[Resource, Request]
 }
 
-func NewDecoder[Resource resource.Resourcer, Request any]() (*Decoder[Resource, Request], error) {
+func NewDecoder[Resource resource.Resourcer, Request any](rSet *resource.ResourceSet[Resource, Request]) (*Decoder[Resource, Request], error) {
 	target := new(Request)
 	m, err := resource.NewFieldMapper(target)
 	if err != nil {
@@ -41,6 +42,7 @@ func NewDecoder[Resource resource.Resourcer, Request any]() (*Decoder[Resource, 
 
 	return &Decoder[Resource, Request]{
 		fieldMapper: m,
+		resourceSet: rSet,
 	}, nil
 }
 
@@ -51,19 +53,19 @@ func (d *Decoder[Resource, Request]) WithValidator(v ValidatorFunc) *Decoder[Res
 	return &decoder
 }
 
-func (d *Decoder[Resource, Request]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resource.ResourceSet) *DecoderWithPermissionChecker[Resource, Request] {
+func (d *Decoder[Resource, Request]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer) *DecoderWithPermissionChecker[Resource, Request] {
 	return &DecoderWithPermissionChecker[Resource, Request]{
 		userFromReq:   userFromReq,
 		domainFromReq: domainFromReq,
 		validate:      d.validate,
 		enforcer:      enforcer,
-		resourceSet:   rSet,
+		resourceSet:   d.resourceSet,
 		fieldMapper:   d.fieldMapper,
 	}
 }
 
-func (d *Decoder[Resource, Request]) Decode(request *http.Request) (*resource.PatchSet, error) {
-	p, _, err := decodeToPatch[Resource, Request](d.fieldMapper, request, d.validate)
+func (d *Decoder[Resource, Request]) Decode(request *http.Request) (*resource.PatchSet[Resource], error) {
+	p, _, err := decodeToPatch(d.resourceSet, d.fieldMapper, request, d.validate)
 	if err != nil {
 		return nil, err
 	}
@@ -71,12 +73,12 @@ func (d *Decoder[Resource, Request]) Decode(request *http.Request) (*resource.Pa
 	return p, nil
 }
 
-type DecoderWithPermissionChecker[Resource resource.Resourcer, T any] struct {
+type DecoderWithPermissionChecker[Resource resource.Resourcer, Request any] struct {
 	userFromReq   UserFromReq
 	domainFromReq DomainFromReq
 	validate      ValidatorFunc
 	enforcer      accesstypes.Enforcer
-	resourceSet   *resource.ResourceSet
+	resourceSet   *resource.ResourceSet[Resource, Request]
 	fieldMapper   *resource.FieldMapper
 }
 
@@ -87,8 +89,8 @@ func (d *DecoderWithPermissionChecker[Resource, Request]) WithValidator(v Valida
 	return &decoder
 }
 
-func (d *DecoderWithPermissionChecker[Resource, Request]) Decode(request *http.Request, perm accesstypes.Permission) (*resource.PatchSet, error) {
-	p, _, err := decodeToPatch[Resource, Request](d.fieldMapper, request, d.validate)
+func (d *DecoderWithPermissionChecker[Resource, Request]) Decode(request *http.Request, perm accesstypes.Permission) (*resource.PatchSet[Resource], error) {
+	p, _, err := decodeToPatch(d.resourceSet, d.fieldMapper, request, d.validate)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +102,7 @@ func (d *DecoderWithPermissionChecker[Resource, Request]) Decode(request *http.R
 	return p, nil
 }
 
-func (d *DecoderWithPermissionChecker[Resource, Request]) DecodeOperation(oper *Operation) (*resource.PatchSet, error) {
+func (d *DecoderWithPermissionChecker[Resource, Request]) DecodeOperation(oper *Operation) (*resource.PatchSet[Resource], error) {
 	if oper.Type == OperationDelete {
 		ctx, user, domain := oper.Req.Context(), d.userFromReq(oper.Req), d.domainFromReq(oper.Req)
 		if ok, missing, err := d.enforcer.RequireResources(ctx, user, domain, accesstypes.Delete, d.resourceSet.BaseResource()); err != nil {
@@ -120,17 +122,17 @@ func (d *DecoderWithPermissionChecker[Resource, Request]) DecodeOperation(oper *
 	return patchSet, nil
 }
 
-func decodeToPatch[Resource resource.Resourcer, Request any](fieldMapper *resource.FieldMapper, request *http.Request, validate ValidatorFunc) (*resource.PatchSet, *Request, error) {
-	target := new(Request)
+func decodeToPatch[Resource resource.Resourcer, Request any](rSet *resource.ResourceSet[Resource, Request], fieldMapper *resource.FieldMapper, req *http.Request, validate ValidatorFunc) (*resource.PatchSet[Resource], *Request, error) {
+	request := new(Request)
 	pr, pw := io.Pipe()
-	tr := io.TeeReader(request.Body, pw)
+	tr := io.TeeReader(req.Body, pw)
 
 	var wg sync.WaitGroup
 	var err error
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err = json.NewDecoder(pr).Decode(target)
+		err = json.NewDecoder(pr).Decode(request)
 	}()
 
 	jsonData := make(map[string]any)
@@ -143,7 +145,7 @@ func decodeToPatch[Resource resource.Resourcer, Request any](fieldMapper *resour
 		return nil, nil, NewBadRequestMessageWithError(err, "failed to unmarshal request body")
 	}
 
-	vValue := reflect.ValueOf(target)
+	vValue := reflect.ValueOf(request)
 	if vValue.Kind() == reflect.Ptr {
 		vValue = vValue.Elem()
 	}
@@ -169,7 +171,7 @@ func decodeToPatch[Resource resource.Resourcer, Request any](fieldMapper *resour
 		changes[fieldName] = value
 	}
 
-	patchSet := resource.NewPatchSet(resource.NewRow[Resource]())
+	patchSet := resource.NewPatchSet(rSet.ResourceMetadata())
 	// Add to patchset in order of struct fields
 	// Every key in changes is guaranteed to be a field in the struct
 	for _, f := range reflect.VisibleFields(vValue.Type()) {
@@ -180,34 +182,34 @@ func decodeToPatch[Resource resource.Resourcer, Request any](fieldMapper *resour
 	}
 
 	if validate != nil {
-		switch request.Method {
+		switch req.Method {
 		case http.MethodPatch:
 			fields := make([]string, 0, patchSet.Len())
 			for _, field := range patchSet.Fields() {
 				fields = append(fields, string(field))
 			}
-			if err := validate.StructPartial(target, fields...); err != nil {
+			if err := validate.StructPartial(request, fields...); err != nil {
 				return nil, nil, NewBadRequestMessageWithError(err, "failed validating the request")
 			}
 		default:
-			if err := validate.Struct(target); err != nil {
+			if err := validate.Struct(request); err != nil {
 				return nil, nil, NewBadRequestMessageWithError(err, "failed validating the request")
 			}
 		}
 	}
 
-	return patchSet, target, nil
+	return patchSet, request, nil
 }
 
-func checkPermissions(
-	ctx context.Context, fields []accesstypes.Field, enforcer accesstypes.Enforcer, resourceSet *resource.ResourceSet,
+func checkPermissions[Resource resource.Resourcer, Request any](
+	ctx context.Context, fields []accesstypes.Field, enforcer accesstypes.Enforcer, rSet *resource.ResourceSet[Resource, Request],
 	user accesstypes.User, domain accesstypes.Domain, perm accesstypes.Permission,
 ) error {
 	resources := make([]accesstypes.Resource, 0, len(fields)+1)
-	resources = append(resources, resourceSet.BaseResource())
+	resources = append(resources, rSet.BaseResource())
 	for _, fieldName := range fields {
-		if resourceSet.PermissionRequired(fieldName, perm) {
-			resources = append(resources, resourceSet.Resource(fieldName))
+		if rSet.PermissionRequired(fieldName, perm) {
+			resources = append(resources, rSet.Resource(fieldName))
 		}
 	}
 

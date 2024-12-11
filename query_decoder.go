@@ -17,13 +17,13 @@ type (
 // QueryDecoder is a struct that returns columns that a given user has access to view
 type QueryDecoder[Resource resource.Resourcer, Request any] struct {
 	fieldMapper       *resource.FieldMapper
-	resourceSet       *resource.ResourceSet
+	resourceSet       *resource.ResourceSet[Resource, Request]
 	permissionChecker accesstypes.Enforcer
 	domainFromCtx     DomainFromCtx
 	userFromCtx       UserFromCtx
 }
 
-func NewQueryDecoder[Resource resource.Resourcer, Request any](rSet *resource.ResourceSet, permissionChecker accesstypes.Enforcer, domainFromCtx DomainFromCtx, userFromCtx UserFromCtx) (*QueryDecoder[Resource, Request], error) {
+func NewQueryDecoder[Resource resource.Resourcer, Request any](rSet *resource.ResourceSet[Resource, Request], permissionChecker accesstypes.Enforcer, domainFromCtx DomainFromCtx, userFromCtx UserFromCtx) (*QueryDecoder[Resource, Request], error) {
 	target := new(Request)
 
 	m, err := resource.NewFieldMapper(target)
@@ -40,19 +40,18 @@ func NewQueryDecoder[Resource resource.Resourcer, Request any](rSet *resource.Re
 	}, nil
 }
 
-func (d *QueryDecoder[Resource, Request]) Decode(request *http.Request) (*resource.Query[Resource], error) {
+func (d *QueryDecoder[Resource, Request]) Decode(request *http.Request) (*resource.QuerySet[Resource], error) {
 	fields, err := d.fields(request.Context())
 	if err != nil {
 		return nil, err
 	}
 
-	row := resource.NewRow[Resource]()
-	qSet := resource.NewQuerySet(row)
+	qSet := resource.NewQuerySet(d.resourceSet.ResourceMetadata())
 	for _, field := range fields {
 		qSet.AddField(field)
 	}
 
-	return &resource.Query[Resource]{Set: qSet}, nil
+	return qSet, nil
 }
 
 func (d *QueryDecoder[Resource, Request]) fields(ctx context.Context) ([]accesstypes.Field, error) {

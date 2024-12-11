@@ -8,10 +8,17 @@ import (
 	"github.com/go-playground/errors/v5"
 )
 
+type nilResource struct{}
+
+func (n nilResource) Resource() accesstypes.Resource {
+	return "nil"
+}
+
 // StructDecoder is a struct that can be used for decoding http requests and validating those requests
 type StructDecoder[Request any] struct {
 	validate    ValidatorFunc
 	fieldMapper *resource.FieldMapper
+	resourceSet *resource.ResourceSet[nilResource, Request]
 }
 
 func NewStructDecoder[Request any]() (*StructDecoder[Request], error) {
@@ -22,8 +29,16 @@ func NewStructDecoder[Request any]() (*StructDecoder[Request], error) {
 		return nil, errors.Wrap(err, "NewFieldMapper()")
 	}
 
+	// TODO(jwatson): This will cause a runtime panic right now since nilResource is not convertable to Request
+	// BUG(jwatson): This will cause a runtime panic right now since nilResource is not convertable to Request
+	rSet, err := resource.NewResourceSet[nilResource, Request]()
+	if err != nil {
+		return nil, errors.Wrap(err, "NewResourceSet()")
+	}
+
 	return &StructDecoder[Request]{
 		fieldMapper: m,
+		resourceSet: rSet,
 	}, nil
 }
 
@@ -34,14 +49,12 @@ func (d *StructDecoder[Request]) WithValidator(v ValidatorFunc) *StructDecoder[R
 	return &decoder
 }
 
-func (d *StructDecoder[Request]) WithPermissionChecker(
-	domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer, rSet *resource.ResourceSet,
-) *StructDecoderWithPermissionChecker[Request] {
+func (d *StructDecoder[Request]) WithPermissionChecker(domainFromReq DomainFromReq, userFromReq UserFromReq, enforcer accesstypes.Enforcer) *StructDecoderWithPermissionChecker[Request] {
 	return &StructDecoderWithPermissionChecker[Request]{
 		userFromReq:   userFromReq,
 		domainFromReq: domainFromReq,
 		enforcer:      enforcer,
-		resourceSet:   rSet,
+		resourceSet:   d.resourceSet,
 		fieldMapper:   d.fieldMapper,
 	}
 }
@@ -49,7 +62,7 @@ func (d *StructDecoder[Request]) WithPermissionChecker(
 // Decode parses the http request body and validates it against the struct validation rules
 // and returns a named patchset
 func (d *StructDecoder[Request]) Decode(request *http.Request) (*Request, error) {
-	_, target, err := decodeToPatch[nilResouce, Request](d.fieldMapper, request, d.validate)
+	_, target, err := decodeToPatch(d.resourceSet, d.fieldMapper, request, d.validate)
 	if err != nil {
 		return nil, err
 	}
@@ -57,18 +70,12 @@ func (d *StructDecoder[Request]) Decode(request *http.Request) (*Request, error)
 	return target, nil
 }
 
-type nilResouce struct{}
-
-func (n nilResouce) Resource() accesstypes.Resource {
-	return "nil"
-}
-
 type StructDecoderWithPermissionChecker[Request any] struct {
 	userFromReq   UserFromReq
 	domainFromReq DomainFromReq
 	validate      ValidatorFunc
 	enforcer      accesstypes.Enforcer
-	resourceSet   *resource.ResourceSet
+	resourceSet   *resource.ResourceSet[nilResource, Request]
 	fieldMapper   *resource.FieldMapper
 }
 
@@ -80,12 +87,13 @@ func (d *StructDecoderWithPermissionChecker[Request]) WithValidator(v ValidatorF
 }
 
 // Decode parses the http request body and validates it against the struct validation rules
-func (d *StructDecoderWithPermissionChecker[Resouce]) Decode(request *http.Request, perm accesstypes.Permission) (*Resouce, error) {
-	p, target, err := decodeToPatch[nilResouce, Resouce](d.fieldMapper, request, d.validate)
+func (d *StructDecoderWithPermissionChecker[Request]) Decode(request *http.Request, perm accesstypes.Permission) (*Request, error) {
+	p, target, err := decodeToPatch(d.resourceSet, d.fieldMapper, request, d.validate)
 	if err != nil {
 		return nil, err
 	}
 
+	// TODO(jwatson): Verify this works with a nilResource
 	if err := checkPermissions(request.Context(), p.Fields(), d.enforcer, d.resourceSet, d.userFromReq(request), d.domainFromReq(request), perm); err != nil {
 		return nil, err
 	}
