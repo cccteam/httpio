@@ -29,8 +29,6 @@ func NewStructDecoder[Request any]() (*StructDecoder[Request], error) {
 		return nil, errors.Wrap(err, "NewFieldMapper()")
 	}
 
-	// TODO(jwatson): This will cause a runtime panic right now since nilResource is not convertable to Request
-	// BUG(jwatson): This will cause a runtime panic right now since nilResource is not convertable to Request
 	rSet, err := resource.NewResourceSet[nilResource, Request]()
 	if err != nil {
 		return nil, errors.Wrap(err, "NewResourceSet()")
