@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.5](https://github.com/cccteam/httpio/compare/v0.7.4...v0.7.5) (2024-12-17)
+
+
+### Code Refactoring
+
+* Move decoders into the resource package ([#91](https://github.com/cccteam/httpio/issues/91)) ([78d7c7f](https://github.com/cccteam/httpio/commit/78d7c7fdf07fc6a50d39c1dbaec882a4677d777d))
+
 ## [0.7.4](https://github.com/cccteam/httpio/compare/v0.7.3...v0.7.4) (2024-12-05)
 
 
