@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.7](https://github.com/cccteam/httpio/compare/v0.7.6...v0.7.7) (2025-02-12)
+
+
+### Code Upgrade
+
+* go dependencies ([#99](https://github.com/cccteam/httpio/issues/99)) ([895caf8](https://github.com/cccteam/httpio/commit/895caf8af18e82b81e96e0860ce910d83730e3a2))
+
 ## [0.7.6](https://github.com/cccteam/httpio/compare/v0.7.5...v0.7.6) (2025-01-30)
 
 
