@@ -180,6 +180,7 @@ issues:
         - gocyclo
         - cyclop
         - funlen
+        - gocognit
       text: type assertion must be checked|Param
 
     - path: params\.go
