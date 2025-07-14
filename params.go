@@ -132,9 +132,9 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 				}
 
 				return reflect.ValueOf(i).Convert(reflect.TypeOf(val)).Interface()
+			default:
+				panic(fmt.Sprintf("support for %T has not been implemented", val))
 			}
-
-			panic(fmt.Sprintf("support for %T has not been implemented", val))
 		}
 	}
 
