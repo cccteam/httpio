@@ -178,6 +178,9 @@ issues:
       linters:
         - forcetypeassert
         - gocyclo
+        - cyclop
+        - funlen
+      text: type assertion must be checked|Param
 
     - path: params\.go
       linters:
