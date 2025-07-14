@@ -101,38 +101,48 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 			}
 
 			// handle named types
-			switch reflect.TypeOf(val).Kind() {
+			rt := reflect.TypeOf(val)
+			switch rt.Kind() {
 			case reflect.String:
-				return reflect.ValueOf(v).Convert(reflect.TypeOf(val)).Interface()
+				return reflect.ValueOf(v).Convert(rt).Interface()
 			case reflect.Int:
 				i, err := strconv.Atoi(v)
 				if err != nil {
 					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 				}
 
-				return reflect.ValueOf(i).Convert(reflect.TypeOf(val)).Interface()
+				return reflect.ValueOf(i).Convert(rt).Interface()
 			case reflect.Int64:
 				i, err := strconv.ParseInt(v, 10, 64)
 				if err != nil {
 					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 				}
 
-				return reflect.ValueOf(i).Convert(reflect.TypeOf(val)).Interface()
+				return reflect.ValueOf(i).Convert(rt).Interface()
 			case reflect.Float64:
 				i, err := strconv.ParseFloat(v, 64)
 				if err != nil {
 					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 				}
 
-				return reflect.ValueOf(i).Convert(reflect.TypeOf(val)).Interface()
+				return reflect.ValueOf(i).Convert(rt).Interface()
 			case reflect.Bool:
 				i, err := strconv.ParseBool(v)
 				if err != nil {
 					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
 				}
 
-				return reflect.ValueOf(i).Convert(reflect.TypeOf(val)).Interface()
+				return reflect.ValueOf(i).Convert(rt).Interface()
 			default:
+				if rt.ConvertibleTo(reflect.TypeOf(uuid.UUID{})) {
+					i, err := uuid.FromString(v)
+					if err != nil {
+						panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+					}
+
+					return reflect.ValueOf(i).Convert(rt).Interface()
+				}
+
 				panic(fmt.Sprintf("support for %T has not been implemented", val))
 			}
 		}
