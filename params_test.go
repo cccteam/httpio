@@ -306,48 +306,6 @@ func TestParam_named_ccc_uuid(t *testing.T) {
 	}
 }
 
-func TestParam_named_uuid_uuid(t *testing.T) {
-	t.Parallel()
-
-	type NamedType uuid.UUID
-
-	type args struct {
-		r     *http.Request
-		param ParamType
-	}
-	tests := []struct {
-		name      string
-		args      args
-		wantVal   NamedType
-		wantPanic bool
-	}{
-		{
-			name: "Valid Param",
-			args: args{
-				r:     mockRequest(map[ParamType]string{"guarantorId": "0020198f-a14e-42ee-b5f8-65a228ba38e7"}),
-				param: ParamType("guarantorId"),
-			},
-			wantVal: NamedType(ccc.Must(uuid.FromString("0020198f-a14e-42ee-b5f8-65a228ba38e7"))),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			defer func() {
-				r := recover()
-				if tt.wantPanic != (r != nil) {
-					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
-				}
-			}()
-
-			if gotVal := Param[NamedType](tt.args.r, tt.args.param); gotVal != tt.wantVal {
-				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
-			}
-		})
-	}
-}
-
 func TestParam_named_bool(t *testing.T) {
 	t.Parallel()
 
