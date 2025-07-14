@@ -100,6 +100,40 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 				return val2
 			}
 
+			// handle named types
+			switch reflect.TypeOf(val).Kind() {
+			case reflect.String:
+				return reflect.ValueOf(v).Convert(reflect.TypeOf(val)).Interface()
+			case reflect.Int:
+				i, err := strconv.Atoi(v)
+				if err != nil {
+					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				}
+
+				return reflect.ValueOf(i).Convert(reflect.TypeOf(val)).Interface()
+			case reflect.Int64:
+				i, err := strconv.ParseInt(v, 10, 64)
+				if err != nil {
+					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				}
+
+				return reflect.ValueOf(i).Convert(reflect.TypeOf(val)).Interface()
+			case reflect.Float64:
+				i, err := strconv.ParseFloat(v, 64)
+				if err != nil {
+					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				}
+
+				return reflect.ValueOf(i).Convert(reflect.TypeOf(val)).Interface()
+			case reflect.Bool:
+				i, err := strconv.ParseBool(v)
+				if err != nil {
+					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				}
+
+				return reflect.ValueOf(i).Convert(reflect.TypeOf(val)).Interface()
+			}
+
 			panic(fmt.Sprintf("support for %T has not been implemented", val))
 		}
 	}

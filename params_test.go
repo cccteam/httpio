@@ -73,6 +73,269 @@ func TestWithParams(t *testing.T) {
 	}
 }
 
+func Test_param_named_string(t *testing.T) {
+	t.Parallel()
+
+	type NamedType string
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   NamedType
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "755"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: "755",
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[NamedType](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func Test_param_named_int(t *testing.T) {
+	t.Parallel()
+
+	type Namedtype int
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   Namedtype
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "755"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: 755,
+		},
+		{
+			name: "Empty Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "-"}),
+				param: ParamType("guarantorId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[Namedtype](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func Test_param_named_int64(t *testing.T) {
+	t.Parallel()
+
+	type Namedtype int64
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   Namedtype
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "755"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: 755,
+		},
+		{
+			name: "Empty Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "-"}),
+				param: ParamType("guarantorId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[Namedtype](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func Test_param_named_float64(t *testing.T) {
+	t.Parallel()
+
+	type Namedtype float64
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   Namedtype
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "755.01"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: 755.01,
+		},
+		{
+			name: "Empty Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "-"}),
+				param: ParamType("guarantorId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[Namedtype](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func Test_param_named_bool(t *testing.T) {
+	t.Parallel()
+
+	type Namedtype bool
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   Namedtype
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "t"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: true,
+		},
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "T"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: true,
+		},
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "True"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: true,
+		},
+		{
+			name: "Empty Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "-"}),
+				param: ParamType("guarantorId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[Namedtype](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
 func Test_param_string(t *testing.T) {
 	t.Parallel()
 
