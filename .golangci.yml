@@ -45,8 +45,6 @@ linters-settings:
     max-complexity: 25
   lll:
     line-length: 200
-  maligned:
-    suggest-new: true
   misspell:
     locale: US
   nestif:
@@ -196,8 +194,3 @@ issues:
 
   # Maximum count of issues with the same text. Set to 0 to disable. Default is 3.
   max-same-issues: 0
-
-# golangci.com configuration
-# https://github.com/golangci/golangci/wiki/Configuration
-service:
-  golangci-lint-version: 1.52 # use the fixed version to not introduce new linters unexpectedly
