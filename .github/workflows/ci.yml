@@ -12,6 +12,6 @@ jobs:
     uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@v5.2.0
     with:
       build-tags: '[""]'
-      golangci-lint-version: "v1.60.1"
+      golangci-lint-version: "v1.64.8"
   semantic-pull-request-title:
     uses: cccteam/github-workflows/.github/workflows/semantic-pull-request-title.yml@v5.2.0

@@ -45,8 +45,6 @@ linters-settings:
     max-complexity: 25
   lll:
     line-length: 200
-  maligned:
-    suggest-new: true
   misspell:
     locale: US
   nestif:
@@ -91,7 +89,7 @@ linters:
     - errcheck # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases [fast: false, auto-fix: false]
     - errorlint # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13. [fast: false, auto-fix: false]
     - exhaustive # check exhaustiveness of enum switch statements [fast: false, auto-fix: false]
-    - exportloopref # checks for pointers to enclosing loop variables [fast: false, auto-fix: false]
+    - copyloopvar
     - forcetypeassert # finds forced type assertions [fast: true, auto-fix: false]
     - funlen # Tool for detection of long functions [fast: true, auto-fix: false]
     - gochecknoglobals # check that no global variables exist [fast: true, auto-fix: false]
@@ -179,6 +177,11 @@ issues:
     - path: params\.go
       linters:
         - forcetypeassert
+        - gocyclo
+        - cyclop
+        - funlen
+        - gocognit
+      text: type assertion must be checked|Param
 
     - path: params\.go
       linters:
@@ -195,8 +198,3 @@ issues:
 
   # Maximum count of issues with the same text. Set to 0 to disable. Default is 3.
   max-same-issues: 0
-
-# golangci.com configuration
-# https://github.com/golangci/golangci/wiki/Configuration
-service:
-  golangci-lint-version: 1.52 # use the fixed version to not introduce new linters unexpectedly

@@ -50,7 +50,6 @@ func TestWithParams(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -73,7 +72,349 @@ func TestWithParams(t *testing.T) {
 	}
 }
 
-func Test_param_string(t *testing.T) {
+func TestParam_named_string(t *testing.T) {
+	t.Parallel()
+
+	type NamedType string
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   NamedType
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "755"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: "755",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[NamedType](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func TestParam_named_int(t *testing.T) {
+	t.Parallel()
+
+	type Namedtype int
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   Namedtype
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "755"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: 755,
+		},
+		{
+			name: "Empty Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "-"}),
+				param: ParamType("guarantorId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[Namedtype](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func TestParam_named_int64(t *testing.T) {
+	t.Parallel()
+
+	type Namedtype int64
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   Namedtype
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "755"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: 755,
+		},
+		{
+			name: "Empty Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "-"}),
+				param: ParamType("guarantorId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[Namedtype](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func TestParam_named_float64(t *testing.T) {
+	t.Parallel()
+
+	type Namedtype float64
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   Namedtype
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "755.01"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: 755.01,
+		},
+		{
+			name: "Empty Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "-"}),
+				param: ParamType("guarantorId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[Namedtype](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func TestParam_named_ccc_uuid(t *testing.T) {
+	t.Parallel()
+
+	type NamedType ccc.UUID
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   NamedType
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "0020198f-a14e-42ee-b5f8-65a228ba38e7"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: NamedType(ccc.Must(ccc.UUIDFromString("0020198f-a14e-42ee-b5f8-65a228ba38e7"))),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[NamedType](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func TestParam_named_uuid_uuid(t *testing.T) {
+	t.Parallel()
+
+	type NamedType uuid.UUID
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   NamedType
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "0020198f-a14e-42ee-b5f8-65a228ba38e7"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: NamedType(ccc.Must(uuid.FromString("0020198f-a14e-42ee-b5f8-65a228ba38e7"))),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[NamedType](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func TestParam_named_bool(t *testing.T) {
+	t.Parallel()
+
+	type Namedtype bool
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+	}
+	tests := []struct {
+		name      string
+		args      args
+		wantVal   Namedtype
+		wantPanic bool
+	}{
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "t"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: true,
+		},
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "T"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: true,
+		},
+		{
+			name: "Valid Param",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "True"}),
+				param: ParamType("guarantorId"),
+			},
+			wantVal: true,
+		},
+		{
+			name: "Empty Param Panic",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"guarantorId": "-"}),
+				param: ParamType("guarantorId"),
+			},
+			wantPanic: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			defer func() {
+				r := recover()
+				if tt.wantPanic != (r != nil) {
+					t.Errorf("param() panic = %v, wantPanic %v", r, tt.wantPanic)
+				}
+			}()
+
+			if gotVal := Param[Namedtype](tt.args.r, tt.args.param); gotVal != tt.wantVal {
+				t.Errorf("param() = %v, want %v", gotVal, tt.wantVal)
+			}
+		})
+	}
+}
+
+func TestParam_string(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -104,7 +445,6 @@ func Test_param_string(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -122,7 +462,7 @@ func Test_param_string(t *testing.T) {
 	}
 }
 
-func Test_param_int(t *testing.T) {
+func TestParam_int(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -153,7 +493,6 @@ func Test_param_int(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -171,7 +510,7 @@ func Test_param_int(t *testing.T) {
 	}
 }
 
-func Test_param_int64(t *testing.T) {
+func TestParam_int64(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -202,7 +541,6 @@ func Test_param_int64(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -220,7 +558,7 @@ func Test_param_int64(t *testing.T) {
 	}
 }
 
-func Test_param_float64(t *testing.T) {
+func TestParam_float64(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -251,7 +589,6 @@ func Test_param_float64(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -269,7 +606,7 @@ func Test_param_float64(t *testing.T) {
 	}
 }
 
-func Test_param_bool(t *testing.T) {
+func TestParam_bool(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -340,7 +677,6 @@ func Test_param_bool(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -358,7 +694,7 @@ func Test_param_bool(t *testing.T) {
 	}
 }
 
-func Test_param_UUID(t *testing.T) {
+func TestParam_UUID(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -389,7 +725,6 @@ func Test_param_UUID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -407,7 +742,7 @@ func Test_param_UUID(t *testing.T) {
 	}
 }
 
-func Test_param_ptr_UUID(t *testing.T) {
+func TestParam_ptr_UUID(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -438,7 +773,6 @@ func Test_param_ptr_UUID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -456,7 +790,7 @@ func Test_param_ptr_UUID(t *testing.T) {
 	}
 }
 
-func Test_param_ccc_UUID(t *testing.T) {
+func TestParam_ccc_UUID(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -487,7 +821,6 @@ func Test_param_ccc_UUID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -505,7 +838,7 @@ func Test_param_ccc_UUID(t *testing.T) {
 	}
 }
 
-func Test_param_ptr_ccc_UUID(t *testing.T) {
+func TestParam_ptr_ccc_UUID(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -536,7 +869,6 @@ func Test_param_ptr_ccc_UUID(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -554,7 +886,7 @@ func Test_param_ptr_ccc_UUID(t *testing.T) {
 	}
 }
 
-func Test_param_notimplemented(t *testing.T) {
+func TestParam_notimplemented(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -577,7 +909,6 @@ func Test_param_notimplemented(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 

@@ -31,7 +31,6 @@ func TestMessage(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := Message(tt.args.err); got != tt.want {
@@ -68,7 +67,6 @@ func TestMessages(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := Messages(tt.args.err)
@@ -122,7 +120,6 @@ func TestCauseIsError(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := CauseIsError(tt.args.err); got != tt.want {
@@ -174,7 +171,6 @@ func TestClientMessage_Error(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			c := &ClientMessage{
@@ -208,7 +204,6 @@ func TestClientMessage_Unwrap(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			c := &ClientMessage{
@@ -270,7 +265,6 @@ func TestClientMessage_Message(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: ""},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			cerr := &ClientMessage{}
@@ -352,7 +346,6 @@ func TestHasClientMessage(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := HasClientMessage(tt.args.err); got != tt.want {
@@ -382,7 +375,6 @@ func TestHasBadRequest(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := HasBadRequest(tt.args.err); got != tt.want {
@@ -412,7 +404,6 @@ func TestHasUnauthorized(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := HasUnauthorized(tt.args.err); got != tt.want {
@@ -442,7 +433,6 @@ func TestHasForbidden(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := HasForbidden(tt.args.err); got != tt.want {
@@ -472,7 +462,6 @@ func TestHasNotFound(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := HasNotFound(tt.args.err); got != tt.want {
@@ -502,7 +491,6 @@ func TestHasConflict(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := HasConflict(tt.args.err); got != tt.want {
@@ -532,7 +520,6 @@ func TestHasInternalServerError(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := HasInternalServerError(tt.args.err); got != tt.want {
@@ -562,7 +549,6 @@ func TestHasServiceUnavailable(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := HasServiceUnavailable(tt.args.err); got != tt.want {
@@ -592,7 +578,6 @@ func TestHasTooManyRequests(t *testing.T) {
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := HasTooManyRequests(tt.args.err); got != tt.want {
