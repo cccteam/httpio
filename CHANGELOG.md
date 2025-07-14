@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.8](https://github.com/cccteam/httpio/compare/v0.7.7...v0.7.8) (2025-07-14)
+
+
+### Features
+
+* Add support for named types where underlying type is already supported ([#101](https://github.com/cccteam/httpio/issues/101)) ([13acc71](https://github.com/cccteam/httpio/commit/13acc717a952f3f94aba3ae3c38063a28b3fd083))
+
 ## [0.7.7](https://github.com/cccteam/httpio/compare/v0.7.6...v0.7.7) (2025-02-12)
 
 
