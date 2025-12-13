@@ -1,4 +1,4 @@
-// httpio handles encoding and decoding for http i/o.
+// Package httpio handles encoding and decoding for http i/o.
 // This package is used to standardize request and response handling.
 package httpio
 
