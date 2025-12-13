@@ -65,7 +65,7 @@ func (e *Encoder) encode(body interface{}, skipFrames uint) error {
 func (e *Encoder) statusCodeWithMessage(ctx context.Context, statusCode int, err error, message string) error {
 	e.w.WriteHeader(statusCode)
 
-	traceID := logger.Ctx(ctx).TraceID()
+	traceID := logger.FromCtx(ctx).TraceID()
 
 	// if we don't have any message or traceID, we don't need to write anything to the body
 	if message == "" && traceID == "" {

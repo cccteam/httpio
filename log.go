@@ -28,21 +28,21 @@ func Log(handler func(w http.ResponseWriter, r *http.Request) error) http.Handle
 
 		cerr := &ClientMessage{}
 		if !errors.As(err, &cerr) {
-			logger.Req(r).Error(err)
+			logger.FromReq(r).Error(err)
 
 			return
 		}
 
 		messages := strings.Join(Messages(err), "', '")
 		if cerr.msgType < internalServerError {
-			logger.Req(r).Info(err)
+			logger.FromReq(r).Info(err)
 			if messages != "" {
-				logger.Req(r).Infof("messages=['%s']", messages)
+				logger.FromReq(r).Infof("messages=['%s']", messages)
 			}
 		} else {
-			logger.Req(r).Error(err)
+			logger.FromReq(r).Error(err)
 			if messages != "" {
-				logger.Req(r).Errorf("messages=['%s']", messages)
+				logger.FromReq(r).Errorf("messages=['%s']", messages)
 			}
 		}
 	}
