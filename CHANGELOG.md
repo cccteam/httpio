@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.10](https://github.com/cccteam/httpio/compare/v0.7.9...v0.7.10) (2026-03-16)
+
+
+### Features
+
+* Upgrade Go to 1.25.8 ([1a110c9](https://github.com/cccteam/httpio/commit/1a110c943eeb9369864124231c4e1d34384e3a56))
+
 ## [0.7.9](https://github.com/cccteam/httpio/compare/v0.7.8...v0.7.9) (2025-12-13)
 
 
