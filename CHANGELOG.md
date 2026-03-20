@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.11](https://github.com/cccteam/httpio/compare/v0.7.10...v0.7.11) (2026-03-20)
+
+
+### Bug Fixes
+
+* address active Trivy incident ([#113](https://github.com/cccteam/httpio/issues/113)) ([dfc7d38](https://github.com/cccteam/httpio/commit/dfc7d3800868e6ca07145768ef485646d10e0e20))
+
 ## [0.7.10](https://github.com/cccteam/httpio/compare/v0.7.9...v0.7.10) (2026-03-16)
 
 
