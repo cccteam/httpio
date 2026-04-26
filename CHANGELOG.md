@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.7.11](https://github.com/cccteam/httpio/compare/v0.7.10...v0.7.11) (2026-04-26)
+
+
+### Features
+
+* Add more http codes ([#118](https://github.com/cccteam/httpio/issues/118)) ([da99754](https://github.com/cccteam/httpio/commit/da997540020bc2dba1fef7dc8ac64b11ad61037c))
+
+
+### Bug Fixes
+
+* address active Trivy incident ([#113](https://github.com/cccteam/httpio/issues/113)) ([dfc7d38](https://github.com/cccteam/httpio/commit/dfc7d3800868e6ca07145768ef485646d10e0e20))
+
+
+### Code Upgrade
+
+* Upgrade Go to 1.26.2 and bump all dependencies ([#117](https://github.com/cccteam/httpio/issues/117)) ([1906918](https://github.com/cccteam/httpio/commit/1906918eb45bbb6bace1f948db212ef568cba255))
+
 ## [0.7.10](https://github.com/cccteam/httpio/compare/v0.7.9...v0.7.10) (2026-03-16)
 
 
