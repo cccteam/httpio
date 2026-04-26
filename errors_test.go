@@ -262,6 +262,30 @@ func TestClientMessage_Message(t *testing.T) {
 		{name: "TooManyRequests (with messagef)", args: args{err: NewTooManyRequestsMessagef("msg %v", "arg")}, want: "msg arg"},
 		{name: "TooManyRequests (with message and error)", args: args{err: NewTooManyRequestsMessageWithError(stderr.New("err"), "msg")}, want: "msg"},
 		{name: "TooManyRequests (with message and errorf)", args: args{err: NewTooManyRequestsMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: "msg arg"},
+		{name: "MethodNotAllowed (with message)", args: args{err: NewMethodNotAllowedMessage("msg")}, want: "msg"},
+		{name: "MethodNotAllowed (with messagef)", args: args{err: NewMethodNotAllowedMessagef("msg %v", "arg")}, want: "msg arg"},
+		{name: "MethodNotAllowed (with message and error)", args: args{err: NewMethodNotAllowedMessageWithError(stderr.New("err"), "msg")}, want: "msg"},
+		{name: "MethodNotAllowed (with message and errorf)", args: args{err: NewMethodNotAllowedMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: "msg arg"},
+		{name: "RequestTimeout (with message)", args: args{err: NewRequestTimeoutMessage("msg")}, want: "msg"},
+		{name: "RequestTimeout (with messagef)", args: args{err: NewRequestTimeoutMessagef("msg %v", "arg")}, want: "msg arg"},
+		{name: "RequestTimeout (with message and error)", args: args{err: NewRequestTimeoutMessageWithError(stderr.New("err"), "msg")}, want: "msg"},
+		{name: "RequestTimeout (with message and errorf)", args: args{err: NewRequestTimeoutMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: "msg arg"},
+		{name: "UnprocessableEntity (with message)", args: args{err: NewUnprocessableEntityMessage("msg")}, want: "msg"},
+		{name: "UnprocessableEntity (with messagef)", args: args{err: NewUnprocessableEntityMessagef("msg %v", "arg")}, want: "msg arg"},
+		{name: "UnprocessableEntity (with message and error)", args: args{err: NewUnprocessableEntityMessageWithError(stderr.New("err"), "msg")}, want: "msg"},
+		{name: "UnprocessableEntity (with message and errorf)", args: args{err: NewUnprocessableEntityMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: "msg arg"},
+		{name: "NotImplemented (with message)", args: args{err: NewNotImplementedMessage("msg")}, want: "msg"},
+		{name: "NotImplemented (with messagef)", args: args{err: NewNotImplementedMessagef("msg %v", "arg")}, want: "msg arg"},
+		{name: "NotImplemented (with message and error)", args: args{err: NewNotImplementedMessageWithError(stderr.New("err"), "msg")}, want: "msg"},
+		{name: "NotImplemented (with message and errorf)", args: args{err: NewNotImplementedMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: "msg arg"},
+		{name: "BadGateway (with message)", args: args{err: NewBadGatewayMessage("msg")}, want: "msg"},
+		{name: "BadGateway (with messagef)", args: args{err: NewBadGatewayMessagef("msg %v", "arg")}, want: "msg arg"},
+		{name: "BadGateway (with message and error)", args: args{err: NewBadGatewayMessageWithError(stderr.New("err"), "msg")}, want: "msg"},
+		{name: "BadGateway (with message and errorf)", args: args{err: NewBadGatewayMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: "msg arg"},
+		{name: "GatewayTimeout (with message)", args: args{err: NewGatewayTimeoutMessage("msg")}, want: "msg"},
+		{name: "GatewayTimeout (with messagef)", args: args{err: NewGatewayTimeoutMessagef("msg %v", "arg")}, want: "msg arg"},
+		{name: "GatewayTimeout (with message and error)", args: args{err: NewGatewayTimeoutMessageWithError(stderr.New("err"), "msg")}, want: "msg"},
+		{name: "GatewayTimeout (with message and errorf)", args: args{err: NewGatewayTimeoutMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: "msg arg"},
 		{name: "Other error", args: args{err: stderr.New("err")}, want: ""},
 	}
 	for _, tt := range tests {
@@ -342,6 +366,42 @@ func TestHasClientMessage(t *testing.T) {
 		{name: "TooManyRequests (with messagef)", args: args{err: NewTooManyRequestsMessagef("msg %v", "arg")}, want: true},
 		{name: "TooManyRequests (with message and error)", args: args{err: NewTooManyRequestsMessageWithError(stderr.New("err"), "msg")}, want: true},
 		{name: "TooManyRequests (with message and errorf)", args: args{err: NewTooManyRequestsMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "MethodNotAllowed", args: args{err: NewMethodNotAllowed()}, want: true},
+		{name: "MethodNotAllowed (with error)", args: args{err: NewMethodNotAllowedWithError(stderr.New("msg"))}, want: true},
+		{name: "MethodNotAllowed (with message)", args: args{err: NewMethodNotAllowedMessage("msg")}, want: true},
+		{name: "MethodNotAllowed (with messagef)", args: args{err: NewMethodNotAllowedMessagef("msg %v", "arg")}, want: true},
+		{name: "MethodNotAllowed (with message and error)", args: args{err: NewMethodNotAllowedMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "MethodNotAllowed (with message and errorf)", args: args{err: NewMethodNotAllowedMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "RequestTimeout", args: args{err: NewRequestTimeout()}, want: true},
+		{name: "RequestTimeout (with error)", args: args{err: NewRequestTimeoutWithError(stderr.New("msg"))}, want: true},
+		{name: "RequestTimeout (with message)", args: args{err: NewRequestTimeoutMessage("msg")}, want: true},
+		{name: "RequestTimeout (with messagef)", args: args{err: NewRequestTimeoutMessagef("msg %v", "arg")}, want: true},
+		{name: "RequestTimeout (with message and error)", args: args{err: NewRequestTimeoutMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "RequestTimeout (with message and errorf)", args: args{err: NewRequestTimeoutMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "UnprocessableEntity", args: args{err: NewUnprocessableEntity()}, want: true},
+		{name: "UnprocessableEntity (with error)", args: args{err: NewUnprocessableEntityWithError(stderr.New("msg"))}, want: true},
+		{name: "UnprocessableEntity (with message)", args: args{err: NewUnprocessableEntityMessage("msg")}, want: true},
+		{name: "UnprocessableEntity (with messagef)", args: args{err: NewUnprocessableEntityMessagef("msg %v", "arg")}, want: true},
+		{name: "UnprocessableEntity (with message and error)", args: args{err: NewUnprocessableEntityMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "UnprocessableEntity (with message and errorf)", args: args{err: NewUnprocessableEntityMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "NotImplemented", args: args{err: NewNotImplemented()}, want: true},
+		{name: "NotImplemented (with error)", args: args{err: NewNotImplementedWithError(stderr.New("msg"))}, want: true},
+		{name: "NotImplemented (with message)", args: args{err: NewNotImplementedMessage("msg")}, want: true},
+		{name: "NotImplemented (with messagef)", args: args{err: NewNotImplementedMessagef("msg %v", "arg")}, want: true},
+		{name: "NotImplemented (with message and error)", args: args{err: NewNotImplementedMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "NotImplemented (with message and errorf)", args: args{err: NewNotImplementedMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "BadGateway", args: args{err: NewBadGateway()}, want: true},
+		{name: "BadGateway (with error)", args: args{err: NewBadGatewayWithError(stderr.New("msg"))}, want: true},
+		{name: "BadGateway (with message)", args: args{err: NewBadGatewayMessage("msg")}, want: true},
+		{name: "BadGateway (with messagef)", args: args{err: NewBadGatewayMessagef("msg %v", "arg")}, want: true},
+		{name: "BadGateway (with message and error)", args: args{err: NewBadGatewayMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "BadGateway (with message and errorf)", args: args{err: NewBadGatewayMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "GatewayTimeout", args: args{err: NewGatewayTimeout()}, want: true},
+		{name: "GatewayTimeout (with error)", args: args{err: NewGatewayTimeoutWithError(stderr.New("msg"))}, want: true},
+		{name: "GatewayTimeout (with message)", args: args{err: NewGatewayTimeoutMessage("msg")}, want: true},
+		{name: "GatewayTimeout (with messagef)", args: args{err: NewGatewayTimeoutMessagef("msg %v", "arg")}, want: true},
+		{name: "GatewayTimeout (with message and error)", args: args{err: NewGatewayTimeoutMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "GatewayTimeout (with message and errorf)", args: args{err: NewGatewayTimeoutMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
 
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
@@ -471,6 +531,64 @@ func TestHasNotFound(t *testing.T) {
 	}
 }
 
+func TestHasMethodNotAllowed(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "MethodNotAllowed", args: args{err: NewMethodNotAllowed()}, want: true},
+		{name: "MethodNotAllowed (with error)", args: args{err: NewMethodNotAllowedWithError(stderr.New("msg"))}, want: true},
+		{name: "MethodNotAllowed (with message)", args: args{err: NewMethodNotAllowedMessage("msg")}, want: true},
+		{name: "MethodNotAllowed (with messagef)", args: args{err: NewMethodNotAllowedMessagef("msg %v", "arg")}, want: true},
+		{name: "MethodNotAllowed (with message and error)", args: args{err: NewMethodNotAllowedMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "MethodNotAllowed (with message and errorf)", args: args{err: NewMethodNotAllowedMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := HasMethodNotAllowed(tt.args.err); got != tt.want {
+				t.Errorf("HasMethodNotAllowed() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHasRequestTimeout(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "RequestTimeout", args: args{err: NewRequestTimeout()}, want: true},
+		{name: "RequestTimeout (with error)", args: args{err: NewRequestTimeoutWithError(stderr.New("msg"))}, want: true},
+		{name: "RequestTimeout (with message)", args: args{err: NewRequestTimeoutMessage("msg")}, want: true},
+		{name: "RequestTimeout (with messagef)", args: args{err: NewRequestTimeoutMessagef("msg %v", "arg")}, want: true},
+		{name: "RequestTimeout (with message and error)", args: args{err: NewRequestTimeoutMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "RequestTimeout (with message and errorf)", args: args{err: NewRequestTimeoutMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := HasRequestTimeout(tt.args.err); got != tt.want {
+				t.Errorf("HasRequestTimeout() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestHasConflict(t *testing.T) {
 	t.Parallel()
 
@@ -495,6 +613,64 @@ func TestHasConflict(t *testing.T) {
 			t.Parallel()
 			if got := HasConflict(tt.args.err); got != tt.want {
 				t.Errorf("HasConflict() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHasUnprocessableEntity(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "UnprocessableEntity", args: args{err: NewUnprocessableEntity()}, want: true},
+		{name: "UnprocessableEntity (with error)", args: args{err: NewUnprocessableEntityWithError(stderr.New("msg"))}, want: true},
+		{name: "UnprocessableEntity (with message)", args: args{err: NewUnprocessableEntityMessage("msg")}, want: true},
+		{name: "UnprocessableEntity (with messagef)", args: args{err: NewUnprocessableEntityMessagef("msg %v", "arg")}, want: true},
+		{name: "UnprocessableEntity (with message and error)", args: args{err: NewUnprocessableEntityMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "UnprocessableEntity (with message and errorf)", args: args{err: NewUnprocessableEntityMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := HasUnprocessableEntity(tt.args.err); got != tt.want {
+				t.Errorf("HasUnprocessableEntity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHasTooManyRequests(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "TooManyRequests", args: args{err: NewTooManyRequests()}, want: true},
+		{name: "TooManyRequests (with error)", args: args{err: NewTooManyRequestsWithError(stderr.New("msg"))}, want: true},
+		{name: "TooManyRequests (with message)", args: args{err: NewTooManyRequestsMessage("msg")}, want: true},
+		{name: "TooManyRequests (with messagef)", args: args{err: NewTooManyRequestsMessagef("msg %v", "arg")}, want: true},
+		{name: "TooManyRequests (with message and error)", args: args{err: NewTooManyRequestsMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "TooManyRequests (with message and errorf)", args: args{err: NewTooManyRequestsMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := HasTooManyRequests(tt.args.err); got != tt.want {
+				t.Errorf("HasTooManyRequests() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -529,6 +705,64 @@ func TestHasInternalServerError(t *testing.T) {
 	}
 }
 
+func TestHasNotImplemented(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "NotImplemented", args: args{err: NewNotImplemented()}, want: true},
+		{name: "NotImplemented (with error)", args: args{err: NewNotImplementedWithError(stderr.New("msg"))}, want: true},
+		{name: "NotImplemented (with message)", args: args{err: NewNotImplementedMessage("msg")}, want: true},
+		{name: "NotImplemented (with messagef)", args: args{err: NewNotImplementedMessagef("msg %v", "arg")}, want: true},
+		{name: "NotImplemented (with message and error)", args: args{err: NewNotImplementedMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "NotImplemented (with message and errorf)", args: args{err: NewNotImplementedMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := HasNotImplemented(tt.args.err); got != tt.want {
+				t.Errorf("HasNotImplemented() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestHasBadGateway(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "BadGateway", args: args{err: NewBadGateway()}, want: true},
+		{name: "BadGateway (with error)", args: args{err: NewBadGatewayWithError(stderr.New("msg"))}, want: true},
+		{name: "BadGateway (with message)", args: args{err: NewBadGatewayMessage("msg")}, want: true},
+		{name: "BadGateway (with messagef)", args: args{err: NewBadGatewayMessagef("msg %v", "arg")}, want: true},
+		{name: "BadGateway (with message and error)", args: args{err: NewBadGatewayMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "BadGateway (with message and errorf)", args: args{err: NewBadGatewayMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := HasBadGateway(tt.args.err); got != tt.want {
+				t.Errorf("HasBadGateway() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestHasServiceUnavailable(t *testing.T) {
 	t.Parallel()
 
@@ -558,7 +792,7 @@ func TestHasServiceUnavailable(t *testing.T) {
 	}
 }
 
-func TestHasTooManyRequests(t *testing.T) {
+func TestHasGatewayTimeout(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -569,19 +803,19 @@ func TestHasTooManyRequests(t *testing.T) {
 		args args
 		want bool
 	}{
-		{name: "TooManyRequests", args: args{err: NewTooManyRequests()}, want: true},
-		{name: "TooManyRequests (with error)", args: args{err: NewTooManyRequestsWithError(stderr.New("msg"))}, want: true},
-		{name: "TooManyRequests (with message)", args: args{err: NewTooManyRequestsMessage("msg")}, want: true},
-		{name: "TooManyRequests (with messagef)", args: args{err: NewTooManyRequestsMessagef("msg %v", "arg")}, want: true},
-		{name: "TooManyRequests (with message and error)", args: args{err: NewTooManyRequestsMessageWithError(stderr.New("err"), "msg")}, want: true},
-		{name: "TooManyRequests (with message and errorf)", args: args{err: NewTooManyRequestsMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
+		{name: "GatewayTimeout", args: args{err: NewGatewayTimeout()}, want: true},
+		{name: "GatewayTimeout (with error)", args: args{err: NewGatewayTimeoutWithError(stderr.New("msg"))}, want: true},
+		{name: "GatewayTimeout (with message)", args: args{err: NewGatewayTimeoutMessage("msg")}, want: true},
+		{name: "GatewayTimeout (with messagef)", args: args{err: NewGatewayTimeoutMessagef("msg %v", "arg")}, want: true},
+		{name: "GatewayTimeout (with message and error)", args: args{err: NewGatewayTimeoutMessageWithError(stderr.New("err"), "msg")}, want: true},
+		{name: "GatewayTimeout (with message and errorf)", args: args{err: NewGatewayTimeoutMessageWithErrorf(stderr.New("err"), "msg %v", "arg")}, want: true},
 		{name: "Other error", args: args{err: stderr.New("err")}, want: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if got := HasTooManyRequests(tt.args.err); got != tt.want {
-				t.Errorf("HasTooManyRequests() = %v, want %v", got, tt.want)
+			if got := HasGatewayTimeout(tt.args.err); got != tt.want {
+				t.Errorf("HasGatewayTimeout() = %v, want %v", got, tt.want)
 			}
 		})
 	}
