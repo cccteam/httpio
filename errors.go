@@ -15,10 +15,16 @@ const (
 	unauthorized                       // http code 401
 	forbidden                          // http code 403
 	notFound                           // http code 404
+	methodNotAllowed                   // http code 405
+	requestTimeout                     // http code 408
 	conflict                           // http code 409
+	unprocessableEntity                // http code 422
 	tooManyRequests                    // http code 429
 	internalServerError                // http code 500
+	notImplemented                     // http code 501
+	badGateway                         // http code 502
 	serviceUnavailable                 // http code 503
+	gatewayTimeout                     // http code 504
 )
 
 func init() {
@@ -147,10 +153,38 @@ func NewNotFound() errors.Chain {
 	})
 }
 
+// NewMethodNotAllowed creates a new empty client message with a MethodNotAllowed (405) return code
+func NewMethodNotAllowed() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: methodNotAllowed,
+	})
+}
+
+// NewRequestTimeout creates a new empty client message with a RequestTimeout (408) return code
+func NewRequestTimeout() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: requestTimeout,
+	})
+}
+
 // NewConflict creates a new empty client message with a Conflict (409) return code
 func NewConflict() errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: conflict,
+	})
+}
+
+// NewUnprocessableEntity creates a new empty client message with a UnprocessableEntity (422) return code
+func NewUnprocessableEntity() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: unprocessableEntity,
+	})
+}
+
+// NewTooManyRequests creates a new empty client message with a TooManyRequests (429) return code
+func NewTooManyRequests() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: tooManyRequests,
 	})
 }
 
@@ -161,6 +195,20 @@ func NewInternalServerError() errors.Chain {
 	})
 }
 
+// NewNotImplemented creates a new empty client message with a NotImplemented (501) return code
+func NewNotImplemented() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: notImplemented,
+	})
+}
+
+// NewBadGateway creates a new empty client message with a BadGateway (502) return code
+func NewBadGateway() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: badGateway,
+	})
+}
+
 // NewServiceUnavailable creates a new empty client message with a ServiceUnavailable (503) return code
 func NewServiceUnavailable() errors.Chain {
 	return wrap(&ClientMessage{
@@ -168,10 +216,10 @@ func NewServiceUnavailable() errors.Chain {
 	})
 }
 
-// NewTooManyRequests creates a new empty client message with a TooManyRequests (429) return code
-func NewTooManyRequests() errors.Chain {
+// NewGatewayTimeout creates a new empty client message with a GatewayTimeout (504) return code
+func NewGatewayTimeout() errors.Chain {
 	return wrap(&ClientMessage{
-		msgType: tooManyRequests,
+		msgType: gatewayTimeout,
 	})
 }
 
@@ -207,10 +255,42 @@ func NewNotFoundWithError(err error) errors.Chain {
 	})
 }
 
+// NewMethodNotAllowedWithError wraps an existing error while creating a new empty client message and a MethodNotAllowed (405) return code
+func NewMethodNotAllowedWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: methodNotAllowed,
+		error:   err,
+	})
+}
+
+// NewRequestTimeoutWithError wraps an existing error while creating a new empty client message and a RequestTimeout (408) return code
+func NewRequestTimeoutWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: requestTimeout,
+		error:   err,
+	})
+}
+
 // NewConflictWithError wraps an existing error while creating a new empty client message and a Conflict (409) return code
 func NewConflictWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: conflict,
+		error:   err,
+	})
+}
+
+// NewUnprocessableEntityWithError wraps an existing error while creating a new empty client message and a UnprocessableEntity (422) return code
+func NewUnprocessableEntityWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: unprocessableEntity,
+		error:   err,
+	})
+}
+
+// NewTooManyRequestsWithError wraps an existing error while creating a new empty client message and a TooManyRequests (429) return code
+func NewTooManyRequestsWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: tooManyRequests,
 		error:   err,
 	})
 }
@@ -223,6 +303,22 @@ func NewInternalServerErrorWithError(err error) errors.Chain {
 	})
 }
 
+// NewNotImplementedWithError wraps an existing error while creating a new empty client message and a NotImplemented (501) return code
+func NewNotImplementedWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: notImplemented,
+		error:   err,
+	})
+}
+
+// NewBadGatewayWithError wraps an existing error while creating a new empty client message and a BadGateway (502) return code
+func NewBadGatewayWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: badGateway,
+		error:   err,
+	})
+}
+
 // NewServiceUnavailableWithError wraps an existing error while creating a new empty client message and a ServiceUnavailable (503) return code
 func NewServiceUnavailableWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
@@ -231,10 +327,10 @@ func NewServiceUnavailableWithError(err error) errors.Chain {
 	})
 }
 
-// NewTooManyRequestsWithError wraps an existing error while creating a new empty client message and a TooManyRequests (429) return code
-func NewTooManyRequestsWithError(err error) errors.Chain {
+// NewGatewayTimeoutWithError wraps an existing error while creating a new empty client message and a GatewayTimeout (504) return code
+func NewGatewayTimeoutWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
-		msgType: tooManyRequests,
+		msgType: gatewayTimeout,
 		error:   err,
 	})
 }
@@ -271,10 +367,42 @@ func NewNotFoundMessage(message string) errors.Chain {
 	})
 }
 
+// NewMethodNotAllowedMessage creates a new client message with a MethodNotAllowed (405) return code
+func NewMethodNotAllowedMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       methodNotAllowed,
+		clientMessage: message,
+	})
+}
+
+// NewRequestTimeoutMessage creates a new client message with a RequestTimeout (408) return code
+func NewRequestTimeoutMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       requestTimeout,
+		clientMessage: message,
+	})
+}
+
 // NewConflictMessage creates a new client message with a Conflict (409) return code
 func NewConflictMessage(message string) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       conflict,
+		clientMessage: message,
+	})
+}
+
+// NewUnprocessableEntityMessage creates a new client message with a UnprocessableEntity (422) return code
+func NewUnprocessableEntityMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       unprocessableEntity,
+		clientMessage: message,
+	})
+}
+
+// NewTooManyRequestsMessage creates a new client message with a TooManyRequests (429) return code
+func NewTooManyRequestsMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: message,
 	})
 }
@@ -287,6 +415,22 @@ func NewInternalServerErrorMessage(message string) errors.Chain {
 	})
 }
 
+// NewNotImplementedMessage creates a new client message with a NotImplemented (501) return code
+func NewNotImplementedMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       notImplemented,
+		clientMessage: message,
+	})
+}
+
+// NewBadGatewayMessage creates a new client message with a BadGateway (502) return code
+func NewBadGatewayMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       badGateway,
+		clientMessage: message,
+	})
+}
+
 // NewServiceUnavailableMessage creates a new client message with a ServiceUnavailable (503) return code
 func NewServiceUnavailableMessage(message string) errors.Chain {
 	return wrap(&ClientMessage{
@@ -295,10 +439,10 @@ func NewServiceUnavailableMessage(message string) errors.Chain {
 	})
 }
 
-// NewTooManyRequestsMessage creates a new client message with a TooManyRequests (429) return code
-func NewTooManyRequestsMessage(message string) errors.Chain {
+// NewGatewayTimeoutMessage creates a new client message with a GatewayTimeout (504) return code
+func NewGatewayTimeoutMessage(message string) errors.Chain {
 	return wrap(&ClientMessage{
-		msgType:       tooManyRequests,
+		msgType:       gatewayTimeout,
 		clientMessage: message,
 	})
 }
@@ -335,10 +479,42 @@ func NewNotFoundMessagef(format string, a ...any) errors.Chain {
 	})
 }
 
+// NewMethodNotAllowedMessagef creates a new client message with a MethodNotAllowed (405) return code
+func NewMethodNotAllowedMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       methodNotAllowed,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
+// NewRequestTimeoutMessagef creates a new client message with a RequestTimeout (408) return code
+func NewRequestTimeoutMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       requestTimeout,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
 // NewConflictMessagef creates a new client message with a Conflict (409) return code
 func NewConflictMessagef(format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       conflict,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
+// NewUnprocessableEntityMessagef creates a new client message with a UnprocessableEntity (422) return code
+func NewUnprocessableEntityMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       unprocessableEntity,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
+// NewTooManyRequestsMessagef creates a new client message with a TooManyRequests (429) return code
+func NewTooManyRequestsMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: fmt.Sprintf(format, a...),
 	})
 }
@@ -351,6 +527,22 @@ func NewInternalServerErrorMessagef(format string, a ...any) errors.Chain {
 	})
 }
 
+// NewNotImplementedMessagef creates a new client message with a NotImplemented (501) return code
+func NewNotImplementedMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       notImplemented,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
+// NewBadGatewayMessagef creates a new client message with a BadGateway (502) return code
+func NewBadGatewayMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       badGateway,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
 // NewServiceUnavailableMessagef creates a new client message with a ServiceUnavailable (503) return code
 func NewServiceUnavailableMessagef(format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
@@ -359,10 +551,10 @@ func NewServiceUnavailableMessagef(format string, a ...any) errors.Chain {
 	})
 }
 
-// NewTooManyRequestsMessagef creates a new client message with a TooManyRequests (429) return code
-func NewTooManyRequestsMessagef(format string, a ...any) errors.Chain {
+// NewGatewayTimeoutMessagef creates a new client message with a GatewayTimeout (504) return code
+func NewGatewayTimeoutMessagef(format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
-		msgType:       tooManyRequests,
+		msgType:       gatewayTimeout,
 		clientMessage: fmt.Sprintf(format, a...),
 	})
 }
@@ -403,10 +595,46 @@ func NewNotFoundMessageWithError(err error, message string) errors.Chain {
 	})
 }
 
+// NewMethodNotAllowedMessageWithError wraps an existing error while creating a new client message with a MethodNotAllowed (405) return code
+func NewMethodNotAllowedMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       methodNotAllowed,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
+// NewRequestTimeoutMessageWithError wraps an existing error while creating a new client message with a RequestTimeout (408) return code
+func NewRequestTimeoutMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       requestTimeout,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
 // NewConflictMessageWithError wraps an existing error while creating a new client message with a Conflict (409) return code
 func NewConflictMessageWithError(err error, message string) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       conflict,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
+// NewUnprocessableEntityMessageWithError wraps an existing error while creating a new client message with a UnprocessableEntity (422) return code
+func NewUnprocessableEntityMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       unprocessableEntity,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
+// NewTooManyRequestsMessageWithError wraps an existing error while creating a new client message with a TooManyRequests (429) return code
+func NewTooManyRequestsMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: message,
 		error:         err,
 	})
@@ -421,6 +649,24 @@ func NewInternalServerErrorMessageWithError(err error, message string) errors.Ch
 	})
 }
 
+// NewNotImplementedMessageWithError wraps an existing error while creating a new client message with a NotImplemented (501) return code
+func NewNotImplementedMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       notImplemented,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
+// NewBadGatewayMessageWithError wraps an existing error while creating a new client message with a BadGateway (502) return code
+func NewBadGatewayMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       badGateway,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
 // NewServiceUnavailableMessageWithError wraps an existing error while creating a new client message with a ServiceUnavailable (503) return code
 func NewServiceUnavailableMessageWithError(err error, message string) errors.Chain {
 	return wrap(&ClientMessage{
@@ -430,10 +676,10 @@ func NewServiceUnavailableMessageWithError(err error, message string) errors.Cha
 	})
 }
 
-// NewTooManyRequestsMessageWithError wraps an existing error while creating a new client message with a TooManyRequests (429) return code
-func NewTooManyRequestsMessageWithError(err error, message string) errors.Chain {
+// NewGatewayTimeoutMessageWithError wraps an existing error while creating a new client message with a GatewayTimeout (504) return code
+func NewGatewayTimeoutMessageWithError(err error, message string) errors.Chain {
 	return wrap(&ClientMessage{
-		msgType:       tooManyRequests,
+		msgType:       gatewayTimeout,
 		clientMessage: message,
 		error:         err,
 	})
@@ -475,6 +721,24 @@ func NewNotFoundMessageWithErrorf(err error, format string, a ...any) errors.Cha
 	})
 }
 
+// NewMethodNotAllowedMessageWithErrorf wraps an existing error while creating a new client message with a MethodNotAllowed (405) return code
+func NewMethodNotAllowedMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       methodNotAllowed,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
+// NewRequestTimeoutMessageWithErrorf wraps an existing error while creating a new client message with a RequestTimeout (408) return code
+func NewRequestTimeoutMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       requestTimeout,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
 // NewConflictMessageWithErrorf wraps an existing error while creating a new client message with a Conflict (409) return code
 func NewConflictMessageWithErrorf(err error, format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
@@ -484,19 +748,10 @@ func NewConflictMessageWithErrorf(err error, format string, a ...any) errors.Cha
 	})
 }
 
-// NewInternalServerErrorMessageWithErrorf wraps an existing error while creating a new client message with a InternalServerError (500) return code
-func NewInternalServerErrorMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+// NewUnprocessableEntityMessageWithErrorf wraps an existing error while creating a new client message with a UnprocessableEntity (422) return code
+func NewUnprocessableEntityMessageWithErrorf(err error, format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
-		msgType:       internalServerError,
-		clientMessage: fmt.Sprintf(format, a...),
-		error:         err,
-	})
-}
-
-// NewServiceUnavailableMessageWithErrorf wraps an existing error while creating a new client message with a ServiceUnavailable (503) return code
-func NewServiceUnavailableMessageWithErrorf(err error, format string, a ...any) errors.Chain {
-	return wrap(&ClientMessage{
-		msgType:       serviceUnavailable,
+		msgType:       unprocessableEntity,
 		clientMessage: fmt.Sprintf(format, a...),
 		error:         err,
 	})
@@ -511,11 +766,49 @@ func NewTooManyRequestsMessageWithErrorf(err error, format string, a ...any) err
 	})
 }
 
-// HasClientMessage checks if the error contains a client message
-func HasClientMessage(err error) bool {
-	cerr := &ClientMessage{}
+// NewInternalServerErrorMessageWithErrorf wraps an existing error while creating a new client message with a InternalServerError (500) return code
+func NewInternalServerErrorMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       internalServerError,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
 
-	return errors.As(err, &cerr)
+// NewNotImplementedMessageWithErrorf wraps an existing error while creating a new client message with a NotImplemented (501) return code
+func NewNotImplementedMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       notImplemented,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
+// NewBadGatewayMessageWithErrorf wraps an existing error while creating a new client message with a BadGateway (502) return code
+func NewBadGatewayMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       badGateway,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
+// NewServiceUnavailableMessageWithErrorf wraps an existing error while creating a new client message with a ServiceUnavailable (503) return code
+func NewServiceUnavailableMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       serviceUnavailable,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
+// NewGatewayTimeoutMessageWithErrorf wraps an existing error while creating a new client message with a GatewayTimeout (504) return code
+func NewGatewayTimeoutMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       gatewayTimeout,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
 }
 
 // HasBadRequest checks if the error contains a BadRequest (400) message
@@ -558,11 +851,51 @@ func HasNotFound(err error) bool {
 	return false
 }
 
+// HasMethodNotAllowed checks if the error contains a MethodNotAllowed (405) message
+func HasMethodNotAllowed(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == methodNotAllowed
+	}
+
+	return false
+}
+
+// HasRequestTimeout checks if the error contains a RequestTimeout (408) message
+func HasRequestTimeout(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == requestTimeout
+	}
+
+	return false
+}
+
 // HasConflict checks if the error contains a Conflict (409) message
 func HasConflict(err error) bool {
 	cerr := &ClientMessage{}
 	if errors.As(err, &cerr) {
 		return cerr.msgType == conflict
+	}
+
+	return false
+}
+
+// HasUnprocessableEntity checks if the error contains a UnprocessableEntity (422) message
+func HasUnprocessableEntity(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == unprocessableEntity
+	}
+
+	return false
+}
+
+// HasTooManyRequests checks if the error contains a TooManyRequests (429) message
+func HasTooManyRequests(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == tooManyRequests
 	}
 
 	return false
@@ -578,6 +911,26 @@ func HasInternalServerError(err error) bool {
 	return false
 }
 
+// HasNotImplemented checks if the error contains a NotImplemented (501) message
+func HasNotImplemented(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == notImplemented
+	}
+
+	return false
+}
+
+// HasBadGateway checks if the error contains a BadGateway (502) message
+func HasBadGateway(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == badGateway
+	}
+
+	return false
+}
+
 // HasServiceUnavailable checks if the error contains a ServiceUnavailable (503) message
 func HasServiceUnavailable(err error) bool {
 	cerr := &ClientMessage{}
@@ -588,12 +941,19 @@ func HasServiceUnavailable(err error) bool {
 	return false
 }
 
-// HasTooManyRequests checks if the error contains a TooManyRequests (429) message
-func HasTooManyRequests(err error) bool {
+// HasGatewayTimeout checks if the error contains a GatewayTimeout (504) message
+func HasGatewayTimeout(err error) bool {
 	cerr := &ClientMessage{}
 	if errors.As(err, &cerr) {
-		return cerr.msgType == tooManyRequests
+		return cerr.msgType == gatewayTimeout
 	}
 
 	return false
+}
+
+// HasClientMessage checks if the error contains a client message
+func HasClientMessage(err error) bool {
+	cerr := &ClientMessage{}
+
+	return errors.As(err, &cerr)
 }

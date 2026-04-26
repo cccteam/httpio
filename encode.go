@@ -119,10 +119,31 @@ func (e *Encoder) NotFound(ctx context.Context) error {
 	}, "")
 }
 
+// MethodNotAllowed creates a new empty client message with a MethodNotAllowed (405) return code
+func (e *Encoder) MethodNotAllowed(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: methodNotAllowed,
+	}, "")
+}
+
+// RequestTimeout creates a new empty client message with a RequestTimeout (408) return code
+func (e *Encoder) RequestTimeout(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: requestTimeout,
+	}, "")
+}
+
 // Conflict creates a new empty client message with a Conflict (409) return code
 func (e *Encoder) Conflict(ctx context.Context) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: conflict,
+	}, "")
+}
+
+// UnprocessableEntity creates a new empty client message with a UnprocessableEntity (422) return code
+func (e *Encoder) UnprocessableEntity(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: unprocessableEntity,
 	}, "")
 }
 
@@ -140,10 +161,31 @@ func (e *Encoder) InternalServerError(ctx context.Context) error {
 	}, "")
 }
 
+// NotImplemented creates a new empty client message with a NotImplemented (501) return code
+func (e *Encoder) NotImplemented(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: notImplemented,
+	}, "")
+}
+
+// BadGateway creates a new empty client message with a BadGateway (502) return code
+func (e *Encoder) BadGateway(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: badGateway,
+	}, "")
+}
+
 // ServiceUnavailable creates a new empty client message with a ServiceUnavailable (503) return code
 func (e *Encoder) ServiceUnavailable(ctx context.Context) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: serviceUnavailable,
+	}, "")
+}
+
+// GatewayTimeout creates a new empty client message with a GatewayTimeout (504) return code
+func (e *Encoder) GatewayTimeout(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: gatewayTimeout,
 	}, "")
 }
 
@@ -183,10 +225,37 @@ func (e *Encoder) NotFoundWithError(ctx context.Context, err error) error {
 	}, "")
 }
 
+// MethodNotAllowedWithError wraps an existing error while creating a new empty client message and a MethodNotAllowed (405) return code
+func (e *Encoder) MethodNotAllowedWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       methodNotAllowed,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
+// RequestTimeoutWithError wraps an existing error while creating a new empty client message and a RequestTimeout (408) return code
+func (e *Encoder) RequestTimeoutWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestTimeout,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
 // ConflictWithError wraps an existing error while creating a new empty client message and a Conflict (409) return code
 func (e *Encoder) ConflictWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       conflict,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
+// UnprocessableEntityWithError wraps an existing error while creating a new empty client message and a UnprocessableEntity (422) return code
+func (e *Encoder) UnprocessableEntityWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unprocessableEntity,
 		clientMessage: Message(err),
 		error:         err,
 	}, "")
@@ -210,10 +279,37 @@ func (e *Encoder) InternalServerErrorWithError(ctx context.Context, err error) e
 	}, "")
 }
 
+// NotImplementedWithError wraps an existing error while creating a new empty client message and a NotImplemented (501) return code
+func (e *Encoder) NotImplementedWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notImplemented,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
+// BadGatewayWithError wraps an existing error while creating a new empty client message and a BadGateway (502) return code
+func (e *Encoder) BadGatewayWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       badGateway,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
 // ServiceUnavailableWithError wraps an existing error while creating a new empty client message and a ServiceUnavailable (503) return code
 func (e *Encoder) ServiceUnavailableWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       serviceUnavailable,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
+// GatewayTimeoutWithError wraps an existing error while creating a new empty client message and a GatewayTimeout (504) return code
+func (e *Encoder) GatewayTimeoutWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       gatewayTimeout,
 		clientMessage: Message(err),
 		error:         err,
 	}, "")
@@ -251,10 +347,42 @@ func (e *Encoder) NotFoundMessage(ctx context.Context, message string) error {
 	}, "")
 }
 
+// MethodNotAllowedMessage creates a new client message with a MethodNotAllowed (405) return code
+func (e *Encoder) MethodNotAllowedMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       methodNotAllowed,
+		clientMessage: message,
+	}, "")
+}
+
+// RequestTimeoutMessage creates a new client message with a RequestTimeout (408) return code
+func (e *Encoder) RequestTimeoutMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestTimeout,
+		clientMessage: message,
+	}, "")
+}
+
 // ConflictMessage creates a new client message with a Conflict (409) return code
 func (e *Encoder) ConflictMessage(ctx context.Context, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       conflict,
+		clientMessage: message,
+	}, "")
+}
+
+// UnprocessableEntityMessage creates a new client message with a UnprocessableEntity (422) return code
+func (e *Encoder) UnprocessableEntityMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unprocessableEntity,
+		clientMessage: message,
+	}, "")
+}
+
+// TooManyRequestsMessage creates a new client message with a TooManyRequests (429) return code
+func (e *Encoder) TooManyRequestsMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: message,
 	}, "")
 }
@@ -267,6 +395,22 @@ func (e *Encoder) InternalServerErrorMessage(ctx context.Context, message string
 	}, "")
 }
 
+// NotImplementedMessage creates a new client message with a NotImplemented (501) return code
+func (e *Encoder) NotImplementedMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notImplemented,
+		clientMessage: message,
+	}, "")
+}
+
+// BadGatewayMessage creates a new client message with a BadGateway (502) return code
+func (e *Encoder) BadGatewayMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       badGateway,
+		clientMessage: message,
+	}, "")
+}
+
 // ServiceUnavailableMessage creates a new client message with a ServiceUnavailable (503) return code
 func (e *Encoder) ServiceUnavailableMessage(ctx context.Context, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -275,10 +419,10 @@ func (e *Encoder) ServiceUnavailableMessage(ctx context.Context, message string)
 	}, "")
 }
 
-// TooManyRequestsMessage creates a new client message with a TooManyRequests (429) return code
-func (e *Encoder) TooManyRequestsMessage(ctx context.Context, message string) error {
+// GatewayTimeoutMessage creates a new client message with a GatewayTimeout (504) return code
+func (e *Encoder) GatewayTimeoutMessage(ctx context.Context, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType:       tooManyRequests,
+		msgType:       gatewayTimeout,
 		clientMessage: message,
 	}, "")
 }
@@ -315,10 +459,42 @@ func (e *Encoder) NotFoundMessagef(ctx context.Context, format string, a ...any)
 	}, "")
 }
 
+// MethodNotAllowedMessagef creates a new client message with a MethodNotAllowed (405) return code
+func (e *Encoder) MethodNotAllowedMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       methodNotAllowed,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
+// RequestTimeoutMessagef creates a new client message with a RequestTimeout (408) return code
+func (e *Encoder) RequestTimeoutMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestTimeout,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
 // ConflictMessagef creates a new client message with a Conflict (409) return code
 func (e *Encoder) ConflictMessagef(ctx context.Context, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       conflict,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
+// UnprocessableEntityMessagef creates a new client message with a UnprocessableEntity (422) return code
+func (e *Encoder) UnprocessableEntityMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unprocessableEntity,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
+// TooManyRequestsMessagef creates a new client message with a TooManyRequests (429) return code
+func (e *Encoder) TooManyRequestsMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: fmt.Sprintf(format, a...),
 	}, "")
 }
@@ -331,6 +507,22 @@ func (e *Encoder) InternalServerErrorMessagef(ctx context.Context, format string
 	}, "")
 }
 
+// NotImplementedMessagef creates a new client message with a NotImplemented (501) return code
+func (e *Encoder) NotImplementedMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notImplemented,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
+// BadGatewayMessagef creates a new client message with a BadGateway (502) return code
+func (e *Encoder) BadGatewayMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       badGateway,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
 // ServiceUnavailableMessagef creates a new client message with a ServiceUnavailable (503) return code
 func (e *Encoder) ServiceUnavailableMessagef(ctx context.Context, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -339,10 +531,10 @@ func (e *Encoder) ServiceUnavailableMessagef(ctx context.Context, format string,
 	}, "")
 }
 
-// TooManyRequestsMessagef creates a new client message with a TooManyRequests (429) return code
-func (e *Encoder) TooManyRequestsMessagef(ctx context.Context, format string, a ...any) error {
+// GatewayTimeoutMessagef creates a new client message with a GatewayTimeout (504) return code
+func (e *Encoder) GatewayTimeoutMessagef(ctx context.Context, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType:       tooManyRequests,
+		msgType:       gatewayTimeout,
 		clientMessage: fmt.Sprintf(format, a...),
 	}, "")
 }
@@ -383,10 +575,46 @@ func (e *Encoder) NotFoundMessageWithError(ctx context.Context, err error, messa
 	}, "")
 }
 
+// MethodNotAllowedMessageWithError wraps an existing error while creating a new client message with a MethodNotAllowed (405) return code
+func (e *Encoder) MethodNotAllowedMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       methodNotAllowed,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
+// RequestTimeoutMessageWithError wraps an existing error while creating a new client message with a RequestTimeout (408) return code
+func (e *Encoder) RequestTimeoutMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestTimeout,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
 // ConflictMessageWithError wraps an existing error while creating a new client message with a Conflict (409) return code
 func (e *Encoder) ConflictMessageWithError(ctx context.Context, err error, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       conflict,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
+// UnprocessableEntityMessageWithError wraps an existing error while creating a new client message with a UnprocessableEntity (422) return code
+func (e *Encoder) UnprocessableEntityMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unprocessableEntity,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
+// TooManyRequestsMessageWithError wraps an existing error while creating a new client message with a TooManyRequests (429) return code
+func (e *Encoder) TooManyRequestsMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: message,
 		error:         err,
 	}, "")
@@ -401,6 +629,24 @@ func (e *Encoder) InternalServerErrorMessageWithError(ctx context.Context, err e
 	}, "")
 }
 
+// NotImplementedMessageWithError wraps an existing error while creating a new client message with a NotImplemented (501) return code
+func (e *Encoder) NotImplementedMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notImplemented,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
+// BadGatewayMessageWithError wraps an existing error while creating a new client message with a BadGateway (502) return code
+func (e *Encoder) BadGatewayMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       badGateway,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
 // ServiceUnavailableMessageWithError wraps an existing error while creating a new client message with a ServiceUnavailable (503) return code
 func (e *Encoder) ServiceUnavailableMessageWithError(ctx context.Context, err error, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -410,10 +656,10 @@ func (e *Encoder) ServiceUnavailableMessageWithError(ctx context.Context, err er
 	}, "")
 }
 
-// TooManyRequestsMessageWithError wraps an existing error while creating a new client message with a TooManyRequests (429) return code
-func (e *Encoder) TooManyRequestsMessageWithError(ctx context.Context, err error, message string) error {
+// GatewayTimeoutMessageWithError wraps an existing error while creating a new client message with a GatewayTimeout (504) return code
+func (e *Encoder) GatewayTimeoutMessageWithError(ctx context.Context, err error, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType:       tooManyRequests,
+		msgType:       gatewayTimeout,
 		clientMessage: message,
 		error:         err,
 	}, "")
@@ -455,10 +701,46 @@ func (e *Encoder) NotFoundMessageWithErrorf(ctx context.Context, err error, form
 	}, "")
 }
 
+// MethodNotAllowedMessageWithErrorf wraps an existing error while creating a new client message with a MethodNotAllowed (405) return code
+func (e *Encoder) MethodNotAllowedMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       methodNotAllowed,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
+// RequestTimeoutMessageWithErrorf wraps an existing error while creating a new client message with a RequestTimeout (408) return code
+func (e *Encoder) RequestTimeoutMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestTimeout,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
 // ConflictMessageWithErrorf wraps an existing error while creating a new client message with a Conflict (409) return code
 func (e *Encoder) ConflictMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       conflict,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
+// UnprocessableEntityMessageWithErrorf wraps an existing error while creating a new client message with a UnprocessableEntity (422) return code
+func (e *Encoder) UnprocessableEntityMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unprocessableEntity,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
+// TooManyRequestsMessageWithErrorf wraps an existing error while creating a new client message with a TooManyRequests (429) return code
+func (e *Encoder) TooManyRequestsMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       tooManyRequests,
 		clientMessage: fmt.Sprintf(format, a...),
 		error:         err,
 	}, "")
@@ -473,6 +755,24 @@ func (e *Encoder) InternalServerErrorMessageWithErrorf(ctx context.Context, err 
 	}, "")
 }
 
+// NotImplementedMessageWithErrorf wraps an existing error while creating a new client message with a NotImplemented (501) return code
+func (e *Encoder) NotImplementedMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notImplemented,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
+// BadGatewayMessageWithErrorf wraps an existing error while creating a new client message with a BadGateway (502) return code
+func (e *Encoder) BadGatewayMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       badGateway,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
 // ServiceUnavailableMessageWithErrorf wraps an existing error while creating a new client message with a ServiceUnavailable (503) return code
 func (e *Encoder) ServiceUnavailableMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -482,10 +782,10 @@ func (e *Encoder) ServiceUnavailableMessageWithErrorf(ctx context.Context, err e
 	}, "")
 }
 
-// TooManyRequestsMessageWithErrorf wraps an existing error while creating a new client message with a TooManyRequests (429) return code
-func (e *Encoder) TooManyRequestsMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+// GatewayTimeoutMessageWithErrorf wraps an existing error while creating a new client message with a GatewayTimeout (504) return code
+func (e *Encoder) GatewayTimeoutMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
-		msgType:       tooManyRequests,
+		msgType:       gatewayTimeout,
 		clientMessage: fmt.Sprintf(format, a...),
 		error:         err,
 	}, "")
@@ -517,12 +817,24 @@ func (e *Encoder) clientMessage(ctx context.Context, err error, prefix string) e
 			return e.statusCodeWithMessage(ctx, http.StatusNotFound, rerr, cerr.clientMessage)
 		case conflict:
 			return e.statusCodeWithMessage(ctx, http.StatusConflict, rerr, cerr.clientMessage)
+		case methodNotAllowed:
+			return e.statusCodeWithMessage(ctx, http.StatusMethodNotAllowed, rerr, cerr.clientMessage)
+		case requestTimeout:
+			return e.statusCodeWithMessage(ctx, http.StatusRequestTimeout, rerr, cerr.clientMessage)
+		case unprocessableEntity:
+			return e.statusCodeWithMessage(ctx, http.StatusUnprocessableEntity, rerr, cerr.clientMessage)
 		case tooManyRequests:
 			return e.statusCodeWithMessage(ctx, http.StatusTooManyRequests, rerr, cerr.clientMessage)
 		case internalServerError:
 			return e.statusCodeWithMessage(ctx, http.StatusInternalServerError, rerr, cerr.clientMessage)
+		case notImplemented:
+			return e.statusCodeWithMessage(ctx, http.StatusNotImplemented, rerr, cerr.clientMessage)
+		case badGateway:
+			return e.statusCodeWithMessage(ctx, http.StatusBadGateway, rerr, cerr.clientMessage)
 		case serviceUnavailable:
 			return e.statusCodeWithMessage(ctx, http.StatusServiceUnavailable, rerr, cerr.clientMessage)
+		case gatewayTimeout:
+			return e.statusCodeWithMessage(ctx, http.StatusGatewayTimeout, rerr, cerr.clientMessage)
 		}
 	}
 
