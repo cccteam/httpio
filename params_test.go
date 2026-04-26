@@ -857,7 +857,7 @@ func TestParam_ptr_ccc_UUID(t *testing.T) {
 				r:     mockRequest(map[ParamType]string{"fileId": "0020198f-a14e-42ee-b5f8-65a228ba38e7"}),
 				param: ParamType("fileId"),
 			},
-			wantVal: ccc.Ptr(ccc.Must(ccc.UUIDFromString("0020198f-a14e-42ee-b5f8-65a228ba38e7"))),
+			wantVal: new(ccc.Must(ccc.UUIDFromString("0020198f-a14e-42ee-b5f8-65a228ba38e7"))),
 		},
 		{
 			name: "Invalid Param Panic",
