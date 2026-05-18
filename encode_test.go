@@ -577,6 +577,243 @@ func TestEncoder_encodeMethods(t *testing.T) {
 			wantContainsError: true,
 		},
 		{
+			name: "MethodNotAllowed()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.MethodNotAllowed(context.Background())
+			},
+			wantStatus:        http.StatusMethodNotAllowed,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "MethodNotAllowedWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.MethodNotAllowedWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusMethodNotAllowed,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "MethodNotAllowedMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.MethodNotAllowedMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusMethodNotAllowed,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "MethodNotAllowedMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.MethodNotAllowedMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusMethodNotAllowed,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "MethodNotAllowedMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.MethodNotAllowedMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusMethodNotAllowed,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "MethodNotAllowedMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.MethodNotAllowedMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusMethodNotAllowed,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "NotAcceptable()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.NotAcceptable(context.Background())
+			},
+			wantStatus:        http.StatusNotAcceptable,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "NotAcceptableWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.NotAcceptableWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusNotAcceptable,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "NotAcceptableMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.NotAcceptableMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusNotAcceptable,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "NotAcceptableMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.NotAcceptableMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusNotAcceptable,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "NotAcceptableMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.NotAcceptableMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusNotAcceptable,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "NotAcceptableMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.NotAcceptableMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusNotAcceptable,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "RequestTimeout()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.RequestTimeout(context.Background())
+			},
+			wantStatus:        http.StatusRequestTimeout,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "RequestTimeoutWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.RequestTimeoutWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusRequestTimeout,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "RequestTimeoutMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.RequestTimeoutMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusRequestTimeout,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "RequestTimeoutMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.RequestTimeoutMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusRequestTimeout,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "RequestTimeoutMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.RequestTimeoutMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusRequestTimeout,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "RequestTimeoutMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.RequestTimeoutMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusRequestTimeout,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
 			name: "Conflict()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
 				return e.Conflict(context.Background())
@@ -651,6 +888,243 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				return e.ConflictMessageWithErrorf(context.Background(), err, msg, a...)
 			},
 			wantStatus:        http.StatusConflict,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "RequestEntityTooLarge()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.RequestEntityTooLarge(context.Background())
+			},
+			wantStatus:        http.StatusRequestEntityTooLarge,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "RequestEntityTooLargeWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.RequestEntityTooLargeWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusRequestEntityTooLarge,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "RequestEntityTooLargeMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.RequestEntityTooLargeMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusRequestEntityTooLarge,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "RequestEntityTooLargeMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.RequestEntityTooLargeMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusRequestEntityTooLarge,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "RequestEntityTooLargeMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.RequestEntityTooLargeMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusRequestEntityTooLarge,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "RequestEntityTooLargeMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.RequestEntityTooLargeMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusRequestEntityTooLarge,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "UnsupportedMediaType()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.UnsupportedMediaType(context.Background())
+			},
+			wantStatus:        http.StatusUnsupportedMediaType,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "UnsupportedMediaTypeWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.UnsupportedMediaTypeWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusUnsupportedMediaType,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "UnsupportedMediaTypeMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.UnsupportedMediaTypeMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusUnsupportedMediaType,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "UnsupportedMediaTypeMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.UnsupportedMediaTypeMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusUnsupportedMediaType,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "UnsupportedMediaTypeMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.UnsupportedMediaTypeMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusUnsupportedMediaType,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "UnsupportedMediaTypeMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.UnsupportedMediaTypeMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusUnsupportedMediaType,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "UnprocessableEntity()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.UnprocessableEntity(context.Background())
+			},
+			wantStatus:        http.StatusUnprocessableEntity,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "UnprocessableEntityWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.UnprocessableEntityWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusUnprocessableEntity,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "UnprocessableEntityMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.UnprocessableEntityMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusUnprocessableEntity,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "UnprocessableEntityMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.UnprocessableEntityMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusUnprocessableEntity,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "UnprocessableEntityMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.UnprocessableEntityMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusUnprocessableEntity,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "UnprocessableEntityMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.UnprocessableEntityMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusUnprocessableEntity,
 			wantMessage:       "Testing f",
 			wantErr:           true,
 			wantContainsError: true,
@@ -735,6 +1209,85 @@ func TestEncoder_encodeMethods(t *testing.T) {
 			wantContainsError: true,
 		},
 		{
+			name: "ClientClosedRequest()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.ClientClosedRequest(context.Background())
+			},
+			wantStatus:        499,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "ClientClosedRequestWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.ClientClosedRequestWithError(context.Background(), err)
+			},
+			wantStatus:        499,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "ClientClosedRequestMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.ClientClosedRequestMessage(context.Background(), msg)
+			},
+			wantStatus:        499,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "ClientClosedRequestMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.ClientClosedRequestMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        499,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "ClientClosedRequestMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.ClientClosedRequestMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        499,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "ClientClosedRequestMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.ClientClosedRequestMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        499,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
 			name: "InternalServerError()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
 				return e.InternalServerError(context.Background())
@@ -814,6 +1367,164 @@ func TestEncoder_encodeMethods(t *testing.T) {
 			wantContainsError: true,
 		},
 		{
+			name: "NotImplemented()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.NotImplemented(context.Background())
+			},
+			wantStatus:        http.StatusNotImplemented,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "NotImplementedWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.NotImplementedWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusNotImplemented,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "NotImplementedMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.NotImplementedMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusNotImplemented,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "NotImplementedMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.NotImplementedMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusNotImplemented,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "NotImplementedMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.NotImplementedMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusNotImplemented,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "NotImplementedMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.NotImplementedMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusNotImplemented,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "BadGateway()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.BadGateway(context.Background())
+			},
+			wantStatus:        http.StatusBadGateway,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "BadGatewayWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.BadGatewayWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusBadGateway,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "BadGatewayMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.BadGatewayMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusBadGateway,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "BadGatewayMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.BadGatewayMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusBadGateway,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "BadGatewayMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.BadGatewayMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusBadGateway,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "BadGatewayMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.BadGatewayMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusBadGateway,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
 			name: "ServiceUnavailable()",
 			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
 				return e.ServiceUnavailable(context.Background())
@@ -888,6 +1599,85 @@ func TestEncoder_encodeMethods(t *testing.T) {
 				return e.ServiceUnavailableMessageWithErrorf(context.Background(), err, msg, a...)
 			},
 			wantStatus:        http.StatusServiceUnavailable,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "GatewayTimeout()",
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, _ error) error {
+				return e.GatewayTimeout(context.Background())
+			},
+			wantStatus:        http.StatusGatewayTimeout,
+			wantMessage:       "",
+			wantErr:           false,
+			wantContainsError: false,
+		},
+		{
+			name: "GatewayTimeoutWithError()",
+			args: args{
+				err: errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, _ string, _ []interface{}, err error) error {
+				return e.GatewayTimeoutWithError(context.Background(), err)
+			},
+			wantStatus:        http.StatusGatewayTimeout,
+			wantMessage:       "",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "GatewayTimeoutMessage()",
+			args: args{
+				message: "Testing",
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, _ error) error {
+				return e.GatewayTimeoutMessage(context.Background(), msg)
+			},
+			wantStatus:        http.StatusGatewayTimeout,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "GatewayTimeoutMessagef",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, _ error) error {
+				return e.GatewayTimeoutMessagef(context.Background(), msg, a...)
+			},
+			wantStatus:        http.StatusGatewayTimeout,
+			wantMessage:       "Testing f",
+			wantErr:           true,
+			wantContainsError: false,
+		},
+		{
+			name: "GatewayTimeoutMessageWithError()",
+			args: args{
+				message: "Testing",
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, _ []interface{}, err error) error {
+				return e.GatewayTimeoutMessageWithError(context.Background(), err, msg)
+			},
+			wantStatus:        http.StatusGatewayTimeout,
+			wantMessage:       "Testing",
+			wantErr:           true,
+			wantContainsError: true,
+		},
+		{
+			name: "GatewayTimeoutMessageWithErrorf",
+			args: args{
+				message: "Testing %s",
+				a:       []interface{}{"f"},
+				err:     errors.New("Testing"),
+			},
+			encodeMethod: func(e *Encoder, msg string, a []interface{}, err error) error {
+				return e.GatewayTimeoutMessageWithErrorf(context.Background(), err, msg, a...)
+			},
+			wantStatus:        http.StatusGatewayTimeout,
 			wantMessage:       "Testing f",
 			wantErr:           true,
 			wantContainsError: true,
@@ -976,12 +1766,60 @@ func TestEncoder_ClientMessage(t *testing.T) {
 			wantStatus:  http.StatusNotFound,
 		},
 		{
+			name: "MethodNotAllowed",
+			args: args{
+				err: NewMethodNotAllowedMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusMethodNotAllowed,
+		},
+		{
+			name: "NotAcceptable",
+			args: args{
+				err: NewNotAcceptableMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusNotAcceptable,
+		},
+		{
+			name: "RequestTimeout",
+			args: args{
+				err: NewRequestTimeoutMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusRequestTimeout,
+		},
+		{
 			name: "Conflict",
 			args: args{
 				err: NewConflictMessage("Testing"),
 			},
 			wantMessage: "Testing",
 			wantStatus:  http.StatusConflict,
+		},
+		{
+			name: "RequestEntityTooLarge",
+			args: args{
+				err: NewRequestEntityTooLargeMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusRequestEntityTooLarge,
+		},
+		{
+			name: "UnsupportedMediaType",
+			args: args{
+				err: NewUnsupportedMediaTypeMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusUnsupportedMediaType,
+		},
+		{
+			name: "UnprocessableEntity",
+			args: args{
+				err: NewUnprocessableEntityMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusUnprocessableEntity,
 		},
 		{
 			name: "TooManyRequests",
@@ -992,6 +1830,14 @@ func TestEncoder_ClientMessage(t *testing.T) {
 			wantStatus:  http.StatusTooManyRequests,
 		},
 		{
+			name: "ClientClosedRequest",
+			args: args{
+				err: NewClientClosedRequestMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  499,
+		},
+		{
 			name: "InternalServerError",
 			args: args{
 				err: NewInternalServerErrorMessage("Testing"),
@@ -1000,12 +1846,36 @@ func TestEncoder_ClientMessage(t *testing.T) {
 			wantStatus:  http.StatusInternalServerError,
 		},
 		{
+			name: "NotImplemented",
+			args: args{
+				err: NewNotImplementedMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusNotImplemented,
+		},
+		{
+			name: "BadGateway",
+			args: args{
+				err: NewBadGatewayMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusBadGateway,
+		},
+		{
 			name: "ServiceUnavailable",
 			args: args{
 				err: NewServiceUnavailableMessage("Testing"),
 			},
 			wantMessage: "Testing",
 			wantStatus:  http.StatusServiceUnavailable,
+		},
+		{
+			name: "GatewayTimeout",
+			args: args{
+				err: NewGatewayTimeoutMessage("Testing"),
+			},
+			wantMessage: "Testing",
+			wantStatus:  http.StatusGatewayTimeout,
 		},
 		{
 			name: "Other Error",
