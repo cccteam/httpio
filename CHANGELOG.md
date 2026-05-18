@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.13](https://github.com/cccteam/httpio/compare/v0.7.12...v0.7.13) (2026-05-18)
+
+
+### Features
+
+* Add more http codes ([#122](https://github.com/cccteam/httpio/issues/122)) ([4d35234](https://github.com/cccteam/httpio/commit/4d352340cbcd0e741d4b01f9a7669c200696c84d))
+
 ## [0.7.12](https://github.com/cccteam/httpio/compare/v0.7.11...v0.7.12) (2026-05-11)
 
 
