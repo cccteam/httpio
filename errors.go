@@ -11,20 +11,24 @@ import (
 type msgType int
 
 const (
-	badRequest          msgType = iota // http code 400
-	unauthorized                       // http code 401
-	forbidden                          // http code 403
-	notFound                           // http code 404
-	methodNotAllowed                   // http code 405
-	requestTimeout                     // http code 408
-	conflict                           // http code 409
-	unprocessableEntity                // http code 422
-	tooManyRequests                    // http code 429
-	internalServerError                // http code 500
-	notImplemented                     // http code 501
-	badGateway                         // http code 502
-	serviceUnavailable                 // http code 503
-	gatewayTimeout                     // http code 504
+	badRequest            msgType = iota // http code 400
+	unauthorized                         // http code 401
+	forbidden                            // http code 403
+	notFound                             // http code 404
+	methodNotAllowed                     // http code 405
+	notAcceptable                        // http code 406
+	requestTimeout                       // http code 408
+	conflict                             // http code 409
+	requestEntityTooLarge                // http code 413
+	unsupportedMediaType                 // http code 415
+	unprocessableEntity                  // http code 422
+	tooManyRequests                      // http code 429
+	clientClosedRequest                  // http code 499
+	internalServerError                  // http code 500
+	notImplemented                       // http code 501
+	badGateway                           // http code 502
+	serviceUnavailable                   // http code 503
+	gatewayTimeout                       // http code 504
 )
 
 func init() {
@@ -160,6 +164,13 @@ func NewMethodNotAllowed() errors.Chain {
 	})
 }
 
+// NewNotAcceptable creates a new empty client message with a NotAcceptable (406) return code
+func NewNotAcceptable() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: notAcceptable,
+	})
+}
+
 // NewRequestTimeout creates a new empty client message with a RequestTimeout (408) return code
 func NewRequestTimeout() errors.Chain {
 	return wrap(&ClientMessage{
@@ -174,6 +185,20 @@ func NewConflict() errors.Chain {
 	})
 }
 
+// NewRequestEntityTooLarge creates a new empty client message with a RequestEntityTooLarge (413) return code
+func NewRequestEntityTooLarge() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: requestEntityTooLarge,
+	})
+}
+
+// NewUnsupportedMediaType creates a new empty client message with a UnsupportedMediaType (415) return code
+func NewUnsupportedMediaType() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: unsupportedMediaType,
+	})
+}
+
 // NewUnprocessableEntity creates a new empty client message with a UnprocessableEntity (422) return code
 func NewUnprocessableEntity() errors.Chain {
 	return wrap(&ClientMessage{
@@ -185,6 +210,13 @@ func NewUnprocessableEntity() errors.Chain {
 func NewTooManyRequests() errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: tooManyRequests,
+	})
+}
+
+// NewClientClosedRequest creates a new empty client message with a ClientClosedRequest (499) return code
+func NewClientClosedRequest() errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: clientClosedRequest,
 	})
 }
 
@@ -263,6 +295,14 @@ func NewMethodNotAllowedWithError(err error) errors.Chain {
 	})
 }
 
+// NewNotAcceptableWithError wraps an existing error while creating a new empty client message and a NotAcceptable (406) return code
+func NewNotAcceptableWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: notAcceptable,
+		error:   err,
+	})
+}
+
 // NewRequestTimeoutWithError wraps an existing error while creating a new empty client message and a RequestTimeout (408) return code
 func NewRequestTimeoutWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
@@ -279,6 +319,22 @@ func NewConflictWithError(err error) errors.Chain {
 	})
 }
 
+// NewRequestEntityTooLargeWithError wraps an existing error while creating a new empty client message and a RequestEntityTooLarge (413) return code
+func NewRequestEntityTooLargeWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: requestEntityTooLarge,
+		error:   err,
+	})
+}
+
+// NewUnsupportedMediaTypeWithError wraps an existing error while creating a new empty client message and a UnsupportedMediaType (415) return code
+func NewUnsupportedMediaTypeWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: unsupportedMediaType,
+		error:   err,
+	})
+}
+
 // NewUnprocessableEntityWithError wraps an existing error while creating a new empty client message and a UnprocessableEntity (422) return code
 func NewUnprocessableEntityWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
@@ -291,6 +347,14 @@ func NewUnprocessableEntityWithError(err error) errors.Chain {
 func NewTooManyRequestsWithError(err error) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType: tooManyRequests,
+		error:   err,
+	})
+}
+
+// NewClientClosedRequestWithError wraps an existing error while creating a new empty client message and a ClientClosedRequest (499) return code
+func NewClientClosedRequestWithError(err error) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType: clientClosedRequest,
 		error:   err,
 	})
 }
@@ -375,6 +439,14 @@ func NewMethodNotAllowedMessage(message string) errors.Chain {
 	})
 }
 
+// NewNotAcceptableMessage creates a new client message with a NotAcceptable (406) return code
+func NewNotAcceptableMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       notAcceptable,
+		clientMessage: message,
+	})
+}
+
 // NewRequestTimeoutMessage creates a new client message with a RequestTimeout (408) return code
 func NewRequestTimeoutMessage(message string) errors.Chain {
 	return wrap(&ClientMessage{
@@ -391,6 +463,22 @@ func NewConflictMessage(message string) errors.Chain {
 	})
 }
 
+// NewRequestEntityTooLargeMessage creates a new client message with a RequestEntityTooLarge (413) return code
+func NewRequestEntityTooLargeMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       requestEntityTooLarge,
+		clientMessage: message,
+	})
+}
+
+// NewUnsupportedMediaTypeMessage creates a new client message with a UnsupportedMediaType (415) return code
+func NewUnsupportedMediaTypeMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       unsupportedMediaType,
+		clientMessage: message,
+	})
+}
+
 // NewUnprocessableEntityMessage creates a new client message with a UnprocessableEntity (422) return code
 func NewUnprocessableEntityMessage(message string) errors.Chain {
 	return wrap(&ClientMessage{
@@ -403,6 +491,14 @@ func NewUnprocessableEntityMessage(message string) errors.Chain {
 func NewTooManyRequestsMessage(message string) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       tooManyRequests,
+		clientMessage: message,
+	})
+}
+
+// NewClientClosedRequestMessage creates a new client message with a ClientClosedRequest (499) return code
+func NewClientClosedRequestMessage(message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       clientClosedRequest,
 		clientMessage: message,
 	})
 }
@@ -487,6 +583,14 @@ func NewMethodNotAllowedMessagef(format string, a ...any) errors.Chain {
 	})
 }
 
+// NewNotAcceptableMessagef creates a new client message with a NotAcceptable (406) return code
+func NewNotAcceptableMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       notAcceptable,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
 // NewRequestTimeoutMessagef creates a new client message with a RequestTimeout (408) return code
 func NewRequestTimeoutMessagef(format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
@@ -503,6 +607,22 @@ func NewConflictMessagef(format string, a ...any) errors.Chain {
 	})
 }
 
+// NewRequestEntityTooLargeMessagef creates a new client message with a RequestEntityTooLarge (413) return code
+func NewRequestEntityTooLargeMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       requestEntityTooLarge,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
+// NewUnsupportedMediaTypeMessagef creates a new client message with a UnsupportedMediaType (415) return code
+func NewUnsupportedMediaTypeMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       unsupportedMediaType,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
 // NewUnprocessableEntityMessagef creates a new client message with a UnprocessableEntity (422) return code
 func NewUnprocessableEntityMessagef(format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
@@ -515,6 +635,14 @@ func NewUnprocessableEntityMessagef(format string, a ...any) errors.Chain {
 func NewTooManyRequestsMessagef(format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       tooManyRequests,
+		clientMessage: fmt.Sprintf(format, a...),
+	})
+}
+
+// NewClientClosedRequestMessagef creates a new client message with a ClientClosedRequest (499) return code
+func NewClientClosedRequestMessagef(format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       clientClosedRequest,
 		clientMessage: fmt.Sprintf(format, a...),
 	})
 }
@@ -604,6 +732,15 @@ func NewMethodNotAllowedMessageWithError(err error, message string) errors.Chain
 	})
 }
 
+// NewNotAcceptableMessageWithError wraps an existing error while creating a new client message with a NotAcceptable (406) return code
+func NewNotAcceptableMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       notAcceptable,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
 // NewRequestTimeoutMessageWithError wraps an existing error while creating a new client message with a RequestTimeout (408) return code
 func NewRequestTimeoutMessageWithError(err error, message string) errors.Chain {
 	return wrap(&ClientMessage{
@@ -622,6 +759,24 @@ func NewConflictMessageWithError(err error, message string) errors.Chain {
 	})
 }
 
+// NewRequestEntityTooLargeMessageWithError wraps an existing error while creating a new client message with a RequestEntityTooLarge (413) return code
+func NewRequestEntityTooLargeMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       requestEntityTooLarge,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
+// NewUnsupportedMediaTypeMessageWithError wraps an existing error while creating a new client message with a UnsupportedMediaType (415) return code
+func NewUnsupportedMediaTypeMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       unsupportedMediaType,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
 // NewUnprocessableEntityMessageWithError wraps an existing error while creating a new client message with a UnprocessableEntity (422) return code
 func NewUnprocessableEntityMessageWithError(err error, message string) errors.Chain {
 	return wrap(&ClientMessage{
@@ -635,6 +790,15 @@ func NewUnprocessableEntityMessageWithError(err error, message string) errors.Ch
 func NewTooManyRequestsMessageWithError(err error, message string) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       tooManyRequests,
+		clientMessage: message,
+		error:         err,
+	})
+}
+
+// NewClientClosedRequestMessageWithError wraps an existing error while creating a new client message with a ClientClosedRequest (499) return code
+func NewClientClosedRequestMessageWithError(err error, message string) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       clientClosedRequest,
 		clientMessage: message,
 		error:         err,
 	})
@@ -730,6 +894,15 @@ func NewMethodNotAllowedMessageWithErrorf(err error, format string, a ...any) er
 	})
 }
 
+// NewNotAcceptableMessageWithErrorf wraps an existing error while creating a new client message with a NotAcceptable (406) return code
+func NewNotAcceptableMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       notAcceptable,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
 // NewRequestTimeoutMessageWithErrorf wraps an existing error while creating a new client message with a RequestTimeout (408) return code
 func NewRequestTimeoutMessageWithErrorf(err error, format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
@@ -748,6 +921,24 @@ func NewConflictMessageWithErrorf(err error, format string, a ...any) errors.Cha
 	})
 }
 
+// NewRequestEntityTooLargeMessageWithErrorf wraps an existing error while creating a new client message with a RequestEntityTooLarge (413) return code
+func NewRequestEntityTooLargeMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       requestEntityTooLarge,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
+// NewUnsupportedMediaTypeMessageWithErrorf wraps an existing error while creating a new client message with a UnsupportedMediaType (415) return code
+func NewUnsupportedMediaTypeMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       unsupportedMediaType,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
 // NewUnprocessableEntityMessageWithErrorf wraps an existing error while creating a new client message with a UnprocessableEntity (422) return code
 func NewUnprocessableEntityMessageWithErrorf(err error, format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
@@ -761,6 +952,15 @@ func NewUnprocessableEntityMessageWithErrorf(err error, format string, a ...any)
 func NewTooManyRequestsMessageWithErrorf(err error, format string, a ...any) errors.Chain {
 	return wrap(&ClientMessage{
 		msgType:       tooManyRequests,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	})
+}
+
+// NewClientClosedRequestMessageWithErrorf wraps an existing error while creating a new client message with a ClientClosedRequest (499) return code
+func NewClientClosedRequestMessageWithErrorf(err error, format string, a ...any) errors.Chain {
+	return wrap(&ClientMessage{
+		msgType:       clientClosedRequest,
 		clientMessage: fmt.Sprintf(format, a...),
 		error:         err,
 	})
@@ -821,7 +1021,7 @@ func HasBadRequest(err error) bool {
 	return false
 }
 
-// HasUnauthorized checks if the error contains an Unauthorized (401) message
+// HasUnauthorized checks if the error contains a Unauthorized (401) message
 func HasUnauthorized(err error) bool {
 	cerr := &ClientMessage{}
 	if errors.As(err, &cerr) {
@@ -861,6 +1061,16 @@ func HasMethodNotAllowed(err error) bool {
 	return false
 }
 
+// HasNotAcceptable checks if the error contains a NotAcceptable (406) message
+func HasNotAcceptable(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == notAcceptable
+	}
+
+	return false
+}
+
 // HasRequestTimeout checks if the error contains a RequestTimeout (408) message
 func HasRequestTimeout(err error) bool {
 	cerr := &ClientMessage{}
@@ -876,6 +1086,26 @@ func HasConflict(err error) bool {
 	cerr := &ClientMessage{}
 	if errors.As(err, &cerr) {
 		return cerr.msgType == conflict
+	}
+
+	return false
+}
+
+// HasRequestEntityTooLarge checks if the error contains a RequestEntityTooLarge (413) message
+func HasRequestEntityTooLarge(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == requestEntityTooLarge
+	}
+
+	return false
+}
+
+// HasUnsupportedMediaType checks if the error contains a UnsupportedMediaType (415) message
+func HasUnsupportedMediaType(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == unsupportedMediaType
 	}
 
 	return false
@@ -901,7 +1131,17 @@ func HasTooManyRequests(err error) bool {
 	return false
 }
 
-// HasInternalServerError checks if the error contains an InternalServerError (500) message
+// HasClientClosedRequest checks if the error contains a ClientClosedRequest (499) message
+func HasClientClosedRequest(err error) bool {
+	cerr := &ClientMessage{}
+	if errors.As(err, &cerr) {
+		return cerr.msgType == clientClosedRequest
+	}
+
+	return false
+}
+
+// HasInternalServerError checks if the error contains a InternalServerError (500) message
 func HasInternalServerError(err error) bool {
 	cerr := &ClientMessage{}
 	if errors.As(err, &cerr) {

@@ -126,6 +126,13 @@ func (e *Encoder) MethodNotAllowed(ctx context.Context) error {
 	}, "")
 }
 
+// NotAcceptable creates a new empty client message with a NotAcceptable (406) return code
+func (e *Encoder) NotAcceptable(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: notAcceptable,
+	}, "")
+}
+
 // RequestTimeout creates a new empty client message with a RequestTimeout (408) return code
 func (e *Encoder) RequestTimeout(ctx context.Context) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -140,6 +147,20 @@ func (e *Encoder) Conflict(ctx context.Context) error {
 	}, "")
 }
 
+// RequestEntityTooLarge creates a new empty client message with a RequestEntityTooLarge (413) return code
+func (e *Encoder) RequestEntityTooLarge(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: requestEntityTooLarge,
+	}, "")
+}
+
+// UnsupportedMediaType creates a new empty client message with a UnsupportedMediaType (415) return code
+func (e *Encoder) UnsupportedMediaType(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: unsupportedMediaType,
+	}, "")
+}
+
 // UnprocessableEntity creates a new empty client message with a UnprocessableEntity (422) return code
 func (e *Encoder) UnprocessableEntity(ctx context.Context) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -151,6 +172,13 @@ func (e *Encoder) UnprocessableEntity(ctx context.Context) error {
 func (e *Encoder) TooManyRequests(ctx context.Context) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType: tooManyRequests,
+	}, "")
+}
+
+// ClientClosedRequest creates a new empty client message with a ClientClosedRequest (499) return code
+func (e *Encoder) ClientClosedRequest(ctx context.Context) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType: clientClosedRequest,
 	}, "")
 }
 
@@ -234,6 +262,15 @@ func (e *Encoder) MethodNotAllowedWithError(ctx context.Context, err error) erro
 	}, "")
 }
 
+// NotAcceptableWithError wraps an existing error while creating a new empty client message and a NotAcceptable (406) return code
+func (e *Encoder) NotAcceptableWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notAcceptable,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
 // RequestTimeoutWithError wraps an existing error while creating a new empty client message and a RequestTimeout (408) return code
 func (e *Encoder) RequestTimeoutWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -252,6 +289,24 @@ func (e *Encoder) ConflictWithError(ctx context.Context, err error) error {
 	}, "")
 }
 
+// RequestEntityTooLargeWithError wraps an existing error while creating a new empty client message and a RequestEntityTooLarge (413) return code
+func (e *Encoder) RequestEntityTooLargeWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestEntityTooLarge,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
+// UnsupportedMediaTypeWithError wraps an existing error while creating a new empty client message and a UnsupportedMediaType (415) return code
+func (e *Encoder) UnsupportedMediaTypeWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unsupportedMediaType,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
 // UnprocessableEntityWithError wraps an existing error while creating a new empty client message and a UnprocessableEntity (422) return code
 func (e *Encoder) UnprocessableEntityWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -261,10 +316,19 @@ func (e *Encoder) UnprocessableEntityWithError(ctx context.Context, err error) e
 	}, "")
 }
 
-// TooManyRequestsWithError wraps an existing error while creating a new client message with a TooManyRequests (429) return code
+// TooManyRequestsWithError wraps an existing error while creating a new empty client message and a TooManyRequests (429) return code
 func (e *Encoder) TooManyRequestsWithError(ctx context.Context, err error) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       tooManyRequests,
+		clientMessage: Message(err),
+		error:         err,
+	}, "")
+}
+
+// ClientClosedRequestWithError wraps an existing error while creating a new empty client message and a ClientClosedRequest (499) return code
+func (e *Encoder) ClientClosedRequestWithError(ctx context.Context, err error) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       clientClosedRequest,
 		clientMessage: Message(err),
 		error:         err,
 	}, "")
@@ -355,6 +419,14 @@ func (e *Encoder) MethodNotAllowedMessage(ctx context.Context, message string) e
 	}, "")
 }
 
+// NotAcceptableMessage creates a new client message with a NotAcceptable (406) return code
+func (e *Encoder) NotAcceptableMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notAcceptable,
+		clientMessage: message,
+	}, "")
+}
+
 // RequestTimeoutMessage creates a new client message with a RequestTimeout (408) return code
 func (e *Encoder) RequestTimeoutMessage(ctx context.Context, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -371,6 +443,22 @@ func (e *Encoder) ConflictMessage(ctx context.Context, message string) error {
 	}, "")
 }
 
+// RequestEntityTooLargeMessage creates a new client message with a RequestEntityTooLarge (413) return code
+func (e *Encoder) RequestEntityTooLargeMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestEntityTooLarge,
+		clientMessage: message,
+	}, "")
+}
+
+// UnsupportedMediaTypeMessage creates a new client message with a UnsupportedMediaType (415) return code
+func (e *Encoder) UnsupportedMediaTypeMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unsupportedMediaType,
+		clientMessage: message,
+	}, "")
+}
+
 // UnprocessableEntityMessage creates a new client message with a UnprocessableEntity (422) return code
 func (e *Encoder) UnprocessableEntityMessage(ctx context.Context, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -383,6 +471,14 @@ func (e *Encoder) UnprocessableEntityMessage(ctx context.Context, message string
 func (e *Encoder) TooManyRequestsMessage(ctx context.Context, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       tooManyRequests,
+		clientMessage: message,
+	}, "")
+}
+
+// ClientClosedRequestMessage creates a new client message with a ClientClosedRequest (499) return code
+func (e *Encoder) ClientClosedRequestMessage(ctx context.Context, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       clientClosedRequest,
 		clientMessage: message,
 	}, "")
 }
@@ -467,6 +563,14 @@ func (e *Encoder) MethodNotAllowedMessagef(ctx context.Context, format string, a
 	}, "")
 }
 
+// NotAcceptableMessagef creates a new client message with a NotAcceptable (406) return code
+func (e *Encoder) NotAcceptableMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notAcceptable,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
 // RequestTimeoutMessagef creates a new client message with a RequestTimeout (408) return code
 func (e *Encoder) RequestTimeoutMessagef(ctx context.Context, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -483,6 +587,22 @@ func (e *Encoder) ConflictMessagef(ctx context.Context, format string, a ...any)
 	}, "")
 }
 
+// RequestEntityTooLargeMessagef creates a new client message with a RequestEntityTooLarge (413) return code
+func (e *Encoder) RequestEntityTooLargeMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestEntityTooLarge,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
+// UnsupportedMediaTypeMessagef creates a new client message with a UnsupportedMediaType (415) return code
+func (e *Encoder) UnsupportedMediaTypeMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unsupportedMediaType,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
 // UnprocessableEntityMessagef creates a new client message with a UnprocessableEntity (422) return code
 func (e *Encoder) UnprocessableEntityMessagef(ctx context.Context, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -495,6 +615,14 @@ func (e *Encoder) UnprocessableEntityMessagef(ctx context.Context, format string
 func (e *Encoder) TooManyRequestsMessagef(ctx context.Context, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       tooManyRequests,
+		clientMessage: fmt.Sprintf(format, a...),
+	}, "")
+}
+
+// ClientClosedRequestMessagef creates a new client message with a ClientClosedRequest (499) return code
+func (e *Encoder) ClientClosedRequestMessagef(ctx context.Context, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       clientClosedRequest,
 		clientMessage: fmt.Sprintf(format, a...),
 	}, "")
 }
@@ -584,6 +712,15 @@ func (e *Encoder) MethodNotAllowedMessageWithError(ctx context.Context, err erro
 	}, "")
 }
 
+// NotAcceptableMessageWithError wraps an existing error while creating a new client message with a NotAcceptable (406) return code
+func (e *Encoder) NotAcceptableMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notAcceptable,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
 // RequestTimeoutMessageWithError wraps an existing error while creating a new client message with a RequestTimeout (408) return code
 func (e *Encoder) RequestTimeoutMessageWithError(ctx context.Context, err error, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -602,6 +739,24 @@ func (e *Encoder) ConflictMessageWithError(ctx context.Context, err error, messa
 	}, "")
 }
 
+// RequestEntityTooLargeMessageWithError wraps an existing error while creating a new client message with a RequestEntityTooLarge (413) return code
+func (e *Encoder) RequestEntityTooLargeMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestEntityTooLarge,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
+// UnsupportedMediaTypeMessageWithError wraps an existing error while creating a new client message with a UnsupportedMediaType (415) return code
+func (e *Encoder) UnsupportedMediaTypeMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unsupportedMediaType,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
 // UnprocessableEntityMessageWithError wraps an existing error while creating a new client message with a UnprocessableEntity (422) return code
 func (e *Encoder) UnprocessableEntityMessageWithError(ctx context.Context, err error, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -615,6 +770,15 @@ func (e *Encoder) UnprocessableEntityMessageWithError(ctx context.Context, err e
 func (e *Encoder) TooManyRequestsMessageWithError(ctx context.Context, err error, message string) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       tooManyRequests,
+		clientMessage: message,
+		error:         err,
+	}, "")
+}
+
+// ClientClosedRequestMessageWithError wraps an existing error while creating a new client message with a ClientClosedRequest (499) return code
+func (e *Encoder) ClientClosedRequestMessageWithError(ctx context.Context, err error, message string) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       clientClosedRequest,
 		clientMessage: message,
 		error:         err,
 	}, "")
@@ -710,6 +874,15 @@ func (e *Encoder) MethodNotAllowedMessageWithErrorf(ctx context.Context, err err
 	}, "")
 }
 
+// NotAcceptableMessageWithErrorf wraps an existing error while creating a new client message with a NotAcceptable (406) return code
+func (e *Encoder) NotAcceptableMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       notAcceptable,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
 // RequestTimeoutMessageWithErrorf wraps an existing error while creating a new client message with a RequestTimeout (408) return code
 func (e *Encoder) RequestTimeoutMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -728,6 +901,24 @@ func (e *Encoder) ConflictMessageWithErrorf(ctx context.Context, err error, form
 	}, "")
 }
 
+// RequestEntityTooLargeMessageWithErrorf wraps an existing error while creating a new client message with a RequestEntityTooLarge (413) return code
+func (e *Encoder) RequestEntityTooLargeMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       requestEntityTooLarge,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
+// UnsupportedMediaTypeMessageWithErrorf wraps an existing error while creating a new client message with a UnsupportedMediaType (415) return code
+func (e *Encoder) UnsupportedMediaTypeMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       unsupportedMediaType,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
 // UnprocessableEntityMessageWithErrorf wraps an existing error while creating a new client message with a UnprocessableEntity (422) return code
 func (e *Encoder) UnprocessableEntityMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
@@ -741,6 +932,15 @@ func (e *Encoder) UnprocessableEntityMessageWithErrorf(ctx context.Context, err 
 func (e *Encoder) TooManyRequestsMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
 	return e.clientMessage(ctx, &ClientMessage{
 		msgType:       tooManyRequests,
+		clientMessage: fmt.Sprintf(format, a...),
+		error:         err,
+	}, "")
+}
+
+// ClientClosedRequestMessageWithErrorf wraps an existing error while creating a new client message with a ClientClosedRequest (499) return code
+func (e *Encoder) ClientClosedRequestMessageWithErrorf(ctx context.Context, err error, format string, a ...any) error {
+	return e.clientMessage(ctx, &ClientMessage{
+		msgType:       clientClosedRequest,
 		clientMessage: fmt.Sprintf(format, a...),
 		error:         err,
 	}, "")
@@ -815,16 +1015,24 @@ func (e *Encoder) clientMessage(ctx context.Context, err error, prefix string) e
 			return e.statusCodeWithMessage(ctx, http.StatusForbidden, rerr, cerr.clientMessage)
 		case notFound:
 			return e.statusCodeWithMessage(ctx, http.StatusNotFound, rerr, cerr.clientMessage)
-		case conflict:
-			return e.statusCodeWithMessage(ctx, http.StatusConflict, rerr, cerr.clientMessage)
 		case methodNotAllowed:
 			return e.statusCodeWithMessage(ctx, http.StatusMethodNotAllowed, rerr, cerr.clientMessage)
+		case notAcceptable:
+			return e.statusCodeWithMessage(ctx, http.StatusNotAcceptable, rerr, cerr.clientMessage)
 		case requestTimeout:
 			return e.statusCodeWithMessage(ctx, http.StatusRequestTimeout, rerr, cerr.clientMessage)
+		case conflict:
+			return e.statusCodeWithMessage(ctx, http.StatusConflict, rerr, cerr.clientMessage)
+		case requestEntityTooLarge:
+			return e.statusCodeWithMessage(ctx, http.StatusRequestEntityTooLarge, rerr, cerr.clientMessage)
+		case unsupportedMediaType:
+			return e.statusCodeWithMessage(ctx, http.StatusUnsupportedMediaType, rerr, cerr.clientMessage)
 		case unprocessableEntity:
 			return e.statusCodeWithMessage(ctx, http.StatusUnprocessableEntity, rerr, cerr.clientMessage)
 		case tooManyRequests:
 			return e.statusCodeWithMessage(ctx, http.StatusTooManyRequests, rerr, cerr.clientMessage)
+		case clientClosedRequest:
+			return e.statusCodeWithMessage(ctx, 499, rerr, cerr.clientMessage)
 		case internalServerError:
 			return e.statusCodeWithMessage(ctx, http.StatusInternalServerError, rerr, cerr.clientMessage)
 		case notImplemented:
