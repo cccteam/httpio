@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/cccteam/logger"
 	"github.com/go-playground/errors/v5"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // MessageResponse holds a standard structure for http responses that carry a single message
@@ -1044,6 +1047,12 @@ func (e *Encoder) clientMessage(ctx context.Context, err error, prefix string) e
 		case gatewayTimeout:
 			return e.statusCodeWithMessage(ctx, http.StatusGatewayTimeout, rerr, cerr.clientMessage)
 		}
+	}
+
+	// Check if the client disconnected.
+	// We convert raw cancellation errors to 499 to prevent them from becoming 500s.
+	if ctx.Err() != nil && (errors.Is(err, context.Canceled) || status.Code(err) == codes.Canceled || strings.Contains(err.Error(), "context canceled")) {
+		return e.statusCodeWithMessage(ctx, 499, rerr, "")
 	}
 
 	return e.statusCodeWithMessage(ctx, http.StatusInternalServerError, rerr, "")
