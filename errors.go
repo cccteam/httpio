@@ -3,6 +3,7 @@ package httpio
 import (
 	stderrors "errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/go-playground/errors/v5"
@@ -11,24 +12,24 @@ import (
 type msgType int
 
 const (
-	badRequest            msgType = iota // http code 400
-	unauthorized                         // http code 401
-	forbidden                            // http code 403
-	notFound                             // http code 404
-	methodNotAllowed                     // http code 405
-	notAcceptable                        // http code 406
-	requestTimeout                       // http code 408
-	conflict                             // http code 409
-	requestEntityTooLarge                // http code 413
-	unsupportedMediaType                 // http code 415
-	unprocessableEntity                  // http code 422
-	tooManyRequests                      // http code 429
-	clientClosedRequest                  // http code 499
-	internalServerError                  // http code 500
-	notImplemented                       // http code 501
-	badGateway                           // http code 502
-	serviceUnavailable                   // http code 503
-	gatewayTimeout                       // http code 504
+	badRequest            msgType = http.StatusBadRequest
+	unauthorized          msgType = http.StatusUnauthorized
+	forbidden             msgType = http.StatusForbidden
+	notFound              msgType = http.StatusNotFound
+	methodNotAllowed      msgType = http.StatusMethodNotAllowed
+	notAcceptable         msgType = http.StatusNotAcceptable
+	requestTimeout        msgType = http.StatusRequestTimeout
+	conflict              msgType = http.StatusConflict
+	requestEntityTooLarge msgType = http.StatusRequestEntityTooLarge
+	unsupportedMediaType  msgType = http.StatusUnsupportedMediaType
+	unprocessableEntity   msgType = http.StatusUnprocessableEntity
+	tooManyRequests       msgType = http.StatusTooManyRequests
+	clientClosedRequest   msgType = 499
+	internalServerError   msgType = http.StatusInternalServerError
+	notImplemented        msgType = http.StatusNotImplemented
+	badGateway            msgType = http.StatusBadGateway
+	serviceUnavailable    msgType = http.StatusServiceUnavailable
+	gatewayTimeout        msgType = http.StatusGatewayTimeout
 )
 
 func init() {

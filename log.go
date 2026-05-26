@@ -1,11 +1,14 @@
 package httpio
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/cccteam/logger"
 	"github.com/go-playground/errors/v5"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Log returns a http.HandlerFunc that logs any error coming from handlers.
@@ -27,7 +30,16 @@ func Log(handler func(w http.ResponseWriter, r *http.Request) error) http.Handle
 		}
 
 		cerr := &ClientMessage{}
-		if !errors.As(err, &cerr) {
+		isClientErr := errors.As(err, &cerr)
+
+		if r.Context().Err() != nil && (errors.Is(err, context.Canceled) || status.Code(err) == codes.Canceled || strings.Contains(err.Error(), "context canceled")) {
+			if !isClientErr || cerr.msgType != clientClosedRequest {
+				err = NewClientClosedRequestWithError(err)
+				isClientErr = errors.As(err, &cerr)
+			}
+		}
+
+		if !isClientErr {
 			logger.FromReq(r).Error(err)
 
 			return

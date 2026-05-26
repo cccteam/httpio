@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/cccteam/logger"
 	"github.com/go-playground/errors/v5"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // MessageResponse holds a standard structure for http responses that carry a single message
@@ -1006,44 +1009,13 @@ func (e *Encoder) clientMessage(ctx context.Context, err error, prefix string) e
 
 	cerr := &ClientMessage{}
 	if errors.As(err, &cerr) {
-		switch cerr.msgType {
-		case badRequest:
-			return e.statusCodeWithMessage(ctx, http.StatusBadRequest, rerr, cerr.clientMessage)
-		case unauthorized:
-			return e.statusCodeWithMessage(ctx, http.StatusUnauthorized, rerr, cerr.clientMessage)
-		case forbidden:
-			return e.statusCodeWithMessage(ctx, http.StatusForbidden, rerr, cerr.clientMessage)
-		case notFound:
-			return e.statusCodeWithMessage(ctx, http.StatusNotFound, rerr, cerr.clientMessage)
-		case methodNotAllowed:
-			return e.statusCodeWithMessage(ctx, http.StatusMethodNotAllowed, rerr, cerr.clientMessage)
-		case notAcceptable:
-			return e.statusCodeWithMessage(ctx, http.StatusNotAcceptable, rerr, cerr.clientMessage)
-		case requestTimeout:
-			return e.statusCodeWithMessage(ctx, http.StatusRequestTimeout, rerr, cerr.clientMessage)
-		case conflict:
-			return e.statusCodeWithMessage(ctx, http.StatusConflict, rerr, cerr.clientMessage)
-		case requestEntityTooLarge:
-			return e.statusCodeWithMessage(ctx, http.StatusRequestEntityTooLarge, rerr, cerr.clientMessage)
-		case unsupportedMediaType:
-			return e.statusCodeWithMessage(ctx, http.StatusUnsupportedMediaType, rerr, cerr.clientMessage)
-		case unprocessableEntity:
-			return e.statusCodeWithMessage(ctx, http.StatusUnprocessableEntity, rerr, cerr.clientMessage)
-		case tooManyRequests:
-			return e.statusCodeWithMessage(ctx, http.StatusTooManyRequests, rerr, cerr.clientMessage)
-		case clientClosedRequest:
-			return e.statusCodeWithMessage(ctx, 499, rerr, cerr.clientMessage)
-		case internalServerError:
-			return e.statusCodeWithMessage(ctx, http.StatusInternalServerError, rerr, cerr.clientMessage)
-		case notImplemented:
-			return e.statusCodeWithMessage(ctx, http.StatusNotImplemented, rerr, cerr.clientMessage)
-		case badGateway:
-			return e.statusCodeWithMessage(ctx, http.StatusBadGateway, rerr, cerr.clientMessage)
-		case serviceUnavailable:
-			return e.statusCodeWithMessage(ctx, http.StatusServiceUnavailable, rerr, cerr.clientMessage)
-		case gatewayTimeout:
-			return e.statusCodeWithMessage(ctx, http.StatusGatewayTimeout, rerr, cerr.clientMessage)
-		}
+		return e.statusCodeWithMessage(ctx, int(cerr.msgType), rerr, cerr.clientMessage)
+	}
+
+	// Check if the client disconnected.
+	// We convert raw cancellation errors to 499 to prevent them from becoming 500s.
+	if ctx.Err() != nil && (errors.Is(err, context.Canceled) || status.Code(err) == codes.Canceled || strings.Contains(err.Error(), "context canceled")) {
+		return e.statusCodeWithMessage(ctx, 499, rerr, "")
 	}
 
 	return e.statusCodeWithMessage(ctx, http.StatusInternalServerError, rerr, "")
