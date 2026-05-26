@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.14](https://github.com/cccteam/httpio/compare/v0.7.13...v0.7.14) (2026-05-26)
+
+
+### Features
+
+* Log client disconnects as ClientClosedRequest (499) instead of InternalServerError (500) ([#124](https://github.com/cccteam/httpio/issues/124)) ([c8bc9f8](https://github.com/cccteam/httpio/commit/c8bc9f8a9ccaf72024538bf2dbfa15b5673b6e19))
+
 ## [0.7.13](https://github.com/cccteam/httpio/compare/v0.7.12...v0.7.13) (2026-05-18)
 
 
