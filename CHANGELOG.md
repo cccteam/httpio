@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.15](https://github.com/cccteam/httpio/compare/v0.7.14...v0.7.15) (2026-06-05)
+
+
+### Code Upgrade
+
+* go 1.26.3 =&gt; 1.26.4 ([#129](https://github.com/cccteam/httpio/issues/129)) ([0b4400b](https://github.com/cccteam/httpio/commit/0b4400b6ba61c29e67fdbe17cc439ff4ce0394a1))
+
 ## [0.7.14](https://github.com/cccteam/httpio/compare/v0.7.13...v0.7.14) (2026-05-26)
 
 
