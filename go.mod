@@ -4,13 +4,13 @@ go 1.26.4
 
 require (
 	github.com/cccteam/ccc v0.3.0
-	github.com/cccteam/logger v0.1.20
-	github.com/go-chi/chi/v5 v5.2.5
+	github.com/cccteam/logger v0.1.21
+	github.com/go-chi/chi/v5 v5.3.0
 	github.com/go-playground/errors/v5 v5.4.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/google/go-cmp v0.7.0
 	go.uber.org/mock v0.6.0
-	google.golang.org/grpc v1.80.0
+	google.golang.org/grpc v1.81.1
 )
 
 require (
