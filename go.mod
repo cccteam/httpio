@@ -1,6 +1,6 @@
 module github.com/cccteam/httpio
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/cccteam/ccc v0.3.0
