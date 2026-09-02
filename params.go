@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/cccteam/ccc"
+	"github.com/cccteam/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
 )
@@ -15,26 +16,43 @@ import (
 // ParamType defines the type used to describe url Params
 type ParamType string
 
-type paramErrMsg string
-
-func newParamErrMsg(format string, a ...any) paramErrMsg {
-	return paramErrMsg(fmt.Sprintf(format, a...))
+// paramErrMsg is the panic value raised by Param when a route parameter is missing or
+// fails to parse. msg is safe to return to the client. err carries the underlying parse
+// failure, which may include internal source paths and library names, and must only
+// ever be logged server-side.
+type paramErrMsg struct {
+	msg string
+	err error
 }
 
+func newParamErrMsg(err error, format string, a ...any) paramErrMsg {
+	return paramErrMsg{msg: fmt.Sprintf(format, a...), err: err}
+}
+
+// Msg returns the client-safe description of the parameter failure
 func (m paramErrMsg) Msg() string {
-	return string(m)
+	return m.msg
+}
+
+// Err returns the underlying parse error, or nil if the parameter was simply missing
+func (m paramErrMsg) Err() error {
+	return m.err
 }
 
 // WithParams middleware is used to capture Param Parsing errors. They are returned
-// as a http.StatusBadRequest status code with a message describing any parsing issue
+// as a http.StatusBadRequest status code with a generic message naming the offending
+// parameter. The underlying parse error is logged server-side and never sent to the client.
 func WithParams(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
-				if m, ok := rec.(paramErrMsg); ok {
-					_ = NewEncoder(w).BadRequestMessage(r.Context(), m.Msg())
-				} else {
+				m, ok := rec.(paramErrMsg)
+				if !ok {
 					panic(rec)
+				}
+
+				if err := NewEncoder(w).BadRequestMessageWithError(r.Context(), m.Err(), m.Msg()); err != nil {
+					logger.FromReq(r).Info(err)
 				}
 			}
 		}()
@@ -48,7 +66,7 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 	fetchParam := func(r *http.Request, param ParamType) any {
 		v := chi.URLParam(r, string(param))
 		if v == "" {
-			panic(newParamErrMsg("route parameter (%s) is required", param))
+			panic(newParamErrMsg(nil, "route parameter (%s) is required", param))
 		}
 		switch any(val).(type) {
 		case string:
@@ -56,42 +74,42 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 		case int:
 			i, err := strconv.Atoi(v)
 			if err != nil {
-				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 			}
 
 			return i
 		case int64:
 			i, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
-				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 			}
 
 			return i
 		case float64:
 			i, err := strconv.ParseFloat(v, 64)
 			if err != nil {
-				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 			}
 
 			return i
 		case bool:
 			i, err := strconv.ParseBool(v)
 			if err != nil {
-				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 			}
 
 			return i
 		case uuid.UUID:
 			i, err := uuid.FromString(v)
 			if err != nil {
-				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 			}
 
 			return i
 		case ccc.UUID:
 			i, err := ccc.UUIDFromString(v)
 			if err != nil {
-				panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+				panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 			}
 
 			return i
@@ -108,28 +126,28 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 			case reflect.Int:
 				i, err := strconv.Atoi(v)
 				if err != nil {
-					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+					panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 				}
 
 				return reflect.ValueOf(i).Convert(rt).Interface()
 			case reflect.Int64:
 				i, err := strconv.ParseInt(v, 10, 64)
 				if err != nil {
-					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+					panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 				}
 
 				return reflect.ValueOf(i).Convert(rt).Interface()
 			case reflect.Float64:
 				i, err := strconv.ParseFloat(v, 64)
 				if err != nil {
-					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+					panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 				}
 
 				return reflect.ValueOf(i).Convert(rt).Interface()
 			case reflect.Bool:
 				i, err := strconv.ParseBool(v)
 				if err != nil {
-					panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+					panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 				}
 
 				return reflect.ValueOf(i).Convert(rt).Interface()
@@ -137,7 +155,7 @@ func Param[T any](r *http.Request, param ParamType) (val T) {
 				if rt.ConvertibleTo(reflect.TypeOf(uuid.UUID{})) {
 					i, err := uuid.FromString(v)
 					if err != nil {
-						panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, v, val, err))
+						panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 					}
 
 					return reflect.ValueOf(i).Convert(rt).Interface()
@@ -174,7 +192,7 @@ func resolveInterfaces[T any](param ParamType, paramVal string, val T) any {
 	switch t := val2.(type) {
 	case encoding.TextUnmarshaler:
 		if err := t.UnmarshalText([]byte(paramVal)); err != nil {
-			panic(newParamErrMsg("param %s=%s is not a valid %T. err: %s", param, paramVal, val, err))
+			panic(newParamErrMsg(err, "route parameter (%s) is not a valid %T", param, val))
 		}
 	default:
 		return nil
