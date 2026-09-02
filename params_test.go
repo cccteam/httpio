@@ -2,8 +2,10 @@ package httpio
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/cccteam/ccc"
@@ -18,10 +20,12 @@ func TestWithParams(t *testing.T) {
 		h http.Handler
 	}
 	tests := []struct {
-		name      string
-		args      args
-		wantPanic bool
-		wantCode  int
+		name             string
+		args             args
+		wantPanic        bool
+		wantCode         int
+		wantBodyContains []string
+		wantBodyExcludes []string
 	}{
 		{
 			name: "success",
@@ -34,10 +38,33 @@ func TestWithParams(t *testing.T) {
 			name: "No panic",
 			args: args{
 				h: http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
-					panic(paramErrMsg("message"))
+					panic(newParamErrMsg(nil, "message"))
 				}),
 			},
-			wantCode: http.StatusBadRequest,
+			wantCode:         http.StatusBadRequest,
+			wantBodyContains: []string{"message"},
+		},
+		{
+			name: "parse failure hides underlying error",
+			args: args{
+				h: http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+					panic(newParamErrMsg(errors.New("source=github.com/example/lib/parse.go:35: bad input"), "route parameter (id) is not a valid int"))
+				}),
+			},
+			wantCode:         http.StatusBadRequest,
+			wantBodyContains: []string{"route parameter (id) is not a valid int"},
+			wantBodyExcludes: []string{"source=", "parse.go", "bad input"},
+		},
+		{
+			name: "malformed ccc.UUID route parameter",
+			args: args{
+				h: http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+					_ = Param[ccc.UUID](r, "conferenceID")
+				}),
+			},
+			wantCode:         http.StatusBadRequest,
+			wantBodyContains: []string{"route parameter (conferenceID) is not a valid ccc.UUID"},
+			wantBodyExcludes: []string{"source=", "uuid.go", "not-a-uuid"},
 		},
 		{
 			name: "panic",
@@ -60,13 +87,114 @@ func TestWithParams(t *testing.T) {
 				}
 			}()
 
-			req := mockRequest(map[ParamType]string{})
+			req := mockRequest(map[ParamType]string{"conferenceID": "not-a-uuid"})
 			rr := httptest.NewRecorder()
 
 			WithParams(tt.args.h).ServeHTTP(rr, req)
 
 			if code := rr.Code; code != tt.wantCode {
 				t.Errorf("WithParam() code = %v, want %v", code, tt.wantCode)
+			}
+			body := rr.Body.String()
+			for _, want := range tt.wantBodyContains {
+				if !strings.Contains(body, want) {
+					t.Errorf("WithParam() body = %q, want it to contain %q", body, want)
+				}
+			}
+			for _, leaked := range tt.wantBodyExcludes {
+				if strings.Contains(body, leaked) {
+					t.Errorf("WithParam() body = %q, must not contain %q", body, leaked)
+				}
+			}
+		})
+	}
+}
+
+func TestParam_errMsg(t *testing.T) {
+	t.Parallel()
+
+	type args struct {
+		r     *http.Request
+		param ParamType
+		call  func(r *http.Request, param ParamType)
+	}
+	tests := []struct {
+		name        string
+		args        args
+		wantMsg     string
+		wantErr     bool
+		wantExclude []string
+	}{
+		{
+			name: "missing parameter has no underlying error",
+			args: args{
+				r:     mockRequest(map[ParamType]string{}),
+				param: "id",
+				call:  func(r *http.Request, param ParamType) { _ = Param[int](r, param) },
+			},
+			wantMsg: "route parameter (id) is required",
+		},
+		{
+			name: "invalid int keeps parse error out of message",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"id": "abc"}),
+				param: "id",
+				call:  func(r *http.Request, param ParamType) { _ = Param[int](r, param) },
+			},
+			wantMsg:     "route parameter (id) is not a valid int",
+			wantErr:     true,
+			wantExclude: []string{"abc", "strconv"},
+		},
+		{
+			name: "invalid ccc.UUID keeps source path out of message",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"id": "not-a-uuid"}),
+				param: "id",
+				call:  func(r *http.Request, param ParamType) { _ = Param[ccc.UUID](r, param) },
+			},
+			wantMsg:     "route parameter (id) is not a valid ccc.UUID",
+			wantErr:     true,
+			wantExclude: []string{"not-a-uuid", "source=", "uuid.go"},
+		},
+		{
+			name: "invalid TextUnmarshaler keeps parse error out of message",
+			args: args{
+				r:     mockRequest(map[ParamType]string{"id": "not-a-uuid"}),
+				param: "id",
+				call:  func(r *http.Request, param ParamType) { _ = Param[*uuid.UUID](r, param) },
+			},
+			wantMsg:     "route parameter (id) is not a valid *uuid.UUID",
+			wantErr:     true,
+			wantExclude: []string{"not-a-uuid"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			var got paramErrMsg
+			func() {
+				defer func() {
+					rec := recover()
+					m, ok := rec.(paramErrMsg)
+					if !ok {
+						t.Fatalf("Param() panic = %v, want paramErrMsg", rec)
+					}
+					got = m
+				}()
+				tt.args.call(tt.args.r, tt.args.param)
+			}()
+
+			if got.Msg() != tt.wantMsg {
+				t.Errorf("Param() Msg() = %q, want %q", got.Msg(), tt.wantMsg)
+			}
+			if (got.Err() != nil) != tt.wantErr {
+				t.Errorf("Param() Err() = %v, wantErr %v", got.Err(), tt.wantErr)
+			}
+			for _, leaked := range tt.wantExclude {
+				if strings.Contains(got.Msg(), leaked) {
+					t.Errorf("Param() Msg() = %q, must not contain %q", got.Msg(), leaked)
+				}
 			}
 		})
 	}
