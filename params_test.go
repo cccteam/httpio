@@ -59,11 +59,11 @@ func TestWithParams(t *testing.T) {
 			name: "malformed ccc.UUID route parameter",
 			args: args{
 				h: http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
-					_ = Param[ccc.UUID](r, "conferenceID")
+					_ = Param[ccc.UUID](r, "recordID")
 				}),
 			},
 			wantCode:         http.StatusBadRequest,
-			wantBodyContains: []string{"route parameter (conferenceID) is not a valid ccc.UUID"},
+			wantBodyContains: []string{"route parameter (recordID) is not a valid ccc.UUID"},
 			wantBodyExcludes: []string{"source=", "uuid.go", "not-a-uuid"},
 		},
 		{
@@ -87,7 +87,7 @@ func TestWithParams(t *testing.T) {
 				}
 			}()
 
-			req := mockRequest(map[ParamType]string{"conferenceID": "not-a-uuid"})
+			req := mockRequest(map[ParamType]string{"recordID": "not-a-uuid"})
 			rr := httptest.NewRecorder()
 
 			WithParams(tt.args.h).ServeHTTP(rr, req)
