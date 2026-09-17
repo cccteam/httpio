@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.19](https://github.com/cccteam/httpio/compare/v0.7.18...v0.7.19) (2026-09-17)
+
+
+### Bug Fixes
+
+* **deps:** bump grpc and x/text to close reachable vulnerabilities ([#142](https://github.com/cccteam/httpio/issues/142)) ([23cddc3](https://github.com/cccteam/httpio/commit/23cddc35bf718486a9dd6ca4f048ab13fe6c1007))
+
 ## [0.7.18](https://github.com/cccteam/httpio/compare/v0.7.17...v0.7.18) (2026-08-19)
 
 
