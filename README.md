@@ -109,7 +109,9 @@ func MyHandler(w http.ResponseWriter, r *http.Request) {
     param := Param[int64](r, "fileId")
     // param is parsed as type int64
     //
-    // WithParams() middleware should be used to catch parsing errors
+    // WithParams() middleware should be used to catch parsing errors. It responds
+    // with a 400 and a generic message naming the parameter; the underlying
+    // parse error is logged server-side and never returned to the client.
 }
 ```
 
