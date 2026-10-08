@@ -1,3 +1,8 @@
+# Every entry pins how dependabot writes its pull requests: the title becomes the squash
+# commit's subject, and release-please releases a merge by its type. chore and build are
+# hidden in our release configuration, so a bump merged under dependabot's inferred prefix
+# never reached a release; "upgrade" is a visible patch section. A release is taken up only
+# after it has been out a week, so a version pulled or superseded within days never lands.
 # To get started with Dependabot version updates, you'll need to specify which
 # package ecosystems to update and where the package manifests are located.
 # Please see the documentation for all configuration options:
@@ -9,6 +14,11 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "monthly"
+    commit-message:
+      prefix: "upgrade"
+      include: "scope"
+    cooldown:
+      default-days: 7
     groups:
       github-actions:
         patterns:
@@ -17,6 +27,11 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    commit-message:
+      prefix: "upgrade"
+      include: "scope"
+    cooldown:
+      default-days: 7
     groups:
       go-dependencies:
         patterns:
