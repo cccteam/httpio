@@ -6,9 +6,9 @@ on:
 
 jobs:
   security_scan:
-    uses: cccteam/github-workflows/.github/workflows/golang-security-scan.yml@1ccb2a0d5c48271b34c23abb3821e365019838be # v5.24.0
+    uses: cccteam/github-workflows/.github/workflows/golang-security-scan.yml@9e5bf053976f0aef9f3c770cd83c6113b2f35da6 # v8.2.1
     with:
-      execute-trivy-scan: false
+      execute-grype-scan: false
     secrets:
       SLACK_BOT_TOKEN: ${{ secrets.CCC_SLACK_BOT_TOKEN }}
       SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
