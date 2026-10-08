@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.20](https://github.com/cccteam/httpio/compare/v0.7.19...v0.7.20) (2026-10-08)
+
+
+### Bug Fixes
+
+* Keep underlying parse errors out of route parameter responses ([#141](https://github.com/cccteam/httpio/issues/141)) ([024135e](https://github.com/cccteam/httpio/commit/024135e8f851c27ae0b08631822ed9dd04604b8e))
+
+
+### Code Upgrade
+
+* **deps:** Bump the go-dependencies group across 1 directory with 4 updates ([#147](https://github.com/cccteam/httpio/issues/147)) ([7c521ab](https://github.com/cccteam/httpio/commit/7c521ab92984cdf4426ae2a6896a69e5c0e624a9))
+* **deps:** Go 1.26.9 and golang.org/x/net v0.60.0; net/http GO-2026-6612, GO-2026-6613 and GO-2026-6617 fixed ([#149](https://github.com/cccteam/httpio/issues/149)) ([6fb5868](https://github.com/cccteam/httpio/commit/6fb5868d605be80f9a5c69d8b2a68b1dec16b190))
+* **deps:** golang-security-scan v8.2.1 with its Grype switch; create-github-app-token v3.2.0 ([#146](https://github.com/cccteam/httpio/issues/146)) ([a0184b3](https://github.com/cccteam/httpio/commit/a0184b3014b09e761efbe54408778e20a7315677))
+
 ## [0.7.19](https://github.com/cccteam/httpio/compare/v0.7.18...v0.7.19) (2026-09-17)
 
 
