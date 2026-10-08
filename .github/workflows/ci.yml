@@ -2,6 +2,11 @@ name: CI
 on:
   pull_request:
     types: [opened, synchronize, reopened] # these are the defaults - synchronize means 'commits pushed to PR'
+  push:
+    branches: [master]
+    # The merge result is checked whole, and the caches its jobs save are the ones the next
+    # pull requests restore: a pull request can read entries saved on its own branch and on
+    # its base, nothing else.
 
 concurrency:
   group: ${{ github.ref }}
@@ -9,9 +14,9 @@ concurrency:
 
 jobs:
   golang-ci:
-    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@1ccb2a0d5c48271b34c23abb3821e365019838be # v5.24.0
+    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@7cd1ac4a2955aae93b5b6e81cfa2f3339dc0d959 # v8.2.0
     with:
       build-tags: '[""]'
       golangci-lint-version: 'v2.11.4'
   semantic-pull-request-title:
-    uses: cccteam/github-workflows/.github/workflows/semantic-pull-request-title.yml@1ccb2a0d5c48271b34c23abb3821e365019838be # 5.24.0
+    uses: cccteam/github-workflows/.github/workflows/semantic-pull-request-title.yml@7cd1ac4a2955aae93b5b6e81cfa2f3339dc0d959 # v8.2.0
