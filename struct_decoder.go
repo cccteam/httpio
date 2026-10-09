@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/go-playground/errors/v5"
@@ -109,14 +110,37 @@ func (d *StructDecoder[Request]) Decode(request *http.Request) (*Request, error)
 // a streaming decode would have saved, and the two passes then share one copy. It also
 // ends a body that is a bare scalar (null, true, a number, a string) at EOF, where a
 // decoder reading a stream waits for a byte that never comes. The buffer grows as bytes
-// arrive; nothing is sized from a header the client wrote.
+// arrive; nothing is sized from a header the client wrote. A body that runs past the
+// limit the route carries (an http.MaxBytesReader installed by the router) answers 413
+// naming the limit.
 func readBody(request *http.Request) ([]byte, error) {
 	body, err := io.ReadAll(request.Body)
 	if err != nil {
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			return nil, NewRequestEntityTooLargeMessagef("the request body exceeds the maximum of %s", formatByteSize(tooLarge.Limit))
+		}
+
 		return nil, NewBadRequestMessageWithError(err, "failed to read request body")
 	}
 
 	return body, nil
+}
+
+// formatByteSize writes a byte count the way a limit is declared: an exact count of
+// bytes, or KB, MB or GB (1024-based) when the count is a whole multiple.
+func formatByteSize(n int64) string {
+	const unit = 1024
+	switch {
+	case n >= unit*unit*unit && n%(unit*unit*unit) == 0:
+		return strconv.FormatInt(n/(unit*unit*unit), 10) + "GB"
+	case n >= unit*unit && n%(unit*unit) == 0:
+		return strconv.FormatInt(n/(unit*unit), 10) + "MB"
+	case n >= unit && n%unit == 0:
+		return strconv.FormatInt(n/unit, 10) + "KB"
+	default:
+		return strconv.FormatInt(n, 10) + " bytes"
+	}
 }
 
 // validate runs the validator over the decoded target: the fields the body carried for

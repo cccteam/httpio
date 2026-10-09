@@ -42,6 +42,7 @@ func TestStructDecoder_Decode(t *testing.T) {
 	type args struct {
 		method      string
 		body        string
+		limit       int64
 		validate    bool
 		validateErr error
 	}
@@ -136,6 +137,23 @@ func TestStructDecoder_Decode(t *testing.T) {
 			wantMessage: "failed to decode request body",
 		},
 		{
+			name:        "a body over the route's limit answers 413 naming the limit",
+			args:        args{body: `{"Name":"Zach"}`, limit: 8},
+			wantCode:    http.StatusRequestEntityTooLarge,
+			wantMessage: "the request body exceeds the maximum of 8 bytes",
+		},
+		{
+			name:        "a limit in kibibytes is named in kibibytes",
+			args:        args{body: `{"Name":"` + strings.Repeat("Z", 2048) + `"}`, limit: 2048},
+			wantCode:    http.StatusRequestEntityTooLarge,
+			wantMessage: "the request body exceeds the maximum of 2KB",
+		},
+		{
+			name: "a body within the route's limit decodes",
+			args: args{body: `{"Name":"Zach"}`, limit: 64},
+			want: &decodeRequest{Name: "Zach"},
+		},
+		{
 			name:        "value the field cannot hold",
 			args:        args{body: `{"Name":1}`},
 			wantCode:    http.StatusBadRequest,
@@ -200,6 +218,10 @@ func TestStructDecoder_Decode(t *testing.T) {
 			}
 			ctx := context.Background()
 			r := httptest.NewRequestWithContext(ctx, method, "/test", strings.NewReader(tt.args.body))
+			if tt.args.limit > 0 {
+				// The limit a route carries, installed by the router ahead of the handler.
+				r.Body = http.MaxBytesReader(httptest.NewRecorder(), r.Body, tt.args.limit)
+			}
 
 			got, err := decoder.Decode(r)
 			if (err != nil) != (tt.wantCode != 0) {
