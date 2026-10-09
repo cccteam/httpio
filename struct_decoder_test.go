@@ -118,6 +118,24 @@ func TestStructDecoder_Decode(t *testing.T) {
 			wantMessage: "failed to decode request body",
 		},
 		{
+			name:        "null body",
+			args:        args{body: `null`},
+			wantCode:    http.StatusBadRequest,
+			wantMessage: "failed to decode request body",
+		},
+		{
+			name:        "scalar body",
+			args:        args{body: `true`},
+			wantCode:    http.StatusBadRequest,
+			wantMessage: "failed to decode request body",
+		},
+		{
+			name:        "trailing data after the object",
+			args:        args{body: `{"Name":"Zach"} {"Name":"Zach"}`},
+			wantCode:    http.StatusBadRequest,
+			wantMessage: "failed to decode request body",
+		},
+		{
 			name:        "value the field cannot hold",
 			args:        args{body: `{"Name":1}`},
 			wantCode:    http.StatusBadRequest,
