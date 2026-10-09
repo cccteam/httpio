@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.22](https://github.com/cccteam/httpio/compare/v0.7.21...v0.7.22) (2026-10-09)
+
+
+### Bug Fixes
+
+* StructDecoder's body read grows as bytes arrive; nothing is sized from a Content-Length the client wrote ([#154](https://github.com/cccteam/httpio/issues/154)) ([ad31c4a](https://github.com/cccteam/httpio/commit/ad31c4aa35a76af02c080aadbdfc85b4829fe38c))
+
 ## [0.7.21](https://github.com/cccteam/httpio/compare/v0.7.20...v0.7.21) (2026-10-09)
 
 
