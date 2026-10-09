@@ -1,8 +1,8 @@
 package httpio
 
 import (
-	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -12,10 +12,6 @@ import (
 
 // jsonTagKey is the struct tag that names a field on the wire.
 const jsonTagKey = "json"
-
-// maxBodyPresize bounds how much of a declared Content-Length readBody reserves ahead
-// of the read, so a header cannot make the server allocate what the client never sends.
-const maxBodyPresize = 1 << 20
 
 // nullLiteral is the JSON null as the key pass holds it.
 const nullLiteral = "null"
@@ -112,19 +108,15 @@ func (d *StructDecoder[Request]) Decode(request *http.Request) (*Request, error)
 // before it decodes it, so reading the body once ahead of the two passes costs no memory
 // a streaming decode would have saved, and the two passes then share one copy. It also
 // ends a body that is a bare scalar (null, true, a number, a string) at EOF, where a
-// decoder reading a stream waits for a byte that never comes. A declared Content-Length
-// sizes the buffer, up to maxBodyPresize, so a body of known size is read in one
-// allocation.
+// decoder reading a stream waits for a byte that never comes. The buffer grows as bytes
+// arrive; nothing is sized from a header the client wrote.
 func readBody(request *http.Request) ([]byte, error) {
-	var body bytes.Buffer
-	if n := request.ContentLength; n > 0 {
-		body.Grow(int(min(n, maxBodyPresize)) + bytes.MinRead)
-	}
-	if _, err := body.ReadFrom(request.Body); err != nil {
+	body, err := io.ReadAll(request.Body)
+	if err != nil {
 		return nil, NewBadRequestMessageWithError(err, "failed to read request body")
 	}
 
-	return body.Bytes(), nil
+	return body, nil
 }
 
 // validate runs the validator over the decoded target: the fields the body carried for
