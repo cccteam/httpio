@@ -14,9 +14,9 @@ concurrency:
 
 jobs:
   golang-ci:
-    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@7cd1ac4a2955aae93b5b6e81cfa2f3339dc0d959 # v8.2.0
+    uses: cccteam/github-workflows/.github/workflows/golang-ci.yml@ce3b6a61c4b88c82d3c0c1760dc1a3f5a2731021 # v8.2.3
     with:
       build-tags: '[""]'
       golangci-lint-version: 'v2.11.4'
   semantic-pull-request-title:
-    uses: cccteam/github-workflows/.github/workflows/semantic-pull-request-title.yml@7cd1ac4a2955aae93b5b6e81cfa2f3339dc0d959 # v8.2.0
+    uses: cccteam/github-workflows/.github/workflows/semantic-pull-request-title.yml@ce3b6a61c4b88c82d3c0c1760dc1a3f5a2731021 # v8.2.3
