@@ -3,7 +3,6 @@ package httpio
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -13,6 +12,13 @@ import (
 
 // jsonTagKey is the struct tag that names a field on the wire.
 const jsonTagKey = "json"
+
+// maxBodyPresize bounds how much of a declared Content-Length readBody reserves ahead
+// of the read, so a header cannot make the server allocate what the client never sends.
+const maxBodyPresize = 1 << 20
+
+// nullLiteral is the JSON null as the key pass holds it.
+const nullLiteral = "null"
 
 // ValidatorFunc validates a struct, in whole (Struct) or in the named fields only
 // (StructPartial). Each method returns an error when validation fails. A
@@ -67,16 +73,26 @@ func (d *StructDecoder[Request]) WithValidator(v ValidatorFunc) *StructDecoder[R
 
 // Decode decodes the request body into a new Request and validates it.
 func (d *StructDecoder[Request]) Decode(request *http.Request) (*Request, error) {
-	// The first pass sees every key the body names; the second fills the struct from the
-	// same bytes.
-	var body bytes.Buffer
-	keys := make(map[string]any)
-	if err := json.NewDecoder(io.TeeReader(request.Body, &body)).Decode(&keys); err != nil {
+	body, err := readBody(request)
+	if err != nil {
+		return nil, err
+	}
+
+	// The first pass sees every key the body names and whether its value is null, and
+	// nothing more: RawMessage keeps it to one scan and a copy of each value, with none
+	// of the values built. The second fills the struct from the same bytes.
+	keys := make(map[string]json.RawMessage)
+	if err := json.Unmarshal(body, &keys); err != nil {
 		return nil, NewBadRequestMessageWithError(err, "failed to decode request body")
+	}
+	if keys == nil {
+		// A body of null decodes into a map as nil and into a struct as nothing at all:
+		// it is not an object and says nothing about any field.
+		return nil, NewBadRequestMessage("failed to decode request body")
 	}
 
 	target := new(Request)
-	if err := json.NewDecoder(&body).Decode(target); err != nil {
+	if err := json.Unmarshal(body, target); err != nil {
 		return nil, NewBadRequestMessageWithError(err, "failed to unmarshal request body")
 	}
 
@@ -90,6 +106,25 @@ func (d *StructDecoder[Request]) Decode(request *http.Request) (*Request, error)
 	}
 
 	return target, nil
+}
+
+// readBody reads the whole request body. encoding/json holds a complete value in memory
+// before it decodes it, so reading the body once ahead of the two passes costs no memory
+// a streaming decode would have saved, and the two passes then share one copy. It also
+// ends a body that is a bare scalar (null, true, a number, a string) at EOF, where a
+// decoder reading a stream waits for a byte that never comes. A declared Content-Length
+// sizes the buffer, up to maxBodyPresize, so a body of known size is read in one
+// allocation.
+func readBody(request *http.Request) ([]byte, error) {
+	var body bytes.Buffer
+	if n := request.ContentLength; n > 0 {
+		body.Grow(int(min(n, maxBodyPresize)) + bytes.MinRead)
+	}
+	if _, err := body.ReadFrom(request.Body); err != nil {
+		return nil, NewBadRequestMessageWithError(err, "failed to read request body")
+	}
+
+	return body.Bytes(), nil
 }
 
 // validate runs the validator over the decoded target: the fields the body carried for
@@ -197,7 +232,7 @@ func (f *requestFields) lookup(key string) (requestField, bool) {
 
 // present names the fields a body's keys reach, refusing a key no field answers to, two
 // keys reaching one field, and a null into a field that cannot hold one.
-func (f *requestFields) present(keys map[string]any) (map[string]struct{}, error) {
+func (f *requestFields) present(keys map[string]json.RawMessage) (map[string]struct{}, error) {
 	present := make(map[string]struct{}, len(keys))
 	for key, value := range keys {
 		field, ok := f.lookup(key)
@@ -207,7 +242,7 @@ func (f *requestFields) present(keys map[string]any) (map[string]struct{}, error
 		if _, seen := present[field.name]; seen {
 			return nil, NewBadRequestMessagef("json field name %s collides with another field name of different case", field.name)
 		}
-		if value == nil && !field.acceptsNull {
+		if string(value) == nullLiteral && !field.acceptsNull {
 			return nil, NewBadRequestMessagef("%s cannot be null", key)
 		}
 		present[field.name] = struct{}{}
