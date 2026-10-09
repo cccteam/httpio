@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.21](https://github.com/cccteam/httpio/compare/v0.7.20...v0.7.21) (2026-10-09)
+
+
+### Features
+
+* StructDecoder, the plain-struct request body decoder with validation, so session and access need no resource ([#151](https://github.com/cccteam/httpio/issues/151)) ([0eb067d](https://github.com/cccteam/httpio/commit/0eb067da38d70e4b1d2893f44a731c11c4340144))
+
+
+### Bug Fixes
+
+* StructDecoder reads the body once and parses it twice, with no second buffer; a null body answers 400 ([#153](https://github.com/cccteam/httpio/issues/153)) ([a958384](https://github.com/cccteam/httpio/commit/a958384b7a642289a1a2a8996fba4466557b0738))
+
 ## [0.7.20](https://github.com/cccteam/httpio/compare/v0.7.19...v0.7.20) (2026-10-08)
 
 
