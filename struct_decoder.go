@@ -1,10 +1,11 @@
 package httpio
 
 import (
-	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/go-playground/errors/v5"
@@ -12,10 +13,6 @@ import (
 
 // jsonTagKey is the struct tag that names a field on the wire.
 const jsonTagKey = "json"
-
-// maxBodyPresize bounds how much of a declared Content-Length readBody reserves ahead
-// of the read, so a header cannot make the server allocate what the client never sends.
-const maxBodyPresize = 1 << 20
 
 // nullLiteral is the JSON null as the key pass holds it.
 const nullLiteral = "null"
@@ -112,19 +109,38 @@ func (d *StructDecoder[Request]) Decode(request *http.Request) (*Request, error)
 // before it decodes it, so reading the body once ahead of the two passes costs no memory
 // a streaming decode would have saved, and the two passes then share one copy. It also
 // ends a body that is a bare scalar (null, true, a number, a string) at EOF, where a
-// decoder reading a stream waits for a byte that never comes. A declared Content-Length
-// sizes the buffer, up to maxBodyPresize, so a body of known size is read in one
-// allocation.
+// decoder reading a stream waits for a byte that never comes. The buffer grows as bytes
+// arrive; nothing is sized from a header the client wrote. A body that runs past the
+// limit the route carries (an http.MaxBytesReader installed by the router) answers 413
+// naming the limit.
 func readBody(request *http.Request) ([]byte, error) {
-	var body bytes.Buffer
-	if n := request.ContentLength; n > 0 {
-		body.Grow(int(min(n, maxBodyPresize)) + bytes.MinRead)
-	}
-	if _, err := body.ReadFrom(request.Body); err != nil {
+	body, err := io.ReadAll(request.Body)
+	if err != nil {
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			return nil, NewRequestEntityTooLargeMessagef("the request body exceeds the maximum of %s", formatByteSize(tooLarge.Limit))
+		}
+
 		return nil, NewBadRequestMessageWithError(err, "failed to read request body")
 	}
 
-	return body.Bytes(), nil
+	return body, nil
+}
+
+// formatByteSize writes a byte count the way a limit is declared: an exact count of
+// bytes, or KB, MB or GB (1024-based) when the count is a whole multiple.
+func formatByteSize(n int64) string {
+	const unit = 1024
+	switch {
+	case n >= unit*unit*unit && n%(unit*unit*unit) == 0:
+		return strconv.FormatInt(n/(unit*unit*unit), 10) + "GB"
+	case n >= unit*unit && n%(unit*unit) == 0:
+		return strconv.FormatInt(n/(unit*unit), 10) + "MB"
+	case n >= unit && n%unit == 0:
+		return strconv.FormatInt(n/unit, 10) + "KB"
+	default:
+		return strconv.FormatInt(n, 10) + " bytes"
+	}
 }
 
 // validate runs the validator over the decoded target: the fields the body carried for
