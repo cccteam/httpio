@@ -10,11 +10,13 @@ First, get the package by running:
 go get github.com/cccteam/httpio
 ```
 
-## Decoder
+## StructDecoder
 
-The Decoder struct is used to decode and validate HTTP requests. It utilizes the json.NewDecoder() function to decode the HTTP request body into a provided struct.
+`StructDecoder` decodes a JSON request body into a plain struct and validates it. The body must be a JSON object, and every key it names must reach a field of the struct: a field with a `json` tag answers to that tag only; a field without one answers to its Go name, exactly or fully lower-cased. A key no field answers to is refused with a 400 `invalid field in json - <key>`, and a JSON `null` lands only in a pointer field. Every refusal is a `ClientMessage`, so a handler writes it with `Encoder.ClientMessage`.
 
-Validation is handled by the Validator interface, which requires a Struct(s interface{}) error function. This function is expected to validate the struct s and return an error if the validation fails.
+Validation is optional. `WithValidator` takes a `ValidatorFunc`, an interface with `Struct(s any) error` and `StructPartial(s any, fields ...string) error`, which `*validator.Validate` from `github.com/go-playground/validator` satisfies. A `PATCH` validates only the fields the body carried; every other method validates the whole struct. A rejection is a 400 `failed validating the request`.
+
+A request body bound to a resource decodes with the `resource` package's decoders instead, which add what its generated struct tags declare.
 
 ### Example usage
 
@@ -24,25 +26,29 @@ type MyRequest struct {
     Field2 int    `json:"field2" validate:"required,gt=0"`
 }
 
-v := validator.New()
+// NewStructDecoder fails only for a type that is not a struct or whose wire names
+// collide, a programming error, so construct the decoder once, at startup.
+func newDecoder[T any]() *httpio.StructDecoder[T] {
+    decoder, err := httpio.NewStructDecoder[T]()
+    if err != nil {
+        panic(err)
+    }
 
-func MyHandler(w http.ResponseWriter, r *http.Request) {
-    req := &MyRequest{}
-    validatorFunc :=  func(s interface{}) error {
+    return decoder.WithValidator(validator.New())
+}
 
-        if err := v.Struct(s); err != nil {
-            return err
+func MyHandler() http.HandlerFunc {
+    decoder := newDecoder[MyRequest]()
+
+    return func(w http.ResponseWriter, r *http.Request) {
+        req, err := decoder.Decode(r)
+        if err != nil {
+            _ = httpio.NewEncoder(w).ClientMessage(r.Context(), err)
+
+            return
         }
-
-        return nil
+        // continue processing req...
     }
-
-    decoder := httpio.NewDecoder(r, validatorFunc)
-    if err := decoder.Decode(req); err != nil {
-        // handle error
-        return
-    }
-    // continue processing the request...
 }
 ```
 
