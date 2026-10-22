@@ -202,5 +202,5 @@ func resolveInterfaces[T any](param ParamType, paramVal string, val T) any {
 		return val2
 	}
 
-	return *(val2.(*T))
+	return *val2.(*T)
 }
