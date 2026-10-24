@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.23](https://github.com/cccteam/httpio/compare/v0.7.22...v0.7.23) (2026-10-22)
+
+
+### Code Upgrade
+
+* **deps:** Go 1.27.3; crypto/x509 GO-2026-6809 fixed ([#157](https://github.com/cccteam/httpio/issues/157)) ([29d8ed8](https://github.com/cccteam/httpio/commit/29d8ed8f34a35ffe3a30bb99db158908db264987))
+
 ## [0.7.22](https://github.com/cccteam/httpio/compare/v0.7.21...v0.7.22) (2026-10-09)
 
 
