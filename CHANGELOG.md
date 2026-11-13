@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.24](https://github.com/cccteam/httpio/compare/v0.7.23...v0.7.24) (2026-11-13)
+
+
+### Bug Fixes
+
+* bump Go to 1.27.4 for GO-2026-6859 ([#163](https://github.com/cccteam/httpio/issues/163)) ([245cbb4](https://github.com/cccteam/httpio/commit/245cbb42c517e78bddaafdee7d47a8f938fd8a8d))
+
+
+### Code Upgrade
+
+* **deps:** bump the github-actions group across 1 directory with 4 updates ([#166](https://github.com/cccteam/httpio/issues/166)) ([11886f3](https://github.com/cccteam/httpio/commit/11886f3b05ebaf340c46660376603644f927268d))
+* **deps:** bump the go-dependencies group across 1 directory with 4 updates ([#164](https://github.com/cccteam/httpio/issues/164)) ([b09cfd6](https://github.com/cccteam/httpio/commit/b09cfd6f495c3c4f18e935d29a4071a7d499c54f))
+
 ## [0.7.23](https://github.com/cccteam/httpio/compare/v0.7.22...v0.7.23) (2026-10-22)
 
 
