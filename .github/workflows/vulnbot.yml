@@ -1,0 +1,18 @@
+name: Fix dependency vulnerabilities
+
+on:
+  schedule:
+    - cron: "23 8 * * 1-5" # Weekdays at 08:23 UTC
+  workflow_dispatch:
+
+jobs:
+  remediate:
+    permissions:
+      contents: write # push the remediation branch
+      pull-requests: write # open the remediation pull request
+      issues: write # maintain the tracking issue for findings that need a person
+    # The pin is a full commit SHA: the workflow builds vulnbot from the revision it is called at.
+    uses: cccteam/vulnbot/.github/workflows/vulnbot.yml@0194bcf1788dc3b891dfd2b5f1b216d4c80624ad # main, 2026-11-25
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.CCC_SLACK_BOT_TOKEN }}
+      SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
